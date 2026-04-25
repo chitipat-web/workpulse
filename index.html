@@ -659,6 +659,16 @@ body { font-family:'Sarabun',sans-serif; background:var(--bg); color:var(--text)
 }
 .chart-title { font-size:14px; font-weight:700; margin-bottom:16px; color:var(--text2); }
 
+/* TEAM SUMMARY TABLE */
+.ts-table { width:100%; border-collapse:collapse; font-size:13px; }
+.ts-table th { background:var(--surface2); padding:10px 12px; text-align:left; font-weight:700; color:var(--text2); font-size:11px; text-transform:uppercase; letter-spacing:.5px; }
+.ts-table td { padding:12px; border-bottom:1px solid var(--border); vertical-align:middle; }
+.ts-table tr:last-child td { border-bottom:none; }
+.ts-table tr:hover td { background:var(--surface2); }
+.ts-rank { width:28px; height:28px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; color:#fff; }
+.ts-member-info { display:flex; align-items:center; gap:8px; }
+.ts-avatar { width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; color:#fff; flex-shrink:0; }
+
 /* ANIMATIONS */
 @keyframes slideUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
 @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
@@ -736,6 +746,7 @@ body { font-family:'Sarabun',sans-serif; background:var(--bg); color:var(--text)
       <button class="desktop-tab" onclick="showPage('stats')">📊 สถิติ</button>
       <button class="desktop-tab" onclick="showPage('history')">📋 ประวัติ</button>
       <button class="desktop-tab" onclick="showPage('team')">👥 ทีม</button>
+      <button class="desktop-tab" onclick="showPage('teamsummary')" id="tabTeamSummary" style="display:none;">📈 สรุปทีม</button>
     </div>
     <div class="nav-right">
       <span id="adminBadge" class="admin-badge">👑 ADMIN</span>
@@ -901,7 +912,28 @@ body { font-family:'Sarabun',sans-serif; background:var(--bg); color:var(--text)
   </div>
 </div>
 
-<!-- DAY DETAIL MODAL -->
+
+  <!-- TEAM SUMMARY PAGE -->
+  <div id="page-teamsummary" class="page">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+      <div style="font-family:'Prompt',sans-serif;font-size:18px;font-weight:700;">📈 สรุปทีมประจำเดือน</div>
+      <div style="display:flex;gap:8px;">
+        <select id="tsMonth" class="select-input" onchange="renderTeamSummary()"></select>
+        <select id="tsYear" class="select-input" onchange="renderTeamSummary()"></select>
+      </div>
+    </div>
+
+    <!-- Overall summary -->
+    <div class="section-card" id="tsOverall" style="margin-bottom:16px;"></div>
+
+    <!-- Per member table -->
+    <div class="section-card">
+      <div class="section-title" style="margin-bottom:16px;">👤 รายละเอียดแต่ละคน</div>
+      <div id="tsMemberList"></div>
+    </div>
+  </div>
+
+  <!-- DAY DETAIL MODAL -->
 <div class="modal-overlay" id="dayModal">
   <div class="modal">
     <div class="modal-handle"></div>
@@ -1054,6 +1086,10 @@ async function startApp() {
   document.getElementById('navAvatar').textContent = currentUser.name.charAt(0).toUpperCase();
   document.getElementById('adminBadge').style.display = isAdmin() ? 'inline-block' : 'none';
   document.getElementById('addMemberSection').style.display = isAdmin() ? 'block' : 'none';
+  if (isAdmin()) {
+    document.getElementById('tabTeamSummary').style.display = '';
+    document.getElementById('mobileTabTeamSummary').style.display = '';
+  }
 
   const now = new Date();
   calYear = now.getFullYear(); calMonth = now.getMonth();
@@ -1648,13 +1684,155 @@ async function renderTeamSilent() {
   }).join('');
 }
 
+
+// ===== TEAM SUMMARY =====
+async function renderTeamSummary() {
+  if (!isAdmin()) return;
+  const month = parseInt(document.getElementById('tsMonth').value);
+  const year = parseInt(document.getElementById('tsYear').value);
+  const allMembers = await getAllMembers();
+  const dim = new Date(year, month+1, 0).getDate();
+  const colors = ['#2563eb','#059669','#7c3aed','#d97706','#dc2626','#0891b2','#0284c7','#16a34a'];
+  const mons = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+
+  document.getElementById('tsOverall').innerHTML = '<div style="text-align:center;padding:20px;"><div class="spinner" style="margin:0 auto"></div></div>';
+  document.getElementById('tsMemberList').innerHTML = '';
+
+  const results = [];
+  for (const [i, member] of allMembers.entries()) {
+    try {
+      const snap = await db.collection('users').doc(skey(member.email)).get();
+      const recs = snap.exists ? (snap.data().records || []) : [];
+      const mr = recs.filter(r => { const [y,m] = r.date.split('-').map(Number); return y===year && m===month+1; });
+      const byDate = {};
+      mr.forEach(r => { if(!byDate[r.date]) byDate[r.date]=[]; byDate[r.date].push(r); });
+      const days = Object.keys(byDate).length;
+      const totalH = mr.filter(r=>r.checkOut).reduce((s,r)=>s+calcHours(r.checkIn,r.checkOut),0);
+      const totalOT = mr.filter(r=>r.checkOut).reduce((s,r)=>s+(r.otMin||0),0);
+      const lateCount = Object.values(byDate).filter(rs=>rs.some(r=>r.isLate)).length;
+      const avgIn = mr.length > 0 ? (() => {
+        const firstIns = Object.values(byDate).map(rs => rs[0].checkIn).filter(Boolean);
+        if (firstIns.length === 0) return '--:--';
+        const avgMin = firstIns.reduce((s,t) => { const[h,m]=t.split(':').map(Number); return s+h*60+m; }, 0) / firstIns.length;
+        return `${String(Math.floor(avgMin/60)).padStart(2,'0')}:${String(Math.round(avgMin%60)).padStart(2,'0')}`;
+      })() : '--:--';
+      results.push({ member, name: member.name||member.email.split('@')[0], days, totalH, totalOT, lateCount, avgIn, color: colors[i%colors.length] });
+    } catch(e) {
+      results.push({ member, name: member.name||member.email.split('@')[0], days:0, totalH:0, totalOT:0, lateCount:0, avgIn:'--:--', color: colors[i%colors.length] });
+    }
+  }
+
+  // Sort by totalH desc
+  results.sort((a,b) => b.totalH - a.totalH);
+
+  // Overall stats
+  const totalMembers = results.length;
+  const totalDays = results.reduce((s,r)=>s+r.days,0);
+  const totalHours = results.reduce((s,r)=>s+r.totalH,0);
+  const totalOTAll = results.reduce((s,r)=>s+r.totalOT,0);
+  const totalLate = results.reduce((s,r)=>s+r.lateCount,0);
+
+  document.getElementById('tsOverall').innerHTML = `
+    <div class="section-title" style="margin-bottom:14px;">📊 ภาพรวม ${mons[month]} ${year+543}</div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;">
+      <div class="sum-card"><div class="sum-val color-blue">${totalMembers}</div><div class="sum-lbl">สมาชิกทั้งหมด</div></div>
+      <div class="sum-card"><div class="sum-val color-green">${totalHours.toFixed(1)}</div><div class="sum-lbl">ชม.รวมทั้งทีม</div></div>
+      <div class="sum-card"><div class="sum-val color-orange">${(totalOTAll/60).toFixed(1)}</div><div class="sum-lbl">ชม.โอทีรวม</div></div>
+      <div class="sum-card"><div class="sum-val color-purple">${totalDays}</div><div class="sum-lbl">วัน-คนรวม</div></div>
+      <div class="sum-card"><div class="sum-val color-red">${totalLate}</div><div class="sum-lbl">ครั้งที่สาย</div></div>
+      <div class="sum-card"><div class="sum-val">${totalMembers>0?(totalHours/totalMembers).toFixed(1):0}</div><div class="sum-lbl">เฉลี่ย ชม./คน</div></div>
+    </div>`;
+
+  if (results.length === 0) {
+    document.getElementById('tsMemberList').innerHTML = '<div class="empty-state"><div class="empty-icon">👥</div><div class="empty-text">ยังไม่มีสมาชิก</div></div>';
+    return;
+  }
+
+  // Member table
+  const rankEmoji = ['🥇','🥈','🥉'];
+  document.getElementById('tsMemberList').innerHTML = `
+    <div style="overflow-x:auto;">
+      <table class="ts-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>ชื่อ</th>
+            <th>วันที่มา</th>
+            <th>ชม.ทำงาน</th>
+            <th>ชม.โอที</th>
+            <th>มาสาย</th>
+            <th>เข้างานเฉลี่ย</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${results.map((r,i) => `
+            <tr onclick="showMemberMonthDetail('${r.member.email}','${r.name}',${month},${year})" style="cursor:pointer;">
+              <td><span style="font-size:18px">${rankEmoji[i]||i+1}</span></td>
+              <td>
+                <div class="ts-member-info">
+                  <div class="ts-avatar" style="background:${r.color}">${r.name.charAt(0).toUpperCase()}</div>
+                  <div>
+                    <div style="font-weight:700;font-size:13px;">${r.name}</div>
+                    <div style="font-size:11px;color:var(--text3);">${r.member.email}</div>
+                  </div>
+                </div>
+              </td>
+              <td><span style="font-weight:700;color:var(--accent)">${r.days}</span> วัน</td>
+              <td><span style="font-weight:700;color:var(--green)">${r.totalH.toFixed(1)}</span></td>
+              <td><span style="font-weight:700;color:var(--orange)">${(r.totalOT/60).toFixed(1)}</span></td>
+              <td>${r.lateCount > 0 ? `<span class="badge badge-late">${r.lateCount} ครั้ง</span>` : '<span class="badge badge-ontime">ไม่สาย</span>'}</td>
+              <td style="font-weight:600;">${r.avgIn}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>`;
+}
+
+async function showMemberMonthDetail(email, name, month, year) {
+  try {
+    const snap = await db.collection('users').doc(skey(email)).get();
+    const recs = snap.exists ? (snap.data().records || []) : [];
+    const mr = recs.filter(r => { const [y,m] = r.date.split('-').map(Number); return y===year && m===month+1; });
+    const byDate = {};
+    mr.forEach(r => { if(!byDate[r.date]) byDate[r.date]=[]; byDate[r.date].push(r); });
+    const mons=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+    document.getElementById('dayModalTitle').textContent = `${name} — ${mons[month]} ${year+543}`;
+
+    const sorted = Object.keys(byDate).sort().reverse();
+    let html = '';
+    if (sorted.length === 0) {
+      html = '<div class="empty-state"><div class="empty-icon">📋</div><div class="empty-text">ไม่มีข้อมูลเดือนนี้</div></div>';
+    } else {
+      sorted.forEach(date => {
+        const rs = byDate[date];
+        const comp = rs.filter(r=>r.checkOut);
+        const totalH = comp.reduce((s,r)=>s+calcHours(r.checkIn,r.checkOut),0);
+        const totalOT = comp.reduce((s,r)=>s+(r.otMin||0),0);
+        const hasLate = rs.some(r=>r.isLate);
+        const [y,m,d] = date.split('-');
+        html += `<div class="history-item" onclick="showDayDetail('${date}','${email}')">
+          <div class="history-date">${parseInt(d)} ${mons[parseInt(m)-1]} ${parseInt(y)+543}</div>
+          <div class="history-times">${rs.map(r=>`${r.checkIn}${r.checkOut?'→'+r.checkOut:'→...'}`).join(', ')}</div>
+          <div class="history-stats">
+            <span class="badge" style="background:var(--green-light);color:var(--green)">⏱ ${totalH.toFixed(1)} ชม.</span>
+            ${totalOT>0?`<span class="badge badge-ot">⚡ OT ${(totalOT/60).toFixed(1)} ชม.</span>`:''}
+            ${hasLate?'<span class="badge badge-late">⚠ สาย</span>':'<span class="badge badge-ontime">✓ ปกติ</span>'}
+          </div>
+        </div>`;
+      });
+    }
+    document.getElementById('dayModalContent').innerHTML = html;
+    document.getElementById('dayModal').classList.add('open');
+  } catch(e) { toast('โหลดข้อมูลไม่ได้','error'); }
+}
+
 // ===== NAVIGATION =====
 function showPage(name) {
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.desktop-tab').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.mobile-nav-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById('page-'+name).classList.add('active');
-  const map = {home:0,calendar:1,stats:2,history:3,team:4};
+  const map = {home:0,calendar:1,stats:2,history:3,team:4,teamsummary:5};
   const idx = map[name];
   document.querySelectorAll('.desktop-tab')[idx]?.classList.add('active');
   document.querySelectorAll('.mobile-nav-btn')[idx]?.classList.add('active');
@@ -1662,6 +1840,7 @@ function showPage(name) {
   if (name==='calendar') renderCalendar();
   if (name==='history') renderHistory();
   if (name==='team') { document.getElementById('teamDate').value = todayKey(); renderTeam(); }
+  if (name==='teamsummary') renderTeamSummary();
 }
 
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
@@ -1670,11 +1849,11 @@ function closeModal(id) { document.getElementById(id).classList.remove('open'); 
 function populateSelectors() {
   const mons=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
   const now = new Date();
-  ['statMonth','histMonth'].forEach(id=>{
+  ['statMonth','histMonth','tsMonth'].forEach(id=>{
     const s=document.getElementById(id); s.innerHTML='';
     mons.forEach((m,i)=>s.innerHTML+=`<option value="${i}"${i===now.getMonth()?' selected':''}>${m}</option>`);
   });
-  ['statYear','histYear'].forEach(id=>{
+  ['statYear','histYear','tsYear'].forEach(id=>{
     const s=document.getElementById(id); s.innerHTML='';
     [now.getFullYear()-1,now.getFullYear()].forEach(y=>s.innerHTML+=`<option value="${y}"${y===now.getFullYear()?' selected':''}>${y}</option>`);
   });
@@ -1717,6 +1896,7 @@ document.addEventListener('DOMContentLoaded', () => {
     <button class="mobile-nav-btn" onclick="showPage('stats')"><span class="icon">📊</span><span>สถิติ</span></button>
     <button class="mobile-nav-btn" onclick="showPage('history')"><span class="icon">📋</span><span>ประวัติ</span></button>
     <button class="mobile-nav-btn" onclick="showPage('team')"><span class="icon">👥</span><span>ทีม</span></button>
+    <button class="mobile-nav-btn" onclick="showPage('teamsummary')" id="mobileTabTeamSummary" style="display:none;"><span class="icon">📈</span><span>สรุปทีม</span></button>
   </div>
 </div>
 
