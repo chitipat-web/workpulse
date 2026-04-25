@@ -1034,11 +1034,17 @@ async function startApp() {
   document.getElementById('loadingOverlay').classList.add('show');
   document.getElementById('loginScreen').style.display = 'none';
 
-  // Save user info to Firestore
+  // Save user info + register in members list
   setTimeout(async () => {
     try {
+      // Save user profile
       await db.collection('users').doc(skey()).set(
         { name: currentUser.name, email: currentUser.email, updatedAt: new Date().toISOString() },
+        { merge: true }
+      );
+      // Auto-register in members collection
+      await db.collection('members').doc(skey()).set(
+        { name: currentUser.name, email: currentUser.email, joinedAt: new Date().toISOString() },
         { merge: true }
       );
     } catch(e) {}
@@ -1429,33 +1435,57 @@ async function renderHistory() {
 }
 
 // ===== TEAM (REAL-TIME) =====
-function getMembers() {
-  try { return JSON.parse(localStorage.getItem('wp_team')||'[]'); } catch(e){return[];}
-}
-function saveMembers(m) { localStorage.setItem('wp_team',JSON.stringify(m)); }
+// Members now come from Firestore - cached locally
+let _membersCache = null;
 
-function addMember() {
+async function getMembers() {
+  if (_membersCache !== null) return _membersCache;
+  try {
+    const snap = await db.collection('members').get();
+    _membersCache = snap.docs.map(d => d.data()).filter(m => m.email !== currentUser.email);
+    return _membersCache;
+  } catch(e) { return []; }
+}
+
+async function getAllMembers() {
+  try {
+    const snap = await db.collection('members').get();
+    return snap.docs.map(d => d.data());
+  } catch(e) { return []; }
+}
+
+function saveMembers(m) { _membersCache = null; } // just invalidate cache
+
+async function addMember() {
   const email = document.getElementById('memberEmail').value.trim().toLowerCase();
   const name = document.getElementById('memberName').value.trim();
   if (!email||!email.includes('@')) { toast('อีเมลไม่ถูกต้อง','error'); return; }
-  const members = getMembers();
-  if (members.find(m=>m.email===email)) { toast('มีสมาชิกนี้แล้ว','warning'); return; }
-  members.push({ email, name });
-  saveMembers(members);
-  document.getElementById('memberEmail').value='';
-  document.getElementById('memberName').value='';
-  toast(`เพิ่ม ${email} แล้ว`,'success');
-  renderTeam();
+  try {
+    await db.collection('members').doc(email.replace(/[^a-zA-Z0-9]/g,'_')).set(
+      { name: name||email.split('@')[0], email, joinedAt: new Date().toISOString() },
+      { merge: true }
+    );
+    _membersCache = null;
+    document.getElementById('memberEmail').value='';
+    document.getElementById('memberName').value='';
+    toast(`เพิ่ม ${email} แล้ว`,'success');
+    renderTeam();
+  } catch(e) { toast('เพิ่มไม่สำเร็จ','error'); }
 }
 
-function removeMember(email) {
+async function removeMember(email) {
   if (!confirm('ลบสมาชิกนี้?')) return;
-  saveMembers(getMembers().filter(m=>m.email!==email));
-  renderTeam();
+  try {
+    await db.collection('members').doc(email.replace(/[^a-zA-Z0-9]/g,'_')).delete();
+    _membersCache = null;
+    toast('ลบสมาชิกแล้ว','success');
+    renderTeam();
+  } catch(e) { toast('ลบไม่สำเร็จ','error'); }
 }
 
 async function renderTeam() {
-  const members = getMembers();
+  // Admin sees all members, others see all too
+  const members = isAdmin() ? await getAllMembers() : await getMembers();
   const dateKey = document.getElementById('teamDate').value || todayKey();
   const list = document.getElementById('teamList');
 
@@ -1528,19 +1558,94 @@ async function renderTeam() {
   setupRealtimeListeners(members, dateKey);
 }
 
+let _teamRenderTimer = null;
+
 function setupRealtimeListeners(members, dateKey) {
   // Detach old listeners
   Object.values(teamListeners).forEach(fn => fn && fn());
   teamListeners = {};
+  
+  // Listen to members collection for new joiners
+  const membersUnsub = db.collection('members').onSnapshot(() => {
+    _membersCache = null;
+    const teamPage = document.getElementById('page-team');
+    if (!teamPage.classList.contains('active')) return;
+    clearTimeout(_teamRenderTimer);
+    _teamRenderTimer = setTimeout(() => renderTeamSilent(), 2000);
+  });
+  teamListeners['_members'] = membersUnsub;
 
   members.forEach(member => {
+    let isFirst = true;
     const unsub = db.collection('users').doc(skey(member.email))
       .onSnapshot(() => {
+        // Skip first snapshot (initial load)
+        if (isFirst) { isFirst = false; return; }
         const teamPage = document.getElementById('page-team');
-        if (teamPage.classList.contains('active')) renderTeam();
+        if (!teamPage.classList.contains('active')) return;
+        // Debounce: wait 1.5s before re-rendering to avoid rapid updates
+        clearTimeout(_teamRenderTimer);
+        _teamRenderTimer = setTimeout(() => {
+          renderTeamSilent();
+        }, 1500);
       });
     teamListeners[member.email] = unsub;
   });
+}
+
+async function renderTeamSilent() {
+  // Re-render team without showing spinner
+  _membersCache = null;
+  const members = isAdmin() ? await getAllMembers() : await getMembers();
+  const dateKey = document.getElementById('teamDate').value || todayKey();
+  const list = document.getElementById('teamList');
+  if (members.length === 0) return;
+
+  const colors = ['#2563eb','#059669','#7c3aed','#d97706','#dc2626','#0891b2'];
+  const results = [];
+
+  for (const [i, member] of members.entries()) {
+    try {
+      const snap = await db.collection('users').doc(skey(member.email)).get();
+      const data = snap.exists ? snap.data() : {};
+      const recs = data.records || [];
+      const dr = recs.filter(r=>r.date===dateKey);
+      const comp = dr.filter(r=>r.checkOut);
+      const open = dr.find(r=>!r.checkOut);
+      const totalH = comp.reduce((s,r)=>s+calcHours(r.checkIn,r.checkOut),0);
+      const totalOT = comp.reduce((s,r)=>s+(r.otMin||0),0);
+      const hasLate = dr.some(r=>r.isLate);
+      const name = data.name || member.name || member.email.split('@')[0];
+      results.push({ member, name, dr, totalH, totalOT, open, hasLate, color:colors[i%colors.length] });
+    } catch(e) {
+      results.push({ member, name:member.name||member.email.split('@')[0], dr:[], totalH:0, totalOT:0, open:null, hasLate:false, color:colors[i%colors.length] });
+    }
+  }
+
+  list.innerHTML = results.map(r => {
+    const firstIn = r.dr.length>0 ? r.dr[0].checkIn : '--:--';
+    let statusBadge = '';
+    if (r.open) statusBadge = '<span class="badge badge-working">🟢 กำลังทำงาน</span>';
+    else if (r.dr.length>0) statusBadge = r.hasLate ? '<span class="badge badge-late">⚠ มาสาย</span>' : '<span class="badge badge-ontime">✓ มาแล้ว</span>';
+    else statusBadge = '<span class="badge" style="background:var(--surface2);color:var(--text3)">— ยังไม่มา</span>';
+
+    return `<div class="team-card" onclick="showDayDetail('${dateKey}','${r.member.email}')">
+      <div class="team-card-top">
+        <div class="team-avatar" style="background:${r.color}">${r.name.charAt(0).toUpperCase()}</div>
+        <div class="team-info">
+          <div class="team-name">${r.name}</div>
+          <div class="team-email">${r.member.email}</div>
+        </div>
+        <div>${statusBadge}</div>
+      </div>
+      <div class="team-stats-row">
+        <div class="team-stat"><div class="team-stat-val color-blue">${firstIn}</div><div class="team-stat-lbl">เข้างาน</div></div>
+        <div class="team-stat"><div class="team-stat-val color-green">${r.totalH.toFixed(1)}</div><div class="team-stat-lbl">ชม.ทำงาน</div></div>
+        <div class="team-stat"><div class="team-stat-val color-orange">${(r.totalOT/60).toFixed(1)}</div><div class="team-stat-lbl">ชม.โอที</div></div>
+      </div>
+      ${isAdmin()?`<div style="text-align:right;margin-top:10px;"><button onclick="event.stopPropagation();removeMember('${r.member.email}')" style="font-size:11px;padding:4px 10px;border:1px solid var(--border);border-radius:6px;background:none;color:var(--text3);cursor:pointer;">ลบสมาชิก</button></div>`:''}
+    </div>`;
+  }).join('');
 }
 
 // ===== NAVIGATION =====
