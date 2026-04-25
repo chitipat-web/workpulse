@@ -1,8 +1,14 @@
 <!DOCTYPE html>
-
 <html lang="th">
 <head>
 <meta charset="UTF-8">
+<meta name="theme-color" content="#667eea">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="WorkPulse">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='url(%23g)'/><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='%23667eea'/><stop offset='1' stop-color='%23764ba2'/></linearGradient></defs><text y='.9em' font-size='70' x='15'>⏱</text></svg>">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>WorkPulse</title>
 <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=Prompt:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -34,171 +40,171 @@
   --shadow-lg: 0 4px 24px rgba(0,0,0,0.1), 0 8px 40px rgba(0,0,0,0.08);
 }
 
-- { margin:0; padding:0; box-sizing:border-box; }
-  body { font-family:‘Sarabun’,sans-serif; background:var(–bg); color:var(–text); min-height:100vh; }
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'Sarabun',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
 
 /* ===== LOGIN ===== */
 #loginScreen {
-min-height:100vh;
-display:flex;
-align-items:center;
-justify-content:center;
-background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-padding:20px;
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding:20px;
 }
 
 .login-card {
-background:#fff;
-border-radius:24px;
-padding:48px 40px;
-width:100%;
-max-width:400px;
-box-shadow:var(–shadow-lg);
-animation:slideUp .4s ease;
+  background:#fff;
+  border-radius:24px;
+  padding:48px 40px;
+  width:100%;
+  max-width:400px;
+  box-shadow:var(--shadow-lg);
+  animation:slideUp .4s ease;
 }
 
 .login-logo {
-width:72px; height:72px;
-background:linear-gradient(135deg,#667eea,#764ba2);
-border-radius:20px;
-display:flex; align-items:center; justify-content:center;
-font-size:32px; margin:0 auto 20px;
-box-shadow:0 8px 24px rgba(102,126,234,0.4);
+  width:72px; height:72px;
+  background:linear-gradient(135deg,#667eea,#764ba2);
+  border-radius:20px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:32px; margin:0 auto 20px;
+  box-shadow:0 8px 24px rgba(102,126,234,0.4);
 }
 
 .login-card h1 {
-font-family:‘Prompt’,sans-serif;
-font-size:26px; font-weight:700;
-text-align:center; margin-bottom:6px;
-color:var(–text);
+  font-family:'Prompt',sans-serif;
+  font-size:26px; font-weight:700;
+  text-align:center; margin-bottom:6px;
+  color:var(--text);
 }
 
 .login-card .subtitle {
-text-align:center; color:var(–text2);
-font-size:14px; margin-bottom:32px;
+  text-align:center; color:var(--text2);
+  font-size:14px; margin-bottom:32px;
 }
 
 .form-field { margin-bottom:14px; }
-.form-field label { display:block; font-size:13px; font-weight:600; color:var(–text2); margin-bottom:6px; }
+.form-field label { display:block; font-size:13px; font-weight:600; color:var(--text2); margin-bottom:6px; }
 .form-field input {
-width:100%; padding:13px 16px;
-border:2px solid var(–border);
-border-radius:12px; font-size:15px;
-font-family:‘Sarabun’,sans-serif;
-color:var(–text); outline:none;
-transition:border-color .2s;
-background:#fff;
+  width:100%; padding:13px 16px;
+  border:2px solid var(--border);
+  border-radius:12px; font-size:15px;
+  font-family:'Sarabun',sans-serif;
+  color:var(--text); outline:none;
+  transition:border-color .2s;
+  background:#fff;
 }
-.form-field input:focus { border-color:var(–accent); }
+.form-field input:focus { border-color:var(--accent); }
 
 .btn-login {
-width:100%; padding:15px;
-background:linear-gradient(135deg,#667eea,#764ba2);
-border:none; border-radius:12px;
-color:#fff; font-size:16px; font-weight:700;
-font-family:‘Sarabun’,sans-serif;
-cursor:pointer; margin-top:8px;
-transition:transform .2s, box-shadow .2s;
-box-shadow:0 4px 16px rgba(102,126,234,0.4);
+  width:100%; padding:15px;
+  background:linear-gradient(135deg,#667eea,#764ba2);
+  border:none; border-radius:12px;
+  color:#fff; font-size:16px; font-weight:700;
+  font-family:'Sarabun',sans-serif;
+  cursor:pointer; margin-top:8px;
+  transition:transform .2s, box-shadow .2s;
+  box-shadow:0 4px 16px rgba(102,126,234,0.4);
 }
 .btn-login:hover { transform:translateY(-1px); box-shadow:0 8px 24px rgba(102,126,234,0.5); }
 
-.login-note { text-align:center; font-size:12px; color:var(–text3); margin-top:16px; line-height:1.6; }
+.login-note { text-align:center; font-size:12px; color:var(--text3); margin-top:16px; line-height:1.6; }
 
 /* ===== APP ===== */
 #app { display:none; }
 
 /* NAVBAR */
 .navbar {
-background:#fff;
-border-bottom:1px solid var(–border);
-padding:0 20px;
-height:60px;
-display:flex; align-items:center; justify-content:space-between;
-position:sticky; top:0; z-index:100;
-box-shadow:0 1px 8px rgba(0,0,0,0.06);
+  background:#fff;
+  border-bottom:1px solid var(--border);
+  padding:0 20px;
+  height:60px;
+  display:flex; align-items:center; justify-content:space-between;
+  position:sticky; top:0; z-index:100;
+  box-shadow:0 1px 8px rgba(0,0,0,0.06);
 }
 
 .nav-brand {
-font-family:‘Prompt’,sans-serif;
-font-weight:700; font-size:18px;
-color:var(–text);
-display:flex; align-items:center; gap:8px;
+  font-family:'Prompt',sans-serif;
+  font-weight:700; font-size:18px;
+  color:var(--text);
+  display:flex; align-items:center; gap:8px;
 }
 
 .nav-brand-icon {
-width:30px; height:30px;
-background:linear-gradient(135deg,#667eea,#764ba2);
-border-radius:8px;
-display:flex; align-items:center; justify-content:center;
-font-size:14px;
+  width:30px; height:30px;
+  background:linear-gradient(135deg,#667eea,#764ba2);
+  border-radius:8px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:14px;
 }
 
 .nav-right {
-display:flex; align-items:center; gap:10px;
+  display:flex; align-items:center; gap:10px;
 }
 
 .admin-badge {
-display:none;
-background:linear-gradient(135deg,#f59e0b,#d97706);
-color:#fff; font-size:11px; font-weight:700;
-padding:3px 10px; border-radius:20px;
-letter-spacing:.5px;
+  display:none;
+  background:linear-gradient(135deg,#f59e0b,#d97706);
+  color:#fff; font-size:11px; font-weight:700;
+  padding:3px 10px; border-radius:20px;
+  letter-spacing:.5px;
 }
 
 .user-pill {
-display:flex; align-items:center; gap:8px;
-background:var(–surface2);
-border:1px solid var(–border);
-border-radius:20px; padding:5px 12px 5px 5px;
+  display:flex; align-items:center; gap:8px;
+  background:var(--surface2);
+  border:1px solid var(--border);
+  border-radius:20px; padding:5px 12px 5px 5px;
 }
 
 .user-avatar {
-width:28px; height:28px; border-radius:50%;
-background:linear-gradient(135deg,#667eea,#764ba2);
-display:flex; align-items:center; justify-content:center;
-font-size:12px; font-weight:700; color:#fff;
+  width:28px; height:28px; border-radius:50%;
+  background:linear-gradient(135deg,#667eea,#764ba2);
+  display:flex; align-items:center; justify-content:center;
+  font-size:12px; font-weight:700; color:#fff;
 }
 
 .user-name { font-size:13px; font-weight:600; }
 
 .btn-logout {
-padding:6px 12px;
-background:none; border:1px solid var(–border);
-border-radius:8px; color:var(–text2);
-font-size:12px; cursor:pointer;
-font-family:‘Sarabun’,sans-serif;
-transition:all .2s;
+  padding:6px 12px;
+  background:none; border:1px solid var(--border);
+  border-radius:8px; color:var(--text2);
+  font-size:12px; cursor:pointer;
+  font-family:'Sarabun',sans-serif;
+  transition:all .2s;
 }
-.btn-logout:hover { border-color:var(–red); color:var(–red); }
+.btn-logout:hover { border-color:var(--red); color:var(--red); }
 
 /* MOBILE NAV */
 .mobile-nav {
-display:none;
-position:fixed; bottom:0; left:0; right:0;
-background:#fff; border-top:1px solid var(–border);
-padding:8px 0 max(8px, env(safe-area-inset-bottom));
-z-index:100;
-box-shadow:0 -4px 20px rgba(0,0,0,0.08);
+  display:none;
+  position:fixed; bottom:0; left:0; right:0;
+  background:#fff; border-top:1px solid var(--border);
+  padding:8px 0 max(8px, env(safe-area-inset-bottom));
+  z-index:100;
+  box-shadow:0 -4px 20px rgba(0,0,0,0.08);
 }
 
 .mobile-nav-inner {
-display:flex; justify-content:space-around;
+  display:flex; justify-content:space-around;
 }
 
 .mobile-nav-btn {
-flex:1; display:flex; flex-direction:column;
-align-items:center; gap:3px;
-padding:6px 4px;
-background:none; border:none;
-color:var(–text3); font-size:11px;
-font-family:‘Sarabun’,sans-serif;
-cursor:pointer; transition:color .2s;
-border-radius:10px;
+  flex:1; display:flex; flex-direction:column;
+  align-items:center; gap:3px;
+  padding:6px 4px;
+  background:none; border:none;
+  color:var(--text3); font-size:11px;
+  font-family:'Sarabun',sans-serif;
+  cursor:pointer; transition:color .2s;
+  border-radius:10px;
 }
 
 .mobile-nav-btn .icon { font-size:22px; }
-.mobile-nav-btn.active { color:var(–accent); }
+.mobile-nav-btn.active { color:var(--accent); }
 .mobile-nav-btn.active .icon { transform:scale(1.1); }
 
 /* PAGES */
@@ -207,141 +213,141 @@ border-radius:10px;
 
 /* CLOCK HERO */
 .clock-hero {
-background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-border-radius:24px;
-padding:32px 24px;
-text-align:center;
-margin-bottom:20px;
-color:#fff;
-position:relative;
-overflow:hidden;
+  background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius:24px;
+  padding:32px 24px;
+  text-align:center;
+  margin-bottom:20px;
+  color:#fff;
+  position:relative;
+  overflow:hidden;
 }
 
 .clock-hero::before {
-content:’’;
-position:absolute; top:-30px; right:-30px;
-width:150px; height:150px;
-background:rgba(255,255,255,0.08);
-border-radius:50%;
+  content:'';
+  position:absolute; top:-30px; right:-30px;
+  width:150px; height:150px;
+  background:rgba(255,255,255,0.08);
+  border-radius:50%;
 }
 
 .clock-hero::after {
-content:’’;
-position:absolute; bottom:-20px; left:-20px;
-width:100px; height:100px;
-background:rgba(255,255,255,0.06);
-border-radius:50%;
+  content:'';
+  position:absolute; bottom:-20px; left:-20px;
+  width:100px; height:100px;
+  background:rgba(255,255,255,0.06);
+  border-radius:50%;
 }
 
 .live-clock {
-font-family:‘Prompt’,sans-serif;
-font-size:56px; font-weight:700;
-letter-spacing:-1px;
-line-height:1; margin-bottom:4px;
-position:relative; z-index:1;
+  font-family:'Prompt',sans-serif;
+  font-size:56px; font-weight:700;
+  letter-spacing:-1px;
+  line-height:1; margin-bottom:4px;
+  position:relative; z-index:1;
 }
 
 .live-date {
-font-size:14px; opacity:.85;
-margin-bottom:24px;
-position:relative; z-index:1;
+  font-size:14px; opacity:.85;
+  margin-bottom:24px;
+  position:relative; z-index:1;
 }
 
 .clock-btns {
-display:flex; gap:12px; justify-content:center;
-position:relative; z-index:1;
+  display:flex; gap:12px; justify-content:center;
+  position:relative; z-index:1;
 }
 
 .btn-checkin {
-flex:1; max-width:160px;
-padding:14px 20px;
-background:#fff; color:#059669;
-border:none; border-radius:14px;
-font-size:16px; font-weight:700;
-font-family:‘Sarabun’,sans-serif;
-cursor:pointer; display:flex; align-items:center;
-justify-content:center; gap:8px;
-transition:all .2s;
-box-shadow:0 4px 16px rgba(0,0,0,0.15);
+  flex:1; max-width:160px;
+  padding:14px 20px;
+  background:#fff; color:#059669;
+  border:none; border-radius:14px;
+  font-size:16px; font-weight:700;
+  font-family:'Sarabun',sans-serif;
+  cursor:pointer; display:flex; align-items:center;
+  justify-content:center; gap:8px;
+  transition:all .2s;
+  box-shadow:0 4px 16px rgba(0,0,0,0.15);
 }
 .btn-checkin:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(0,0,0,0.2); }
 .btn-checkin:disabled { opacity:.4; cursor:not-allowed; transform:none; }
 
 .btn-checkout {
-flex:1; max-width:160px;
-padding:14px 20px;
-background:rgba(255,255,255,0.2);
-color:#fff; border:2px solid rgba(255,255,255,0.4);
-border-radius:14px; font-size:16px; font-weight:700;
-font-family:‘Sarabun’,sans-serif;
-cursor:pointer; display:flex; align-items:center;
-justify-content:center; gap:8px;
-transition:all .2s;
+  flex:1; max-width:160px;
+  padding:14px 20px;
+  background:rgba(255,255,255,0.2);
+  color:#fff; border:2px solid rgba(255,255,255,0.4);
+  border-radius:14px; font-size:16px; font-weight:700;
+  font-family:'Sarabun',sans-serif;
+  cursor:pointer; display:flex; align-items:center;
+  justify-content:center; gap:8px;
+  transition:all .2s;
 }
 .btn-checkout:hover { background:rgba(255,255,255,0.3); }
 .btn-checkout:disabled { opacity:.35; cursor:not-allowed; }
 
 /* STAT CARDS */
 .stats-row {
-display:grid; grid-template-columns:1fr 1fr;
-gap:12px; margin-bottom:20px;
+  display:grid; grid-template-columns:1fr 1fr;
+  gap:12px; margin-bottom:20px;
 }
 
 .stat-card {
-background:#fff; border-radius:16px;
-padding:16px; box-shadow:var(–shadow);
-border:1px solid var(–border);
+  background:#fff; border-radius:16px;
+  padding:16px; box-shadow:var(--shadow);
+  border:1px solid var(--border);
 }
 
 .stat-icon { font-size:22px; margin-bottom:8px; }
-.stat-val { font-family:‘Prompt’,sans-serif; font-size:24px; font-weight:700; line-height:1; }
-.stat-lbl { font-size:12px; color:var(–text2); margin-top:4px; }
+.stat-val { font-family:'Prompt',sans-serif; font-size:24px; font-weight:700; line-height:1; }
+.stat-lbl { font-size:12px; color:var(--text2); margin-top:4px; }
 .stat-sub { font-size:11px; margin-top:3px; }
 
-.color-green { color:var(–green); }
-.color-red { color:var(–red); }
-.color-orange { color:var(–orange); }
-.color-blue { color:var(–accent); }
-.color-purple { color:var(–purple); }
+.color-green { color:var(--green); }
+.color-red { color:var(--red); }
+.color-orange { color:var(--orange); }
+.color-blue { color:var(--accent); }
+.color-purple { color:var(--purple); }
 
 /* SECTION */
 .section-card {
-background:#fff; border-radius:16px;
-padding:20px; margin-bottom:16px;
-box-shadow:var(–shadow);
-border:1px solid var(–border);
+  background:#fff; border-radius:16px;
+  padding:20px; margin-bottom:16px;
+  box-shadow:var(--shadow);
+  border:1px solid var(--border);
 }
 
 .section-header {
-display:flex; align-items:center;
-justify-content:space-between;
-margin-bottom:16px;
+  display:flex; align-items:center;
+  justify-content:space-between;
+  margin-bottom:16px;
 }
 
 .section-title {
-font-size:15px; font-weight:700;
-display:flex; align-items:center; gap:6px;
+  font-size:15px; font-weight:700;
+  display:flex; align-items:center; gap:6px;
 }
 
 /* RECORD ITEMS */
 .record-item {
-display:flex; align-items:center;
-gap:12px; padding:12px;
-background:var(–surface2);
-border-radius:12px; margin-bottom:8px;
-border:1px solid var(–border);
-transition:background .15s;
+  display:flex; align-items:center;
+  gap:12px; padding:12px;
+  background:var(--surface2);
+  border-radius:12px; margin-bottom:8px;
+  border:1px solid var(--border);
+  transition:background .15s;
 }
 
 .record-item:last-child { margin-bottom:0; }
 
 .record-num {
-width:28px; height:28px; border-radius:50%;
-background:var(–accent-light);
-color:var(–accent);
-display:flex; align-items:center; justify-content:center;
-font-size:12px; font-weight:700;
-flex-shrink:0;
+  width:28px; height:28px; border-radius:50%;
+  background:var(--accent-light);
+  color:var(--accent);
+  display:flex; align-items:center; justify-content:center;
+  font-size:12px; font-weight:700;
+  flex-shrink:0;
 }
 
 .record-times { flex:1; }
@@ -349,105 +355,105 @@ flex-shrink:0;
 .record-status-row { display:flex; gap:6px; margin-top:4px; flex-wrap:wrap; }
 
 .badge {
-display:inline-flex; align-items:center; gap:3px;
-padding:3px 9px; border-radius:20px;
-font-size:11px; font-weight:600;
+  display:inline-flex; align-items:center; gap:3px;
+  padding:3px 9px; border-radius:20px;
+  font-size:11px; font-weight:600;
 }
 
-.badge-late { background:var(–red-light); color:var(–red); }
-.badge-ontime { background:var(–green-light); color:var(–green); }
-.badge-ot { background:var(–orange-light); color:var(–orange); }
-.badge-working { background:var(–accent-light); color:var(–accent); }
+.badge-late { background:var(--red-light); color:var(--red); }
+.badge-ontime { background:var(--green-light); color:var(--green); }
+.badge-ot { background:var(--orange-light); color:var(--orange); }
+.badge-working { background:var(--accent-light); color:var(--accent); }
 
 .record-actions { display:flex; gap:6px; }
 
 .btn-icon {
-width:32px; height:32px;
-border-radius:8px; border:1px solid var(–border);
-background:#fff; cursor:pointer;
-display:flex; align-items:center; justify-content:center;
-font-size:14px; transition:all .2s;
+  width:32px; height:32px;
+  border-radius:8px; border:1px solid var(--border);
+  background:#fff; cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  font-size:14px; transition:all .2s;
 }
-.btn-icon:hover { background:var(–red-light); border-color:var(–red); }
-.btn-icon.edit:hover { background:var(–accent-light); border-color:var(–accent); }
+.btn-icon:hover { background:var(--red-light); border-color:var(--red); }
+.btn-icon.edit:hover { background:var(--accent-light); border-color:var(--accent); }
 
 /* MANUAL ENTRY */
 .manual-grid {
-display:grid; grid-template-columns:1fr 1fr;
-gap:10px; margin-bottom:12px;
+  display:grid; grid-template-columns:1fr 1fr;
+  gap:10px; margin-bottom:12px;
 }
 
 .form-group { }
-.form-label { font-size:12px; font-weight:600; color:var(–text2); margin-bottom:5px; display:block; }
+.form-label { font-size:12px; font-weight:600; color:var(--text2); margin-bottom:5px; display:block; }
 .form-input {
-width:100%; padding:10px 13px;
-border:2px solid var(–border); border-radius:10px;
-font-size:14px; font-family:‘Sarabun’,sans-serif;
-color:var(–text); outline:none; transition:border-color .2s;
-background:#fff;
+  width:100%; padding:10px 13px;
+  border:2px solid var(--border); border-radius:10px;
+  font-size:14px; font-family:'Sarabun',sans-serif;
+  color:var(--text); outline:none; transition:border-color .2s;
+  background:#fff;
 }
-.form-input:focus { border-color:var(–accent); }
+.form-input:focus { border-color:var(--accent); }
 
 .btn-primary {
-width:100%; padding:13px;
-background:var(–accent); color:#fff;
-border:none; border-radius:12px;
-font-size:15px; font-weight:700;
-font-family:‘Sarabun’,sans-serif;
-cursor:pointer; transition:all .2s;
+  width:100%; padding:13px;
+  background:var(--accent); color:#fff;
+  border:none; border-radius:12px;
+  font-size:15px; font-weight:700;
+  font-family:'Sarabun',sans-serif;
+  cursor:pointer; transition:all .2s;
 }
-.btn-primary:hover { background:var(–accent-dark); transform:translateY(-1px); }
+.btn-primary:hover { background:var(--accent-dark); transform:translateY(-1px); }
 
 /* CALENDAR */
 .cal-nav {
-display:flex; align-items:center;
-justify-content:space-between; margin-bottom:16px;
+  display:flex; align-items:center;
+  justify-content:space-between; margin-bottom:16px;
 }
 
 .cal-nav-btn {
-width:38px; height:38px;
-border-radius:10px; border:1px solid var(–border);
-background:#fff; cursor:pointer;
-font-size:18px; display:flex; align-items:center;
-justify-content:center; transition:all .2s;
-box-shadow:var(–shadow);
+  width:38px; height:38px;
+  border-radius:10px; border:1px solid var(--border);
+  background:#fff; cursor:pointer;
+  font-size:18px; display:flex; align-items:center;
+  justify-content:center; transition:all .2s;
+  box-shadow:var(--shadow);
 }
-.cal-nav-btn:hover { border-color:var(–accent); color:var(–accent); }
+.cal-nav-btn:hover { border-color:var(--accent); color:var(--accent); }
 
-.cal-title { font-family:‘Prompt’,sans-serif; font-size:18px; font-weight:700; }
+.cal-title { font-family:'Prompt',sans-serif; font-size:18px; font-weight:700; }
 
 .cal-grid {
-background:#fff; border-radius:16px;
-padding:16px; box-shadow:var(–shadow);
-border:1px solid var(–border);
+  background:#fff; border-radius:16px;
+  padding:16px; box-shadow:var(--shadow);
+  border:1px solid var(--border);
 }
 
 .cal-weekdays {
-display:grid; grid-template-columns:repeat(7,1fr);
-margin-bottom:8px;
+  display:grid; grid-template-columns:repeat(7,1fr);
+  margin-bottom:8px;
 }
 
 .cal-weekday {
-text-align:center; font-size:11px;
-font-weight:700; color:var(–text3);
-padding:6px; text-transform:uppercase;
+  text-align:center; font-size:11px;
+  font-weight:700; color:var(--text3);
+  padding:6px; text-transform:uppercase;
 }
 
 .cal-days { display:grid; grid-template-columns:repeat(7,1fr); gap:4px; }
 
 .cal-day {
-aspect-ratio:1; border-radius:10px;
-display:flex; flex-direction:column;
-align-items:center; justify-content:center;
-cursor:pointer; transition:all .2s;
-position:relative; padding:4px;
+  aspect-ratio:1; border-radius:10px;
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  cursor:pointer; transition:all .2s;
+  position:relative; padding:4px;
 }
 
-.cal-day:hover { background:var(–surface2); }
+.cal-day:hover { background:var(--surface2); }
 .cal-day.other { opacity:.3; pointer-events:none; }
-.cal-day.today { background:var(–accent); color:#fff; }
+.cal-day.today { background:var(--accent); color:#fff; }
 .cal-day.today .cal-day-num { color:#fff; }
-.cal-day.has-data { background:var(–accent-light); }
+.cal-day.has-data { background:var(--accent-light); }
 .cal-day.has-data:hover { background:#dbeafe; }
 
 .cal-day-num { font-size:14px; font-weight:600; }
@@ -455,157 +461,157 @@ position:relative; padding:4px;
 .cal-dot { width:5px; height:5px; border-radius:50%; }
 
 .cal-legend {
-display:flex; gap:16px; margin-top:12px;
-flex-wrap:wrap; font-size:12px; color:var(–text2);
+  display:flex; gap:16px; margin-top:12px;
+  flex-wrap:wrap; font-size:12px; color:var(--text2);
 }
 .legend-item { display:flex; align-items:center; gap:5px; }
 .legend-dot { width:10px; height:10px; border-radius:50%; }
 
 /* STATS PAGE */
 .month-summary {
-display:grid; grid-template-columns:repeat(3,1fr);
-gap:10px; margin-bottom:16px;
+  display:grid; grid-template-columns:repeat(3,1fr);
+  gap:10px; margin-bottom:16px;
 }
 
 .sum-card {
-background:#fff; border-radius:14px;
-padding:14px 12px; text-align:center;
-box-shadow:var(–shadow); border:1px solid var(–border);
+  background:#fff; border-radius:14px;
+  padding:14px 12px; text-align:center;
+  box-shadow:var(--shadow); border:1px solid var(--border);
 }
 
-.sum-val { font-family:‘Prompt’,sans-serif; font-size:22px; font-weight:700; }
-.sum-lbl { font-size:11px; color:var(–text2); margin-top:3px; }
+.sum-val { font-family:'Prompt',sans-serif; font-size:22px; font-weight:700; }
+.sum-lbl { font-size:11px; color:var(--text2); margin-top:3px; }
 
 /* TEAM PAGE */
 .team-card {
-background:#fff; border-radius:16px;
-padding:16px; margin-bottom:12px;
-box-shadow:var(–shadow); border:1px solid var(–border);
-cursor:pointer; transition:all .2s;
+  background:#fff; border-radius:16px;
+  padding:16px; margin-bottom:12px;
+  box-shadow:var(--shadow); border:1px solid var(--border);
+  cursor:pointer; transition:all .2s;
 }
-.team-card:hover { box-shadow:var(–shadow-lg); transform:translateY(-1px); }
+.team-card:hover { box-shadow:var(--shadow-lg); transform:translateY(-1px); }
 
 .team-card-top {
-display:flex; align-items:center; gap:12px;
-margin-bottom:12px;
+  display:flex; align-items:center; gap:12px;
+  margin-bottom:12px;
 }
 
 .team-avatar {
-width:44px; height:44px; border-radius:50%;
-display:flex; align-items:center; justify-content:center;
-font-size:18px; font-weight:700; color:#fff;
-flex-shrink:0;
+  width:44px; height:44px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  font-size:18px; font-weight:700; color:#fff;
+  flex-shrink:0;
 }
 
 .team-info { flex:1; }
 .team-name { font-size:15px; font-weight:700; }
-.team-email { font-size:12px; color:var(–text2); margin-top:1px; }
+.team-email { font-size:12px; color:var(--text2); margin-top:1px; }
 
 .team-status { }
 
 .team-stats-row {
-display:grid; grid-template-columns:repeat(3,1fr);
-gap:8px;
+  display:grid; grid-template-columns:repeat(3,1fr);
+  gap:8px;
 }
 
 .team-stat {
-background:var(–surface2); border-radius:10px;
-padding:10px 8px; text-align:center;
+  background:var(--surface2); border-radius:10px;
+  padding:10px 8px; text-align:center;
 }
-.team-stat-val { font-family:‘Prompt’,sans-serif; font-size:16px; font-weight:700; }
-.team-stat-lbl { font-size:10px; color:var(–text2); margin-top:2px; }
+.team-stat-val { font-family:'Prompt',sans-serif; font-size:16px; font-weight:700; }
+.team-stat-lbl { font-size:10px; color:var(--text2); margin-top:2px; }
 
 .realtime-dot {
-display:inline-block;
-width:7px; height:7px; border-radius:50%;
-background:var(–green);
-animation:pulse 2s infinite;
-margin-right:4px;
+  display:inline-block;
+  width:7px; height:7px; border-radius:50%;
+  background:var(--green);
+  animation:pulse 2s infinite;
+  margin-right:4px;
 }
 
 /* HISTORY */
 .history-item {
-background:#fff; border-radius:14px;
-padding:14px 16px; margin-bottom:10px;
-box-shadow:var(–shadow); border:1px solid var(–border);
-cursor:pointer; transition:all .2s;
+  background:#fff; border-radius:14px;
+  padding:14px 16px; margin-bottom:10px;
+  box-shadow:var(--shadow); border:1px solid var(--border);
+  cursor:pointer; transition:all .2s;
 }
-.history-item:hover { box-shadow:var(–shadow-lg); }
+.history-item:hover { box-shadow:var(--shadow-lg); }
 
-.history-date { font-size:13px; font-weight:700; color:var(–text); margin-bottom:6px; }
-.history-times { font-size:12px; color:var(–text2); margin-bottom:6px; }
+.history-date { font-size:13px; font-weight:700; color:var(--text); margin-bottom:6px; }
+.history-times { font-size:12px; color:var(--text2); margin-bottom:6px; }
 .history-stats { display:flex; gap:8px; flex-wrap:wrap; }
 
 /* MODAL */
 .modal-overlay {
-display:none; position:fixed; inset:0;
-background:rgba(0,0,0,0.5); z-index:200;
-align-items:flex-end; justify-content:center;
-backdrop-filter:blur(4px);
-padding:0;
+  display:none; position:fixed; inset:0;
+  background:rgba(0,0,0,0.5); z-index:200;
+  align-items:flex-end; justify-content:center;
+  backdrop-filter:blur(4px);
+  padding:0;
 }
 .modal-overlay.open { display:flex; }
 
 .modal {
-background:#fff;
-border-radius:24px 24px 0 0;
-padding:24px 20px 40px;
-width:100%; max-width:600px;
-max-height:85vh; overflow-y:auto;
-animation:slideUp .3s ease;
-box-shadow:0 -8px 40px rgba(0,0,0,0.15);
+  background:#fff;
+  border-radius:24px 24px 0 0;
+  padding:24px 20px 40px;
+  width:100%; max-width:600px;
+  max-height:85vh; overflow-y:auto;
+  animation:slideUp .3s ease;
+  box-shadow:0 -8px 40px rgba(0,0,0,0.15);
 }
 
 .modal-handle {
-width:40px; height:4px;
-background:var(–border); border-radius:2px;
-margin:0 auto 16px;
+  width:40px; height:4px;
+  background:var(--border); border-radius:2px;
+  margin:0 auto 16px;
 }
 
 .modal-title {
-font-family:‘Prompt’,sans-serif;
-font-size:18px; font-weight:700;
-margin-bottom:20px;
-display:flex; align-items:center; justify-content:space-between;
+  font-family:'Prompt',sans-serif;
+  font-size:18px; font-weight:700;
+  margin-bottom:20px;
+  display:flex; align-items:center; justify-content:space-between;
 }
 
 .modal-close {
-width:32px; height:32px;
-background:var(–surface2); border:none;
-border-radius:8px; cursor:pointer;
-font-size:16px; display:flex;
-align-items:center; justify-content:center;
+  width:32px; height:32px;
+  background:var(--surface2); border:none;
+  border-radius:8px; cursor:pointer;
+  font-size:16px; display:flex;
+  align-items:center; justify-content:center;
 }
 
 /* LOADING */
 #loadingOverlay {
-display:none; position:fixed; inset:0;
-background:rgba(255,255,255,0.9); z-index:999;
-align-items:center; justify-content:center;
-flex-direction:column; gap:12px;
+  display:none; position:fixed; inset:0;
+  background:rgba(255,255,255,0.9); z-index:999;
+  align-items:center; justify-content:center;
+  flex-direction:column; gap:12px;
 }
 #loadingOverlay.show { display:flex; }
 
 .spinner {
-width:36px; height:36px;
-border:3px solid var(–border);
-border-top-color:var(–accent);
-border-radius:50%;
-animation:spin 1s linear infinite;
+  width:36px; height:36px;
+  border:3px solid var(--border);
+  border-top-color:var(--accent);
+  border-radius:50%;
+  animation:spin 1s linear infinite;
 }
 
 /* TOAST */
 .toast {
-position:fixed; bottom:80px; left:50%;
-transform:translateX(-50%) translateY(20px);
-background:#1e293b; color:#fff;
-border-radius:12px; padding:12px 20px;
-font-size:14px; font-weight:500;
-z-index:500; opacity:0;
-transition:all .3s cubic-bezier(.4,0,.2,1);
-display:flex; align-items:center; gap:8px;
-white-space:nowrap; max-width:90vw;
-box-shadow:0 8px 32px rgba(0,0,0,0.2);
+  position:fixed; bottom:80px; left:50%;
+  transform:translateX(-50%) translateY(20px);
+  background:#1e293b; color:#fff;
+  border-radius:12px; padding:12px 20px;
+  font-size:14px; font-weight:500;
+  z-index:500; opacity:0;
+  transition:all .3s cubic-bezier(.4,0,.2,1);
+  display:flex; align-items:center; gap:8px;
+  white-space:nowrap; max-width:90vw;
+  box-shadow:0 8px 32px rgba(0,0,0,0.2);
 }
 .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
 .toast.success { background:#059669; }
@@ -616,17 +622,17 @@ box-shadow:0 8px 32px rgba(0,0,0,0.2);
 .month-selector { display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap; }
 .month-select-group { display:flex; gap:8px; }
 .select-input {
-padding:9px 14px;
-border:2px solid var(–border); border-radius:10px;
-font-size:14px; font-family:‘Sarabun’,sans-serif;
-color:var(–text); outline:none; background:#fff;
+  padding:9px 14px;
+  border:2px solid var(--border); border-radius:10px;
+  font-size:14px; font-family:'Sarabun',sans-serif;
+  color:var(--text); outline:none; background:#fff;
 }
-.select-input:focus { border-color:var(–accent); }
+.select-input:focus { border-color:var(--accent); }
 
 /* EMPTY STATE */
 .empty-state {
-text-align:center; padding:40px 20px;
-color:var(–text3);
+  text-align:center; padding:40px 20px;
+  color:var(--text3);
 }
 .empty-icon { font-size:48px; margin-bottom:12px; }
 .empty-text { font-size:15px; }
@@ -635,23 +641,23 @@ color:var(–text3);
 .add-member-row { display:flex; gap:8px; flex-wrap:wrap; }
 .add-member-row .form-input { flex:1; min-width:150px; }
 .btn-add {
-padding:10px 18px;
-background:var(–accent); color:#fff;
-border:none; border-radius:10px;
-font-size:14px; font-weight:700;
-font-family:‘Sarabun’,sans-serif;
-cursor:pointer; white-space:nowrap;
-transition:all .2s;
+  padding:10px 18px;
+  background:var(--accent); color:#fff;
+  border:none; border-radius:10px;
+  font-size:14px; font-weight:700;
+  font-family:'Sarabun',sans-serif;
+  cursor:pointer; white-space:nowrap;
+  transition:all .2s;
 }
-.btn-add:hover { background:var(–accent-dark); }
+.btn-add:hover { background:var(--accent-dark); }
 
 /* CHART */
 .chart-card {
-background:#fff; border-radius:16px;
-padding:20px; margin-bottom:16px;
-box-shadow:var(–shadow); border:1px solid var(–border);
+  background:#fff; border-radius:16px;
+  padding:20px; margin-bottom:16px;
+  box-shadow:var(--shadow); border:1px solid var(--border);
 }
-.chart-title { font-size:14px; font-weight:700; margin-bottom:16px; color:var(–text2); }
+.chart-title { font-size:14px; font-weight:700; margin-bottom:16px; color:var(--text2); }
 
 /* ANIMATIONS */
 @keyframes slideUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
@@ -661,46 +667,43 @@ box-shadow:var(–shadow); border:1px solid var(–border);
 
 /* DESKTOP TABS */
 .desktop-tabs {
-display:none;
-gap:4px;
+  display:none;
+  gap:4px;
 }
 .desktop-tab {
-padding:8px 16px; border-radius:8px;
-font-size:14px; font-weight:600;
-cursor:pointer; color:var(–text2);
-background:none; border:none;
-font-family:‘Sarabun’,sans-serif;
-transition:all .2s;
+  padding:8px 16px; border-radius:8px;
+  font-size:14px; font-weight:600;
+  cursor:pointer; color:var(--text2);
+  background:none; border:none;
+  font-family:'Sarabun',sans-serif;
+  transition:all .2s;
 }
-.desktop-tab:hover { color:var(–text); background:var(–surface2); }
-.desktop-tab.active { color:var(–accent); background:var(–accent-light); }
+.desktop-tab:hover { color:var(--text); background:var(--surface2); }
+.desktop-tab.active { color:var(--accent); background:var(--accent-light); }
 
 @media (min-width:640px) {
-.desktop-tabs { display:flex; }
-.mobile-nav { display:none; }
-.page { padding:24px 20px 40px; }
-.clock-hero { padding:40px 32px; }
-.live-clock { font-size:72px; }
+  .desktop-tabs { display:flex; }
+  .mobile-nav { display:none; }
+  .page { padding:24px 20px 40px; }
+  .clock-hero { padding:40px 32px; }
+  .live-clock { font-size:72px; }
 }
 
 @media (max-width:639px) {
-.mobile-nav { display:block; }
-.nav-right .user-name { display:none; }
+  .mobile-nav { display:block; }
+  .nav-right .user-name { display:none; }
 }
 </style>
-
 </head>
 <body>
 
 <!-- LOADING -->
-
 <div id="loadingOverlay">
   <div class="spinner"></div>
   <div style="font-size:14px;color:var(--text2)">กำลังโหลด...</div>
 </div>
 
 <!-- LOGIN -->
-
 <div id="loginScreen">
   <div class="login-card">
     <div class="login-logo">⏱</div>
@@ -720,7 +723,6 @@ transition:all .2s;
 </div>
 
 <!-- APP -->
-
 <div id="app">
   <!-- NAVBAR -->
   <nav class="navbar">
@@ -746,7 +748,6 @@ transition:all .2s;
   </nav>
 
   <!-- HOME PAGE -->
-
   <div id="page-home" class="page active">
     <!-- Clock Hero -->
     <div class="clock-hero">
@@ -758,74 +759,70 @@ transition:all .2s;
       </div>
     </div>
 
-```
-<!-- Stats -->
-<div class="stats-row">
-  <div class="stat-card">
-    <div class="stat-icon">🕐</div>
-    <div id="s-firstin" class="stat-val color-blue">--:--</div>
-    <div class="stat-lbl">เวลาเข้าครั้งแรก</div>
-    <div id="s-latestatus" class="stat-sub"></div>
-  </div>
-  <div class="stat-card">
-    <div class="stat-icon">⏱</div>
-    <div id="s-hours" class="stat-val color-green">0.0</div>
-    <div class="stat-lbl">ชั่วโมงทำงาน (ชม.)</div>
-    <div class="stat-sub" style="color:var(--text3)">รวมทุกรอบวันนี้</div>
-  </div>
-  <div class="stat-card">
-    <div class="stat-icon">⚡</div>
-    <div id="s-ot" class="stat-val color-orange">0.0</div>
-    <div class="stat-lbl">ชั่วโมงโอที (ชม.)</div>
-    <div class="stat-sub" style="color:var(--text3)">หลัง 16:30 น.</div>
-  </div>
-  <div class="stat-card">
-    <div class="stat-icon">🔄</div>
-    <div id="s-rounds" class="stat-val color-purple">0</div>
-    <div class="stat-lbl">รอบเข้า-ออก</div>
-    <div class="stat-sub" style="color:var(--text3)">วันนี้</div>
-  </div>
-</div>
+    <!-- Stats -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-icon">🕐</div>
+        <div id="s-firstin" class="stat-val color-blue">--:--</div>
+        <div class="stat-lbl">เวลาเข้าครั้งแรก</div>
+        <div id="s-latestatus" class="stat-sub"></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">⏱</div>
+        <div id="s-hours" class="stat-val color-green">0.0</div>
+        <div class="stat-lbl">ชั่วโมงทำงาน (ชม.)</div>
+        <div class="stat-sub" style="color:var(--text3)">รวมทุกรอบวันนี้</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">⚡</div>
+        <div id="s-ot" class="stat-val color-orange">0.0</div>
+        <div class="stat-lbl">ชั่วโมงโอที (ชม.)</div>
+        <div class="stat-sub" style="color:var(--text3)">หลัง 16:30 น.</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">🔄</div>
+        <div id="s-rounds" class="stat-val color-purple">0</div>
+        <div class="stat-lbl">รอบเข้า-ออก</div>
+        <div class="stat-sub" style="color:var(--text3)">วันนี้</div>
+      </div>
+    </div>
 
-<!-- Today Records -->
-<div class="section-card">
-  <div class="section-header">
-    <div class="section-title">📝 รายการวันนี้</div>
-  </div>
-  <div id="todayList"></div>
-</div>
+    <!-- Today Records -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="section-title">📝 รายการวันนี้</div>
+      </div>
+      <div id="todayList"></div>
+    </div>
 
-<!-- Manual Entry -->
-<div class="section-card">
-  <div class="section-header">
-    <div class="section-title">✏️ บันทึกย้อนหลัง</div>
-  </div>
-  <div class="manual-grid">
-    <div class="form-group">
-      <label class="form-label">วันที่</label>
-      <input type="date" id="manDate" class="form-input"/>
+    <!-- Manual Entry -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="section-title">✏️ บันทึกย้อนหลัง</div>
+      </div>
+      <div class="manual-grid">
+        <div class="form-group">
+          <label class="form-label">วันที่</label>
+          <input type="date" id="manDate" class="form-input"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">หมายเหตุ</label>
+          <input type="text" id="manNote" class="form-input" placeholder="ไม่บังคับ"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">เวลาเข้างาน</label>
+          <input type="time" id="manIn" class="form-input"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">เวลาออกงาน</label>
+          <input type="time" id="manOut" class="form-input"/>
+        </div>
+      </div>
+      <button class="btn-primary" onclick="addManual()">+ เพิ่มรายการ</button>
     </div>
-    <div class="form-group">
-      <label class="form-label">หมายเหตุ</label>
-      <input type="text" id="manNote" class="form-input" placeholder="ไม่บังคับ"/>
-    </div>
-    <div class="form-group">
-      <label class="form-label">เวลาเข้างาน</label>
-      <input type="time" id="manIn" class="form-input"/>
-    </div>
-    <div class="form-group">
-      <label class="form-label">เวลาออกงาน</label>
-      <input type="time" id="manOut" class="form-input"/>
-    </div>
-  </div>
-  <button class="btn-primary" onclick="addManual()">+ เพิ่มรายการ</button>
-</div>
-```
-
   </div>
 
   <!-- CALENDAR PAGE -->
-
   <div id="page-calendar" class="page">
     <div class="cal-nav">
       <button class="cal-nav-btn" onclick="calMove(-1)">‹</button>
@@ -844,7 +841,6 @@ transition:all .2s;
   </div>
 
   <!-- STATS PAGE -->
-
   <div id="page-stats" class="page">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
       <div style="font-family:'Prompt',sans-serif;font-size:18px;font-weight:700;">📊 สถิติ</div>
@@ -865,7 +861,6 @@ transition:all .2s;
   </div>
 
   <!-- HISTORY PAGE -->
-
   <div id="page-history" class="page">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
       <div style="font-family:'Prompt',sans-serif;font-size:18px;font-weight:700;">📋 ประวัติ</div>
@@ -878,7 +873,6 @@ transition:all .2s;
   </div>
 
   <!-- TEAM PAGE -->
-
   <div id="page-team" class="page">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
       <div style="font-family:'Prompt',sans-serif;font-size:18px;font-weight:700;">👥 ทีมงาน</div>
@@ -887,31 +881,27 @@ transition:all .2s;
       </div>
     </div>
 
-```
-<!-- Add member -->
-<div class="section-card" id="addMemberSection" style="display:none;">
-  <div class="section-title" style="margin-bottom:12px;">➕ เพิ่มสมาชิก</div>
-  <div class="add-member-row">
-    <input type="email" id="memberEmail" class="form-input" placeholder="อีเมลสมาชิก"/>
-    <input type="text" id="memberName" class="form-input" placeholder="ชื่อ (ไม่บังคับ)"/>
-    <button class="btn-add" onclick="addMember()">เพิ่ม</button>
-  </div>
-</div>
+    <!-- Add member -->
+    <div class="section-card" id="addMemberSection" style="display:none;">
+      <div class="section-title" style="margin-bottom:12px;">➕ เพิ่มสมาชิก</div>
+      <div class="add-member-row">
+        <input type="email" id="memberEmail" class="form-input" placeholder="อีเมลสมาชิก"/>
+        <input type="text" id="memberName" class="form-input" placeholder="ชื่อ (ไม่บังคับ)"/>
+        <button class="btn-add" onclick="addMember()">เพิ่ม</button>
+      </div>
+    </div>
 
-<!-- Date picker -->
-<div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
-  <span style="font-size:13px;color:var(--text2);">ดูวันที่:</span>
-  <input type="date" id="teamDate" class="form-input" style="width:auto;padding:8px 12px;" onchange="renderTeam()"/>
-</div>
+    <!-- Date picker -->
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
+      <span style="font-size:13px;color:var(--text2);">ดูวันที่:</span>
+      <input type="date" id="teamDate" class="form-input" style="width:auto;padding:8px 12px;" onchange="renderTeam()"/>
+    </div>
 
-<div id="teamList"></div>
-```
-
+    <div id="teamList"></div>
   </div>
 </div>
 
 <!-- DAY DETAIL MODAL -->
-
 <div class="modal-overlay" id="dayModal">
   <div class="modal">
     <div class="modal-handle"></div>
@@ -924,7 +914,6 @@ transition:all .2s;
 </div>
 
 <!-- EDIT MODAL -->
-
 <div class="modal-overlay" id="editModal">
   <div class="modal">
     <div class="modal-handle"></div>
@@ -963,7 +952,6 @@ transition:all .2s;
 <div class="toast" id="toast"></div>
 
 <!-- FIREBASE -->
-
 <script>
 const ADMIN = "chitipat.kao@gmail.com";
 const FB_CONFIG = {
@@ -1617,7 +1605,6 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 
 <!-- MOBILE NAV -->
-
 <div class="mobile-nav">
   <div class="mobile-nav-inner">
     <button class="mobile-nav-btn active" onclick="showPage('home')"><span class="icon">🏠</span><span>หน้าหลัก</span></button>
@@ -1627,6 +1614,72 @@ document.addEventListener('DOMContentLoaded', () => {
     <button class="mobile-nav-btn" onclick="showPage('team')"><span class="icon">👥</span><span>ทีม</span></button>
   </div>
 </div>
+
+
+<!-- PWA INSTALL BANNER -->
+<div id="installBanner" style="display:none;position:fixed;bottom:80px;left:16px;right:16px;background:#fff;border-radius:16px;padding:16px;box-shadow:0 8px 32px rgba(0,0,0,0.15);border:1px solid #e2e8f0;z-index:300;animation:slideUp .3s ease;">
+  <div style="display:flex;align-items:center;gap:12px;">
+    <div style="width:44px;height:44px;background:linear-gradient(135deg,#667eea,#764ba2);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">⏱</div>
+    <div style="flex:1;">
+      <div style="font-weight:700;font-size:14px;margin-bottom:2px;">ติดตั้ง WorkPulse</div>
+      <div style="font-size:12px;color:#64748b;">เพิ่มลงหน้าจอหลักเพื่อใช้งานแบบแอพ</div>
+    </div>
+    <button onclick="installPWA()" style="padding:8px 16px;background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Sarabun',sans-serif;">ติดตั้ง</button>
+    <button onclick="dismissInstall()" style="width:28px;height:28px;background:#f1f5f9;border:none;border-radius:8px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;">✕</button>
+  </div>
+</div>
+
+<!-- PWA Script -->
+<script>
+let deferredPrompt = null;
+
+// Register Service Worker
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').then(reg => {
+      console.log('SW registered:', reg.scope);
+    }).catch(err => {
+      console.log('SW registration failed:', err);
+    });
+  });
+}
+
+// Install prompt
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  // Show banner after 3 seconds
+  setTimeout(() => {
+    const banner = document.getElementById('installBanner');
+    if (banner && !localStorage.getItem('pwa_dismissed')) {
+      banner.style.display = 'block';
+    }
+  }, 3000);
+});
+
+function installPWA() {
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then(result => {
+      if (result.outcome === 'accepted') {
+        document.getElementById('installBanner').style.display = 'none';
+      }
+      deferredPrompt = null;
+    });
+  }
+}
+
+function dismissInstall() {
+  document.getElementById('installBanner').style.display = 'none';
+  localStorage.setItem('pwa_dismissed', '1');
+}
+
+// Detect if already installed
+window.addEventListener('appinstalled', () => {
+  document.getElementById('installBanner').style.display = 'none';
+  console.log('PWA installed!');
+});
+</script>
 
 </body>
 </html>
