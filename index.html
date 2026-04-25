@@ -747,6 +747,7 @@ body { font-family:'Sarabun',sans-serif; background:var(--bg); color:var(--text)
       <button class="desktop-tab" onclick="showPage('history')">📋 ประวัติ</button>
       <button class="desktop-tab" onclick="showPage('team')">👥 ทีม</button>
       <button class="desktop-tab" onclick="showPage('teamsummary')" id="tabTeamSummary" style="display:none;">📈 สรุปทีม</button>
+      <button class="desktop-tab" onclick="showPage('salary')">💰 ค่าแรง</button>
     </div>
     <div class="nav-right">
       <span id="adminBadge" class="admin-badge">👑 ADMIN</span>
@@ -931,6 +932,30 @@ body { font-family:'Sarabun',sans-serif; background:var(--bg); color:var(--text)
       <div class="section-title" style="margin-bottom:16px;">👤 รายละเอียดแต่ละคน</div>
       <div id="tsMemberList"></div>
     </div>
+  </div>
+
+
+  <!-- SALARY PAGE -->
+  <div id="page-salary" class="page">
+    <div style="font-family:'Prompt',sans-serif;font-size:18px;font-weight:700;margin-bottom:16px;">💰 คำนวณค่าแรง</div>
+
+    <!-- Month selector -->
+    <div class="section-card" style="margin-bottom:16px;">
+      <div class="section-title" style="margin-bottom:14px;">เลือกเดือนที่ต้องการคำนวณ</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;">
+        <select id="salMonth" class="select-input" onchange="renderSalary()"></select>
+        <select id="salYear" class="select-input" onchange="renderSalary()"></select>
+      </div>
+      <div class="form-group" style="margin-bottom:12px;">
+        <label class="form-label">เงินเดือนที่ได้รับเดือนนี้ (บาท)</label>
+        <input type="number" id="salaryInput" class="form-input" placeholder="เช่น 15000" 
+               oninput="saveSalaryInput()" style="font-size:18px;font-weight:700;"/>
+      </div>
+      <button class="btn-primary" onclick="renderSalary()">💰 คำนวณ</button>
+    </div>
+
+    <!-- Result -->
+    <div id="salaryResult"></div>
   </div>
 
   <!-- DAY DETAIL MODAL -->
@@ -1685,6 +1710,144 @@ async function renderTeamSilent() {
 }
 
 
+
+// ===== SALARY CALCULATOR =====
+function salKey() {
+  return 'sal_' + currentUser.email.replace(/[^a-zA-Z0-9]/g,'_');
+}
+
+function saveSalaryInput() {
+  const month = document.getElementById('salMonth').value;
+  const year = document.getElementById('salYear').value;
+  const val = document.getElementById('salaryInput').value;
+  const key = salKey() + '_' + year + '_' + month;
+  if (val) localStorage.setItem(key, val);
+  else localStorage.removeItem(key);
+}
+
+function loadSalaryInput(month, year) {
+  const key = salKey() + '_' + year + '_' + month;
+  return localStorage.getItem(key) || '';
+}
+
+async function renderSalary() {
+  const month = parseInt(document.getElementById('salMonth').value);
+  const year = parseInt(document.getElementById('salYear').value);
+  const salaryRaw = document.getElementById('salaryInput').value;
+
+  // Load saved salary for this month
+  const saved = loadSalaryInput(month, year);
+  if (document.getElementById('salaryInput').value === '' && saved) {
+    document.getElementById('salaryInput').value = saved;
+  }
+
+  const salary = parseFloat(document.getElementById('salaryInput').value) || 0;
+  const mons = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+  const recs = await loadRecords();
+  const mr = recs.filter(r => {
+    const [y,m] = r.date.split('-').map(Number);
+    return y === year && m === month + 1;
+  });
+
+  const byDate = {};
+  mr.forEach(r => { if(!byDate[r.date]) byDate[r.date]=[]; byDate[r.date].push(r); });
+
+  const days = Object.keys(byDate).length;
+  const comp = mr.filter(r => r.checkOut);
+  const totalH = comp.reduce((s,r) => s + calcHours(r.checkIn, r.checkOut), 0);
+  const totalOT = comp.reduce((s,r) => s + (r.otMin||0), 0);
+  const totalOTH = totalOT / 60;
+  const totalAllH = totalH; // OT already included in totalH
+  const lateCount = Object.values(byDate).filter(rs => rs.some(r => r.isLate)).length;
+
+  const perHour = totalAllH > 0 && salary > 0 ? salary / totalAllH : 0;
+
+  const resultEl = document.getElementById('salaryResult');
+
+  if (salary === 0) {
+    resultEl.innerHTML = `
+      <div class="section-card" style="text-align:center;padding:32px;">
+        <div style="font-size:48px;margin-bottom:12px;">💰</div>
+        <div style="color:var(--text2);font-size:15px;">กรอกเงินเดือนที่ได้รับด้านบนเพื่อคำนวณครับ</div>
+      </div>`;
+    return;
+  }
+
+  resultEl.innerHTML = `
+    <div class="section-card" style="margin-bottom:16px;">
+      <div class="section-title" style="margin-bottom:16px;">📊 สรุป ${mons[month]} ${year+543}</div>
+      
+      <!-- Main result -->
+      <div style="background:linear-gradient(135deg,#667eea,#764ba2);border-radius:16px;padding:24px;text-align:center;color:#fff;margin-bottom:16px;">
+        <div style="font-size:13px;opacity:.85;margin-bottom:8px;">ค่าแรงต่อชั่วโมง</div>
+        <div style="font-family:'Prompt',sans-serif;font-size:42px;font-weight:700;letter-spacing:-1px;">
+          ฿${perHour.toLocaleString('th-TH', {minimumFractionDigits:2, maximumFractionDigits:2})}
+        </div>
+        <div style="font-size:13px;opacity:.75;margin-top:6px;">= ${salary.toLocaleString('th-TH')} ÷ ${totalAllH.toFixed(2)} ชม.</div>
+      </div>
+
+      <!-- Stats grid -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
+        <div class="sum-card">
+          <div class="sum-val color-blue">${salary.toLocaleString('th-TH')}</div>
+          <div class="sum-lbl">เงินเดือน (บาท)</div>
+        </div>
+        <div class="sum-card">
+          <div class="sum-val color-green">${totalAllH.toFixed(2)}</div>
+          <div class="sum-lbl">ชม.ทำงานรวม</div>
+        </div>
+        <div class="sum-card">
+          <div class="sum-val color-orange">${totalOTH.toFixed(2)}</div>
+          <div class="sum-lbl">ชม.โอที</div>
+        </div>
+        <div class="sum-card">
+          <div class="sum-val color-purple">${days}</div>
+          <div class="sum-lbl">วันที่มาทำงาน</div>
+        </div>
+      </div>
+
+      <!-- Breakdown -->
+      <div style="background:var(--surface2);border-radius:12px;padding:16px;">
+        <div style="font-size:13px;font-weight:700;margin-bottom:12px;color:var(--text2);">รายละเอียดการคำนวณ</div>
+        <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:14px;">
+          <span>เงินเดือนที่ได้รับ</span>
+          <span style="font-weight:700;">฿${salary.toLocaleString('th-TH')}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:14px;">
+          <span>ชั่วโมงทำงานรวม (รวมโอที)</span>
+          <span style="font-weight:700;">${totalAllH.toFixed(2)} ชม.</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:14px;">
+          <span>ชั่วโมงปกติ</span>
+          <span style="font-weight:700;">${(totalAllH - totalOTH).toFixed(2)} ชม.</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:14px;">
+          <span>ชั่วโมงโอที</span>
+          <span style="font-weight:700;color:var(--orange);">${totalOTH.toFixed(2)} ชม.</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:10px 0 0;font-size:15px;">
+          <span style="font-weight:700;">ค่าแรงต่อชั่วโมง</span>
+          <span style="font-weight:700;color:var(--accent);font-size:16px;">฿${perHour.toLocaleString('th-TH', {minimumFractionDigits:2, maximumFractionDigits:2})}</span>
+        </div>
+      </div>
+    </div>
+
+    ${lateCount > 0 ? `
+    <div class="section-card" style="border-left:3px solid var(--red);">
+      <div style="display:flex;align-items:center;gap:8px;color:var(--red);">
+        <span style="font-size:18px;">⚠️</span>
+        <span style="font-weight:700;">มาสาย ${lateCount} วันในเดือนนี้</span>
+      </div>
+    </div>` : `
+    <div class="section-card" style="border-left:3px solid var(--green);">
+      <div style="display:flex;align-items:center;gap:8px;color:var(--green);">
+        <span style="font-size:18px;">✅</span>
+        <span style="font-weight:700;">ไม่มาสายเลยในเดือนนี้ 🎉</span>
+      </div>
+    </div>`}
+  `;
+}
+
 // ===== TEAM SUMMARY =====
 async function renderTeamSummary() {
   if (!isAdmin()) return;
@@ -1832,7 +1995,7 @@ function showPage(name) {
   document.querySelectorAll('.desktop-tab').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.mobile-nav-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById('page-'+name).classList.add('active');
-  const map = {home:0,calendar:1,stats:2,history:3,team:4,teamsummary:5};
+  const map = {home:0,calendar:1,stats:2,history:3,team:4,teamsummary:5,salary:6};
   const idx = map[name];
   document.querySelectorAll('.desktop-tab')[idx]?.classList.add('active');
   document.querySelectorAll('.mobile-nav-btn')[idx]?.classList.add('active');
@@ -1841,6 +2004,13 @@ function showPage(name) {
   if (name==='history') renderHistory();
   if (name==='team') { document.getElementById('teamDate').value = todayKey(); renderTeam(); }
   if (name==='teamsummary') renderTeamSummary();
+  if (name==='salary') {
+    const m = document.getElementById('salMonth').value;
+    const y = document.getElementById('salYear').value;
+    const saved = loadSalaryInput(m, y);
+    if (saved) document.getElementById('salaryInput').value = saved;
+    renderSalary();
+  }
 }
 
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
@@ -1849,11 +2019,11 @@ function closeModal(id) { document.getElementById(id).classList.remove('open'); 
 function populateSelectors() {
   const mons=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
   const now = new Date();
-  ['statMonth','histMonth','tsMonth'].forEach(id=>{
+  ['statMonth','histMonth','tsMonth','salMonth'].forEach(id=>{
     const s=document.getElementById(id); s.innerHTML='';
     mons.forEach((m,i)=>s.innerHTML+=`<option value="${i}"${i===now.getMonth()?' selected':''}>${m}</option>`);
   });
-  ['statYear','histYear','tsYear'].forEach(id=>{
+  ['statYear','histYear','tsYear','salYear'].forEach(id=>{
     const s=document.getElementById(id); s.innerHTML='';
     [now.getFullYear()-1,now.getFullYear()].forEach(y=>s.innerHTML+=`<option value="${y}"${y===now.getFullYear()?' selected':''}>${y}</option>`);
   });
@@ -1897,6 +2067,7 @@ document.addEventListener('DOMContentLoaded', () => {
     <button class="mobile-nav-btn" onclick="showPage('history')"><span class="icon">📋</span><span>ประวัติ</span></button>
     <button class="mobile-nav-btn" onclick="showPage('team')"><span class="icon">👥</span><span>ทีม</span></button>
     <button class="mobile-nav-btn" onclick="showPage('teamsummary')" id="mobileTabTeamSummary" style="display:none;"><span class="icon">📈</span><span>สรุปทีม</span></button>
+    <button class="mobile-nav-btn" onclick="showPage('salary')"><span class="icon">💰</span><span>ค่าแรง</span></button>
   </div>
 </div>
 
