@@ -250,7 +250,7 @@
 
 <!-- LOGIN -->
 
-<div id="loginScreen" style="display:none">
+<div id="loginScreen">
   <div class="login-card">
     <div class="login-logo">⏱</div>
     <h1>WorkPulse</h1>
@@ -627,19 +627,22 @@ function logout() {
 }
 
 // ========== AUTO-LOGIN ON REFRESH ==========
-(function() {
+// Auto-login on page load
+document.addEventListener('DOMContentLoaded', function() {
   try {
     const saved = localStorage.getItem('wp:session');
     if (saved) {
       currentUser = JSON.parse(saved);
       _cache = null;
-      // initApp will be called after DOM ready
-      window._autoLogin = true;
-      return;
+      document.getElementById('loginScreen').style.display = 'none';
+      initApp();
+    } else {
+      document.getElementById('loginScreen').style.display = 'flex';
     }
-  } catch(e) {}
-  document.getElementById('loginScreen').style.display = 'flex';
-})();
+  } catch(e) {
+    document.getElementById('loginScreen').style.display = 'flex';
+  }
+});
 
 // ========== INIT ==========
 async function initApp() {
@@ -1218,15 +1221,6 @@ function populateSelectors() {
     s.innerHTML='';
     [now.getFullYear()-1,now.getFullYear()].forEach(y=>s.innerHTML+=`<option value="${y}"${y===now.getFullYear()?' selected':''}>${y}</option>`);
   });
-}
-
-// Trigger auto-login if session was found
-if (window._autoLogin) {
-  document.addEventListener('DOMContentLoaded', function() {
-    initApp();
-  });
-  // If DOM already ready
-  if (document.readyState !== 'loading') initApp();
 }
 
 function showToast(msg,type='success') {
