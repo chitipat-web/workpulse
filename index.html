@@ -607,13 +607,13 @@ function setSyncStatus(state) {
 function loginDemo() {
   const name = document.getElementById('demoName').value.trim();
   const email = document.getElementById('demoEmail').value.trim();
-  if (!name || !email) { showToast('กรุณากรอกชื่อและอีเมล', 'error'); return; }
-  if (!email.includes('@')) { showToast('อีเมลไม่ถูกต้อง', 'error'); return; }
+  if (!name) { alert('กรุณากรอกชื่อ'); return; }
+  if (!email || !email.includes('@')) { alert('กรุณากรอกอีเมลให้ถูกต้อง'); return; }
   currentUser = { name, email };
   _cache = null;
   try { localStorage.setItem('wp:session', JSON.stringify(currentUser)); } catch(e) {}
-  // Save name to Firestore for team lookup
-  await waitFirebase().then(async () => { try { const ref = window._doc(window._db,'users',currentUser.email.replace(/[^a-zA-Z0-9]/g,'_')); const snap = await window._getDoc(ref); const existing = snap.exists() ? snap.data() : {}; await window._setDoc(ref,{...existing, name: currentUser.name, email: currentUser.email}); } catch(e){} });
+  // Save name to Firestore for team lookup (async, non-blocking)
+  setTimeout(async () => { try { await waitFirebase(); const ref = window._doc(window._db,'users',currentUser.email.replace(/[^a-zA-Z0-9]/g,'_')); const snap = await window._getDoc(ref); const existing = snap.exists() ? snap.data() : {}; await window._setDoc(ref,{...existing, name: currentUser.name, email: currentUser.email}); } catch(e){ console.warn('Save name error:', e); } }, 2000);
   initApp();
 }
 
