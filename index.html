@@ -1206,7 +1206,7 @@ async function renderHome() {
     const f = todayRecs[0];
     document.getElementById('s-firstin').textContent = f.checkIn;
     document.getElementById('s-latestatus').innerHTML = f.isLate
-      ? `<span style="color:var(--red)">สาย ${f.lateMin} นาที</span>`
+      ? `<span style="color:var(--red)">สาย ${f.lateMin||f.lateMinutes||0} นาที</span>`
       : `<span style="color:var(--green)">ตรงเวลา ✓</span>`;
   } else {
     document.getElementById('s-firstin').textContent = '--:--';
@@ -1234,7 +1234,7 @@ async function renderHome() {
       <div class="record-times">
         <div class="record-time-row">${r.checkIn} → ${r.checkOut || '<span style="color:var(--accent)">กำลังทำงาน...</span>'}</div>
         <div class="record-status-row">
-          ${r.isLate ? `<span class="badge badge-late">⚠ สาย ${r.lateMin}น.</span>` : '<span class="badge badge-ontime">✓ ตรงเวลา</span>'}
+          ${r.isLate ? `<span class="badge badge-late">⚠ สาย ${r.lateMin||r.lateMinutes||0}น.</span>` : '<span class="badge badge-ontime">✓ ตรงเวลา</span>'}
           ${ot ? `<span class="badge badge-ot">⚡ OT ${ot}</span>` : ''}
           ${hrs ? `<span class="badge" style="background:var(--surface2);color:var(--text2)">${hrs} ชม.</span>` : ''}
           ${r.note ? `<span class="badge" style="background:var(--surface2);color:var(--text2)">📝 ${r.note}</span>` : ''}
@@ -1319,7 +1319,7 @@ async function showDayDetail(dateKey, ownerEmail) {
         <div class="record-times">
           <div class="record-time-row">${r.checkIn} → ${r.checkOut||'<span style="color:var(--accent)">กำลังทำงาน</span>'}</div>
           <div class="record-status-row">
-            ${r.isLate?`<span class="badge badge-late">สาย ${r.lateMin}น.</span>`:'<span class="badge badge-ontime">ตรงเวลา</span>'}
+            ${r.isLate?`<span class="badge badge-late">สาย ${r.lateMin||r.lateMinutes||0}น.</span>`:'<span class="badge badge-ontime">ตรงเวลา</span>'}
             ${r.otMin>0?`<span class="badge badge-ot">OT</span>`:''}
             ${r.checkOut?`<span class="badge" style="background:var(--surface2);color:var(--text2)">${hrs} ชม.</span>`:''}
             ${r.note?`<span class="badge" style="background:var(--surface2);color:var(--text2)">📝 ${r.note}</span>`:''}
