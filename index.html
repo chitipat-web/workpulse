@@ -797,6 +797,8 @@ body.dark input[type=date]::-webkit-calendar-picker-indicator { filter: invert(1
       <button class="desktop-tab" onclick="showPage('team')">👥 ทีม</button>
       <button class="desktop-tab" onclick="showPage('teamsummary')" id="tabTeamSummary" style="display:none;">📈 สรุปทีม</button>
       <button class="desktop-tab" onclick="showPage('salary')">💰 ค่าแรง</button>
+      <button class="desktop-tab" onclick="showPage('settings')">⚙️ ตั้งค่า</button>
+      <button class="desktop-tab" onclick="showPage('settings')">⚙️ ตั้งค่า</button>
     </div>
     <div class="nav-right" title="กดรูปโปรไฟล์เพื่อเปลี่ยนรูป">
       <span id="adminBadge" class="admin-badge">👑 ADMIN</span>
@@ -1048,6 +1050,112 @@ body.dark input[type=date]::-webkit-calendar-picker-indicator { filter: invert(1
     <div id="adminSalarySection" style="margin-top:16px;"></div>
   </div>
 
+
+  <!-- SETTINGS PAGE -->
+  <div id="page-settings" class="page">
+    <div style="font-family:'Prompt',sans-serif;font-size:18px;font-weight:700;margin-bottom:16px;">⚙️ ตั้งค่า</div>
+
+    <!-- Work Times -->
+    <div class="section-card" style="margin-bottom:16px;">
+      <div class="section-title" style="margin-bottom:14px;">🕐 เวลาทำงาน</div>
+      <div class="manual-grid">
+        <div class="form-group">
+          <label class="form-label">เวลาเข้างาน (ถ้าสายกว่านี้ = สาย)</label>
+          <input type="time" id="settingWorkStart" class="form-input"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">เวลาเริ่มโอที</label>
+          <input type="time" id="settingOTStart" class="form-input"/>
+        </div>
+      </div>
+      <button class="btn-primary" onclick="saveWorkTimes(document.getElementById('settingWorkStart').value, document.getElementById('settingOTStart').value)">💾 บันทึก</button>
+    </div>
+
+    <!-- Admin Password -->
+    <div class="section-card" id="adminPasswordSection" style="display:none;margin-bottom:16px;">
+      <div class="section-title" style="margin-bottom:14px;">🔐 รหัส Admin</div>
+      <div class="form-group" style="margin-bottom:12px;">
+        <label class="form-label">ตั้งรหัสผ่าน Admin (6 ตัวขึ้นไป)</label>
+        <input type="password" id="adminPassword" class="form-input" placeholder="รหัสผ่านใหม่"/>
+      </div>
+      <button class="btn-primary" onclick="saveAdminPassword()">🔐 ตั้งรหัสผ่าน</button>
+    </div>
+
+    <!-- Profile -->
+    <div class="section-card" style="margin-bottom:16px;">
+      <div class="section-title" style="margin-bottom:14px;">👤 โปรไฟล์</div>
+      <div style="display:flex;align-items:center;gap:16px;margin-bottom:14px;">
+        <div id="settingsAvatar" style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#667eea,#764ba2);display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;color:#fff;overflow:hidden;cursor:pointer;" onclick="openProfileUpload()"></div>
+        <div>
+          <div style="font-weight:700;font-size:16px;" id="settingsName"></div>
+          <div style="color:var(--text2);font-size:13px;" id="settingsEmail"></div>
+          <button onclick="openProfileUpload()" style="margin-top:6px;font-size:12px;padding:5px 12px;background:var(--accent-light);border:1px solid var(--accent);border-radius:8px;color:var(--accent);cursor:pointer;font-family:'Sarabun',sans-serif;">📷 เปลี่ยนรูปโปรไฟล์</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Deduction Info -->
+    <div class="section-card">
+      <div class="section-title" style="margin-bottom:10px;">✂️ การหักเวลา</div>
+      <div style="font-size:13px;color:var(--text2);line-height:1.8;">
+        <div>📅 <strong>อา-พฤ:</strong> หัก 2 ชม. (เดินทาง 1 + พักเที่ยง 1)</div>
+        <div>📅 <strong>ศุกร์:</strong> หัก 1 ชม. (เดินทางอย่างเดียว)</div>
+        <div>📅 <strong>เสาร์:</strong> ไม่หัก</div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- SETTINGS PAGE -->
+  <div id="page-settings" class="page">
+    <div style="font-family:'Prompt',sans-serif;font-size:18px;font-weight:700;margin-bottom:16px;">⚙️ ตั้งค่า</div>
+
+    <div class="section-card" style="margin-bottom:16px;">
+      <div class="section-title" style="margin-bottom:14px;">🕐 เวลาทำงาน</div>
+      <div class="manual-grid">
+        <div class="form-group">
+          <label class="form-label">เวลาเข้างาน (ถ้าสายกว่านี้ = สาย)</label>
+          <input type="time" id="settingWorkStart" class="form-input"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">เวลาเริ่มโอที</label>
+          <input type="time" id="settingOTStart" class="form-input"/>
+        </div>
+      </div>
+      <button class="btn-primary" onclick="saveWorkTimes(document.getElementById('settingWorkStart').value,document.getElementById('settingOTStart').value)">💾 บันทึก</button>
+    </div>
+
+    <div class="section-card" id="adminPwdCard" style="display:none;margin-bottom:16px;">
+      <div class="section-title" style="margin-bottom:14px;">🔐 รหัสผ่าน Admin</div>
+      <div class="form-group" style="margin-bottom:12px;">
+        <label class="form-label">ตั้งรหัสผ่านใหม่ (6 ตัวขึ้นไป)</label>
+        <input type="password" id="adminPassword" class="form-input" placeholder="รหัสผ่าน"/>
+      </div>
+      <button class="btn-primary" onclick="saveAdminPassword()">🔐 ตั้งรหัสผ่าน</button>
+    </div>
+
+    <div class="section-card" style="margin-bottom:16px;">
+      <div class="section-title" style="margin-bottom:10px;">👤 โปรไฟล์</div>
+      <div style="display:flex;align-items:center;gap:16px;">
+        <div id="settingsAvatar" onclick="openProfileUpload()" style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#667eea,#764ba2);display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;color:#fff;overflow:hidden;cursor:pointer;"></div>
+        <div>
+          <div style="font-weight:700;font-size:16px;" id="settingsName"></div>
+          <div style="color:var(--text2);font-size:13px;" id="settingsEmail"></div>
+          <button onclick="openProfileUpload()" style="margin-top:8px;font-size:12px;padding:5px 12px;background:var(--accent-light);border:1px solid var(--accent);border-radius:8px;color:var(--accent);cursor:pointer;font-family:'Sarabun',sans-serif;">📷 เปลี่ยนรูป</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-card">
+      <div class="section-title" style="margin-bottom:10px;">✂️ การหักเวลาอัตโนมัติ</div>
+      <div style="font-size:13px;color:var(--text2);line-height:2;">
+        <div>📅 <strong>อา-พฤ:</strong> หัก 2 ชม. (เดินทาง + พักเที่ยง)</div>
+        <div>📅 <strong>ศุกร์:</strong> หัก 1 ชม. (เดินทาง)</div>
+        <div>📅 <strong>เสาร์:</strong> ไม่หัก</div>
+      </div>
+    </div>
+  </div>
+
   <!-- DAY DETAIL MODAL -->
 <div class="modal-overlay" id="dayModal">
   <div class="modal">
@@ -1247,7 +1355,7 @@ function todayKey() {
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
 function fmtTime(d) { return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`; }
-function calcOT(t) { if(!t)return 0; const[h,m]=t.split(':').map(Number); return Math.max(0,h*60+m-990); }
+function calcOT(t) { if(!t)return 0; const[h,m]=t.split(':').map(Number); const[oh,om]=getWorkOTStart().split(':').map(Number); return Math.max(0,h*60+m-(oh*60+om)); }
 function calcHours(i,o) { if(!i||!o)return 0; const[ih,im]=i.split(':').map(Number); const[oh,om]=o.split(':').map(Number); return Math.max(0,(oh*60+om-ih*60-im)/60); }
 
 // Get deduction hours based on day of week
@@ -1281,7 +1389,8 @@ async function doCheckIn() {
   if (recs.find(r=>r.date===tk&&!r.checkOut)) { toast('มีการเข้างานที่ยังไม่ออก','warning'); return; }
   const t = fmtTime(now);
   const inMin = now.getHours()*60+now.getMinutes();
-  const isLate = inMin > 360;
+  const [wh,wm] = getWorkStartTime().split(':').map(Number);
+  const isLate = inMin > wh*60+wm;
   recs.push({ id:Date.now(), date:tk, checkIn:t, checkInTs:now.getTime(), checkOut:null, checkOutTs:null, isLate, lateMin:isLate?inMin-360:0, otMin:0, note:'' });
   await saveRecords(recs);
   document.getElementById('btnIn').disabled = true;
@@ -1316,7 +1425,8 @@ async function addManual() {
   if (!date||!inT) { toast('กรุณาระบุวันที่และเวลาเข้า','error'); return; }
   const [h,m] = inT.split(':').map(Number);
   const inMin = h*60+m;
-  const isLate = inMin > 360;
+  const [wh2,wm2] = getWorkStartTime().split(':').map(Number);
+  const isLate = inMin > wh2*60+wm2;
   const recs = await loadRecords();
   recs.push({ id:Date.now(), date, checkIn:inT, checkInTs:null, checkOut:outT||null, checkOutTs:null, isLate, lateMin:isLate?inMin-360:0, otMin:outT?calcOT(outT):0, note });
   await saveRecords(recs);
@@ -1699,37 +1809,22 @@ async function removeMember(email) {
 async function renderTeam() {
   const dateKey = document.getElementById('teamDate').value || todayKey();
   const list = document.getElementById('teamList');
-  list.innerHTML = '<div class="empty-state"><div class="spinner" style="margin:0 auto"></div></div>';
+  list.innerHTML = '<div class="empty-state"><div class="spinner" style="margin:0 auto"></div><div style="margin-top:12px;font-size:13px;color:var(--text2)">กำลังโหลดข้อมูลทีม...</div></div>';
 
-  // Get members from localStorage first (fast), then try Firestore
-  let members = JSON.parse(localStorage.getItem('wp_team') || '[]');
-  
-  // Try to get from Firestore 'users' collection with 5s timeout
+  let members = [];
   try {
-    const snap = await Promise.race([
-      db.collection('users').get(),
-      new Promise((_, r) => setTimeout(() => r(new Error('timeout')), 5000))
-    ]);
-    if (snap && snap.docs) {
-      const firestoreMembers = snap.docs.map(d => d.data()).filter(u => u.email);
-      if (firestoreMembers.length > 0) {
-        members = firestoreMembers;
-        localStorage.setItem('wp_team', JSON.stringify(members));
-      }
-    }
+    const snap = await db.collection('users').get();
+    members = snap.docs.map(d => d.data()).filter(u => u.email && u.name);
   } catch(e) {
-    console.warn('Firestore fetch failed, using localStorage:', e.message);
+    members = JSON.parse(localStorage.getItem('wp_team') || '[]');
   }
 
   if (members.length === 0) {
-    list.innerHTML = `<div class="empty-state">
-      <div class="empty-icon">👥</div>
-      <div class="empty-text">${isAdmin()?'เพิ่มสมาชิกด้านบนเพื่อเริ่มต้น':'ยังไม่มีสมาชิกทีม'}</div>
-    </div>`;
+    list.innerHTML = `<div class="empty-state"><div class="empty-icon">👥</div><div class="empty-text">ยังไม่มีสมาชิก<br><span style="font-size:12px;color:var(--text3)">สมาชิกจะปรากฏหลังจากล็อกอินเข้าแอพครั้งแรก</span></div></div>`;
     return;
   }
 
-  const colors = ['#2563eb','#059669','#7c3aed','#d97706','#dc2626','#0891b2'];
+  const colors = ['#2563eb','#059669','#7c3aed','#d97706','#dc2626','#0891b2','#0284c7','#16a34a'];
   const results = [];
 
   for (const [i, member] of members.entries()) {
@@ -1737,30 +1832,29 @@ async function renderTeam() {
       const snap = await db.collection('users').doc(skey(member.email)).get();
       const data = snap.exists ? snap.data() : {};
       const recs = data.records || [];
-      const dr = recs.filter(r=>r.date===dateKey);
-      const comp = dr.filter(r=>r.checkOut);
-      const open = dr.find(r=>!r.checkOut);
-      const totalH = comp.reduce((s,r)=>s+calcNetHours(r.checkIn,r.checkOut,r.date),0);
-      const totalOT = comp.reduce((s,r)=>s+(r.otMin||0),0);
-      const hasLate = dr.some(r=>r.isLate);
-      const name = data.name || member.name || member.email.split('@')[0];
-      results.push({ member, name, dr, totalH, totalOT, open, hasLate, color:colors[i%colors.length] });
+      const dr = recs.filter(r => r.date === dateKey);
+      const comp = dr.filter(r => r.checkOut);
+      const open = dr.find(r => !r.checkOut);
+      const totalH = comp.reduce((s,r) => s + calcNetHours(r.checkIn,r.checkOut,r.date), 0);
+      const totalOT = comp.reduce((s,r) => s + (r.otMin||0), 0);
+      const hasLate = dr.some(r => r.isLate);
+      results.push({ member, name: data.name||member.name||member.email.split('@')[0], dr, totalH, totalOT, open, hasLate, color: colors[i%colors.length], photo: data.photo||getProfilePhoto(member.email)||'' });
     } catch(e) {
-      results.push({ member, name:member.name||member.email.split('@')[0], dr:[], totalH:0, totalOT:0, open:null, hasLate:false, color:colors[i%colors.length] });
+      results.push({ member, name: member.name||member.email.split('@')[0], dr:[], totalH:0, totalOT:0, open:null, hasLate:false, color:colors[i%colors.length], photo:'' });
     }
   }
 
   list.innerHTML = results.map(r => {
-    const firstIn = r.dr.length>0 ? r.dr[0].checkIn : '--:--';
+    const firstIn = r.dr.length > 0 ? r.dr[0].checkIn : '--:--';
     let statusBadge = '';
     if (r.open) statusBadge = '<span class="badge badge-working">🟢 กำลังทำงาน</span>';
-    else if (r.dr.length>0) statusBadge = r.hasLate ? '<span class="badge badge-late">⚠ มาสาย</span>' : '<span class="badge badge-ontime">✓ มาแล้ว</span>';
+    else if (r.dr.length > 0) statusBadge = r.hasLate ? '<span class="badge badge-late">⚠ มาสาย</span>' : '<span class="badge badge-ontime">✓ มาแล้ว</span>';
     else statusBadge = '<span class="badge" style="background:var(--surface2);color:var(--text3)">— ยังไม่มา</span>';
 
-    return `<div class="team-card" onclick="showDayDetail('${document.getElementById('teamDate').value||todayKey()}','${r.member.email}')">
+    return `<div class="team-card" data-email="${r.member.email}" onclick="showDayDetail('${dateKey}','${r.member.email}')">
       <div class="team-card-top">
         <div class="team-avatar" style="background:${r.color}">
-          ${photos[r.member.email] ? `<img src="${photos[r.member.email]}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">` : r.name.charAt(0).toUpperCase()}
+          ${r.photo ? `<img src="${r.photo}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">` : r.name.charAt(0).toUpperCase()}
         </div>
         <div class="team-info">
           <div class="team-name">${r.name}</div>
@@ -1769,78 +1863,18 @@ async function renderTeam() {
         <div>${statusBadge}</div>
       </div>
       <div class="team-stats-row">
-        <div class="team-stat">
-          <div class="team-stat-val color-blue">${firstIn}</div>
-          <div class="team-stat-lbl">เข้างาน</div>
-        </div>
-        <div class="team-stat">
-          <div class="team-stat-val color-green">${r.totalH.toFixed(1)}</div>
-          <div class="team-stat-lbl">ชม.ทำงาน</div>
-        </div>
-        <div class="team-stat">
-          <div class="team-stat-val color-orange">${(r.totalOT/60).toFixed(1)}</div>
-          <div class="team-stat-lbl">ชม.โอที</div>
-        </div>
+        <div class="team-stat"><div class="team-stat-val color-blue">${firstIn}</div><div class="team-stat-lbl">เข้างาน</div></div>
+        <div class="team-stat"><div class="team-stat-val color-green">${r.totalH.toFixed(1)}</div><div class="team-stat-lbl">ชม.ทำงาน</div></div>
+        <div class="team-stat"><div class="team-stat-val color-orange">${(r.totalOT/60).toFixed(1)}</div><div class="team-stat-lbl">ชม.โอที</div></div>
       </div>
-      ${isAdmin()?`<div style="text-align:right;margin-top:10px;"><button onclick="event.stopPropagation();removeMember('${r.member.email}')" style="font-size:11px;padding:4px 10px;border:1px solid var(--border);border-radius:6px;background:none;color:var(--text3);cursor:pointer;">ลบสมาชิก</button></div>`:''}
+      ${isAdmin()?`<div style="text-align:right;margin-top:8px;">
+        <button onclick="event.stopPropagation();openEdit(${r.dr[0]?.id||0},'${r.member.email}')" style="font-size:11px;padding:4px 10px;border:1px solid var(--accent);border-radius:6px;background:var(--accent-light);color:var(--accent);cursor:pointer;font-family:'Sarabun',sans-serif;margin-right:4px;" ${r.dr.length===0?'disabled style="opacity:.4"':''}>✏️ แก้ไข</button>
+        <button onclick="event.stopPropagation();showDayDetail('${dateKey}','${r.member.email}')" style="font-size:11px;padding:4px 10px;border:1px solid var(--border);border-radius:6px;background:none;color:var(--text2);cursor:pointer;font-family:'Sarabun',sans-serif;">📋 รายละเอียด</button>
+      </div>`:''}
     </div>`;
   }).join('');
 
-  // Real-time listeners
   setupRealtimeListeners(members, dateKey);
-
-  // Load profile photos in background (non-blocking)
-  setTimeout(async () => {
-    for (const r of results) {
-      const cached = getProfilePhoto(r.member.email);
-      if (cached) continue; // already have it
-      try {
-        const snap = await db.collection('users').doc(skey(r.member.email)).get();
-        if (snap.exists && snap.data().photo) {
-          const photo = snap.data().photo;
-          localStorage.setItem('wp_photo_' + r.member.email.replace(/[^a-zA-Z0-9]/g,'_'), photo);
-          // Update avatar in DOM if exists
-          const avatarEl = document.querySelector(`[data-email="${r.member.email}"] .team-avatar`);
-          if (avatarEl) avatarEl.innerHTML = `<img src="${photo}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
-        }
-      } catch(e) {}
-    }
-  }, 100);
-}
-
-let _teamRenderTimer = null;
-
-function setupRealtimeListeners(members, dateKey) {
-  // Detach old listeners
-  Object.values(teamListeners).forEach(fn => fn && fn());
-  teamListeners = {};
-  
-  // Listen to members collection for new joiners
-  const membersUnsub = db.collection('members').onSnapshot(() => {
-    _membersCache = null;
-    const teamPage = document.getElementById('page-team');
-    if (!teamPage.classList.contains('active')) return;
-    clearTimeout(_teamRenderTimer);
-    _teamRenderTimer = setTimeout(() => renderTeamSilent(), 2000);
-  });
-  teamListeners['_members'] = membersUnsub;
-
-  members.forEach(member => {
-    let isFirst = true;
-    const unsub = db.collection('users').doc(skey(member.email))
-      .onSnapshot(() => {
-        // Skip first snapshot (initial load)
-        if (isFirst) { isFirst = false; return; }
-        const teamPage = document.getElementById('page-team');
-        if (!teamPage.classList.contains('active')) return;
-        // Debounce: wait 1.5s before re-rendering to avoid rapid updates
-        clearTimeout(_teamRenderTimer);
-        _teamRenderTimer = setTimeout(() => {
-          renderTeamSilent();
-        }, 1500);
-      });
-    teamListeners[member.email] = unsub;
-  });
 }
 
 async function renderTeamSilent() {
@@ -2818,13 +2852,72 @@ async function generatePDF(month, year) {
   setTimeout(() => win.print(), 500);
 }
 
+
+// ===== WORK TIME SETTINGS =====
+function getWorkStartTime() {
+  return localStorage.getItem('wp_work_start_' + skey()) || '06:00';
+}
+function getWorkOTStart() {
+  return localStorage.getItem('wp_ot_start_' + skey()) || '16:30';
+}
+function saveWorkTimes(start, ot) {
+  localStorage.setItem('wp_work_start_' + skey(), start);
+  localStorage.setItem('wp_ot_start_' + skey(), ot);
+  db.collection('users').doc(skey()).set({ workStart: start, otStart: ot }, { merge: true });
+  // Recalculate cache
+  _cache = null;
+  toast('✅ บันทึกการตั้งค่าแล้ว', 'success');
+}
+
+// Admin password
+function saveAdminPassword() {
+  const pwd = document.getElementById('adminPassword').value;
+  if (pwd.length < 6) { toast('รหัสต้องมีอย่างน้อย 6 ตัว','error'); return; }
+  localStorage.setItem('wp_admin_pwd', btoa(pwd));
+  toast('✅ ตั้งรหัสผ่าน Admin แล้ว','success');
+  document.getElementById('adminPassword').value = '';
+}
+
+function checkAdminPassword() {
+  const saved = localStorage.getItem('wp_admin_pwd');
+  if (!saved) return true; // no password set
+  const input = prompt('กรุณากรอกรหัสผ่าน Admin:');
+  if (!input) return false;
+  return btoa(input) === saved;
+}
+
+
+// ===== WORK TIME SETTINGS =====
+function getWorkStartTime() {
+  return localStorage.getItem('wp_work_start') || '06:00';
+}
+function getWorkOTStart() {
+  return localStorage.getItem('wp_ot_start') || '16:30';
+}
+function saveWorkTimes(start, ot) {
+  if (!start || !ot) { toast('กรุณากรอกเวลา','error'); return; }
+  localStorage.setItem('wp_work_start', start);
+  localStorage.setItem('wp_ot_start', ot);
+  _cache = null;
+  toast('✅ บันทึกการตั้งค่าแล้ว', 'success');
+  renderHome();
+}
+
+function saveAdminPassword() {
+  const pwd = document.getElementById('adminPassword').value;
+  if (pwd.length < 6) { toast('รหัสต้องมีอย่างน้อย 6 ตัว','error'); return; }
+  localStorage.setItem('wp_admin_pwd', btoa(pwd));
+  toast('✅ ตั้งรหัสผ่าน Admin แล้ว','success');
+  document.getElementById('adminPassword').value = '';
+}
+
 // ===== NAVIGATION =====
 function showPage(name) {
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.desktop-tab').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.mobile-nav-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById('page-'+name).classList.add('active');
-  const map = {home:0,calendar:1,stats:2,history:3,team:4,teamsummary:5,salary:6};
+  const map = {home:0,calendar:1,stats:2,history:3,team:4,teamsummary:5,salary:6,settings:7};
   const idx = map[name];
   document.querySelectorAll('.desktop-tab')[idx]?.classList.add('active');
   document.querySelectorAll('.mobile-nav-btn')[idx]?.classList.add('active');
@@ -2837,6 +2930,28 @@ function showPage(name) {
     if (isAdmin()) document.getElementById('bulkSection'); // already handled by button
   }
   if (name==='teamsummary') renderTeamSummary();
+  if (name==='settings') {
+    document.getElementById('settingWorkStart').value = getWorkStartTime();
+    document.getElementById('settingOTStart').value = getWorkOTStart();
+    document.getElementById('settingsName').textContent = currentUser.name;
+    document.getElementById('settingsEmail').textContent = currentUser.email;
+    const photo = getProfilePhoto(currentUser.email);
+    const av = document.getElementById('settingsAvatar');
+    if (photo) av.innerHTML = `<img src="${photo}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+    else av.textContent = currentUser.name.charAt(0).toUpperCase();
+    if (isAdmin()) document.getElementById('adminPasswordSection').style.display = 'block';
+  }
+  if (name==='settings') {
+    document.getElementById('settingWorkStart').value = getWorkStartTime();
+    document.getElementById('settingOTStart').value = getWorkOTStart();
+    document.getElementById('settingsName').textContent = currentUser.name;
+    document.getElementById('settingsEmail').textContent = currentUser.email;
+    if (isAdmin()) document.getElementById('adminPwdCard').style.display = 'block';
+    const photo = getProfilePhoto(currentUser.email);
+    const av = document.getElementById('settingsAvatar');
+    if (photo) av.innerHTML = '<img src="'+photo+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">';
+    else av.textContent = currentUser.name.charAt(0).toUpperCase();
+  }
   if (name==='salary') {
     const m = document.getElementById('salMonth').value;
     const y = document.getElementById('salYear').value;
@@ -2902,6 +3017,8 @@ document.addEventListener('DOMContentLoaded', () => {
     <button class="mobile-nav-btn" onclick="showPage('team')"><span class="icon">👥</span><span>ทีม</span></button>
     <button class="mobile-nav-btn" onclick="showPage('teamsummary')" id="mobileTabTeamSummary" style="display:none;"><span class="icon">📈</span><span>สรุปทีม</span></button>
     <button class="mobile-nav-btn" onclick="showPage('salary')"><span class="icon">💰</span><span>ค่าแรง</span></button>
+    <button class="mobile-nav-btn" onclick="showPage('settings')"><span class="icon">⚙️</span><span>ตั้งค่า</span></button>
+    <button class="mobile-nav-btn" onclick="showPage('settings')"><span class="icon">⚙️</span><span>ตั้งค่า</span></button>
   </div>
 </div>
 
