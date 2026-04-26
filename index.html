@@ -859,6 +859,7 @@ body { font-family:'Sarabun',sans-serif; background:var(--bg); color:var(--text)
       <div style="display:flex;gap:8px;">
         <select id="statMonth" class="select-input" onchange="renderStats()"></select>
         <select id="statYear" class="select-input" onchange="renderStats()"></select>
+        <button onclick="exportToCSV(parseInt(document.getElementById('statMonth').value),parseInt(document.getElementById('statYear').value))" style="padding:9px 14px;background:var(--green);color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Sarabun',sans-serif;white-space:nowrap;">📥 Export</button>
       </div>
     </div>
     <div class="month-summary" id="monthSummary"></div>
@@ -954,11 +955,16 @@ body { font-family:'Sarabun',sans-serif; background:var(--bg); color:var(--text)
         <input type="number" id="salaryInput" class="form-input" placeholder="เช่น 15000" 
                oninput="saveSalaryInput()" style="font-size:18px;font-weight:700;"/>
       </div>
-      <button class="btn-primary" onclick="renderSalary()">💰 คำนวณ</button>
+      <div style="display:flex;gap:10px;">
+        <button class="btn-primary" onclick="renderSalary()" style="flex:1;">💰 คำนวณ</button>
+        <button onclick="exportToCSV(parseInt(document.getElementById('salMonth').value),parseInt(document.getElementById('salYear').value))" style="padding:13px 16px;background:var(--green);color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Sarabun',sans-serif;">📥 Export</button>
+      </div>
     </div>
 
     <!-- Result -->
     <div id="salaryResult"></div>
+    <!-- Admin salary view -->
+    <div id="adminSalarySection" style="margin-top:16px;"></div>
   </div>
 
   <!-- DAY DETAIL MODAL -->
@@ -1126,6 +1132,7 @@ async function startApp() {
 
   populateSelectors();
   startClock();
+  setupCheckoutReminder();
   await renderHome();
 
   document.getElementById('loadingOverlay').classList.remove('show');
@@ -1763,6 +1770,7 @@ function loadSalaryInput(month, year) {
 }
 
 async function renderSalary() {
+  if (isAdmin()) setTimeout(renderAdminSalary, 500);
   const month = parseInt(document.getElementById('salMonth').value);
   const year = parseInt(document.getElementById('salYear').value);
   const salaryRaw = document.getElementById('salaryInput').value;
@@ -2021,6 +2029,252 @@ async function showMemberMonthDetail(email, name, month, year) {
   } catch(e) { toast('โหลดข้อมูลไม่ได้','error'); }
 }
 
+
+// ===== EXPORT =====
+function exportToCSV(month, year) {
+  const mons = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+  loadRecords().then(recs => {
+    const mr = recs.filter(r => {
+      const [y,m] = r.date.split('-').map(Number);
+      return y === year && m === month + 1;
+    });
+    if (mr.length === 0) { toast('ไม่มีข้อมูลให้ Export','warning'); return; }
+
+    const byDate = {};
+    mr.forEach(r => { if(!byDate[r.date]) byDate[r.date]=[]; byDate[r.date].push(r); });
+
+    let csv = '\uFEFF'; // BOM for Thai
+    csv += 'วันที่,วัน,เวลาเข้า,เวลาออก,ชม.ดิบ,หักเวลา,ชม.สุทธิ,โอที(ชม.),สถานะ,หมายเหตุ\n';
+
+    const dayNames = ['อาทิตย์','จันทร์','อังคาร','พุธ','พฤหัสบดี','ศุกร์','เสาร์'];
+
+    Object.keys(byDate).sort().forEach(date => {
+      const rs = byDate[date];
+      const d = new Date(date);
+      const dayName = dayNames[d.getDay()];
+      const [y,m,dd] = date.split('-');
+      const dateStr = `${parseInt(dd)}/${parseInt(m)}/${parseInt(y)+543}`;
+      const deduct = getDeduction(date);
+
+      rs.forEach((r, i) => {
+        const rawH = r.checkOut ? calcHours(r.checkIn, r.checkOut) : 0;
+        const netH = r.checkOut ? calcNetHours(r.checkIn, r.checkOut, r.date) : 0;
+        const otH = (r.otMin||0) / 60;
+        const status = r.isLate ? `สาย ${r.lateMin||r.lateMinutes||0} นาที` : 'ตรงเวลา';
+        csv += `${dateStr},${dayName},${r.checkIn},${r.checkOut||''},${rawH.toFixed(2)},${i===0?deduct:0},${i===0?netH.toFixed(2):''},${otH.toFixed(2)},${status},${r.note||''}\n`;
+      });
+    });
+
+    // Summary row
+    const totalNetH = mr.filter(r=>r.checkOut).reduce((s,r)=>s+calcNetHours(r.checkIn,r.checkOut,r.date),0);
+    const totalOT = mr.filter(r=>r.checkOut).reduce((s,r)=>s+(r.otMin||0),0);
+    csv += `\nสรุป ${mons[month]} ${year+543},,,,,,${totalNetH.toFixed(2)},${(totalOT/60).toFixed(2)},,\n`;
+
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `ทีมงานลาล่า_${currentUser.name}_${mons[month]}${year+543}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast('✅ Export สำเร็จ', 'success');
+  });
+}
+
+// ===== ADMIN SALARY VIEW =====
+async function renderAdminSalary() {
+  if (!isAdmin()) return;
+  const month = parseInt(document.getElementById('salMonth').value);
+  const year = parseInt(document.getElementById('salYear').value);
+  const allMembers = await getAllMembers();
+  const mons = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+  
+  const adminSalEl = document.getElementById('adminSalarySection');
+  if (!adminSalEl) return;
+  adminSalEl.innerHTML = '<div style="text-align:center;padding:16px;"><div class="spinner" style="margin:0 auto"></div></div>';
+
+  const results = [];
+  for (const member of allMembers) {
+    try {
+      const snap = await db.collection('users').doc(skey(member.email)).get();
+      const recs = snap.exists ? (snap.data().records || []) : [];
+      const mr = recs.filter(r => { const [y,m]=r.date.split('-').map(Number); return y===year&&m===month+1; });
+      const comp = mr.filter(r=>r.checkOut);
+      const totalH = comp.reduce((s,r)=>s+calcNetHours(r.checkIn,r.checkOut,r.date),0);
+      const totalOT = comp.reduce((s,r)=>s+(r.otMin||0),0);
+      const days = new Set(mr.map(r=>r.date)).size;
+      // Get saved salary for this member
+      const salKey2 = 'sal_' + member.email.replace(/[^a-zA-Z0-9]/g,'_') + '_' + year + '_' + month;
+      const salary = parseFloat(localStorage.getItem(salKey2)) || 0;
+      const perHour = salary > 0 && totalH > 0 ? salary / totalH : 0;
+      results.push({ member, name: member.name||member.email.split('@')[0], totalH, totalOT, days, salary, perHour });
+    } catch(e) {
+      results.push({ member, name: member.name||member.email.split('@')[0], totalH:0, totalOT:0, days:0, salary:0, perHour:0 });
+    }
+  }
+
+  adminSalEl.innerHTML = `
+    <div class="section-title" style="margin-bottom:16px;">👑 ค่าแรงทีมงาน — ${mons[month]} ${year+543}</div>
+    <div style="overflow-x:auto;">
+      <table class="ts-table">
+        <thead>
+          <tr>
+            <th>ชื่อ</th>
+            <th>วันที่มา</th>
+            <th>ชม.สุทธิ</th>
+            <th>โอที</th>
+            <th>เงินเดือน (บาท)</th>
+            <th>ค่าแรง/ชม.</th>
+            <th>Export</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${results.map(r => `
+            <tr>
+              <td>
+                <div style="font-weight:700;">${r.name}</div>
+                <div style="font-size:11px;color:var(--text3);">${r.member.email}</div>
+              </td>
+              <td style="font-weight:700;color:var(--accent)">${r.days} วัน</td>
+              <td style="font-weight:700;color:var(--green)">${r.totalH.toFixed(2)}</td>
+              <td style="font-weight:700;color:var(--orange)">${(r.totalOT/60).toFixed(2)}</td>
+              <td>
+                <input type="number" placeholder="กรอกเงินเดือน"
+                  value="${r.salary||''}"
+                  onchange="saveAdminMemberSalary('${r.member.email}',this.value,${month},${year})"
+                  style="width:120px;padding:6px 10px;border:2px solid var(--border);border-radius:8px;font-size:13px;font-family:'Sarabun',sans-serif;outline:none;"
+                  onfocus="this.style.borderColor='var(--accent)'"
+                  onblur="this.style.borderColor='var(--border)'"/>
+              </td>
+              <td style="font-weight:700;color:var(--purple);">
+                ${r.perHour > 0 ? `฿${r.perHour.toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2})}` : '<span style="color:var(--text3)">—</span>'}
+              </td>
+              <td>
+                <button onclick="exportMemberCSV('${r.member.email}','${r.name}',${month},${year})"
+                  style="padding:6px 12px;background:var(--green);color:#fff;border:none;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Sarabun',sans-serif;">
+                  📥 CSV
+                </button>
+              </td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>`;
+}
+
+function saveAdminMemberSalary(email, salary, month, year) {
+  const key = 'sal_' + email.replace(/[^a-zA-Z0-9]/g,'_') + '_' + year + '_' + month;
+  if (salary) localStorage.setItem(key, salary);
+  else localStorage.removeItem(key);
+  renderAdminSalary();
+}
+
+async function exportMemberCSV(email, name, month, year) {
+  const mons = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+  const snap = await db.collection('users').doc(skey(email)).get();
+  const recs = snap.exists ? (snap.data().records || []) : [];
+  const mr = recs.filter(r => { const [y,m]=r.date.split('-').map(Number); return y===year&&m===month+1; });
+  
+  if (mr.length === 0) { toast('ไม่มีข้อมูล','warning'); return; }
+  
+  const byDate = {};
+  mr.forEach(r => { if(!byDate[r.date]) byDate[r.date]=[]; byDate[r.date].push(r); });
+  const dayNames = ['อาทิตย์','จันทร์','อังคาร','พุธ','พฤหัสบดี','ศุกร์','เสาร์'];
+
+  let csv = '\uFEFF';
+  csv += `รายงานเวลาทำงาน - ${name} - ${mons[month]} ${year+543}\n\n`;
+  csv += 'วันที่,วัน,เวลาเข้า,เวลาออก,ชม.ดิบ,หักเวลา,ชม.สุทธิ,โอที(ชม.),สถานะ\n';
+
+  Object.keys(byDate).sort().forEach(date => {
+    const rs = byDate[date];
+    const d = new Date(date);
+    const [y,m,dd] = date.split('-');
+    const dateStr = `${parseInt(dd)}/${parseInt(m)}/${parseInt(y)+543}`;
+    const deduct = getDeduction(date);
+    rs.forEach((r,i) => {
+      const rawH = r.checkOut ? calcHours(r.checkIn,r.checkOut) : 0;
+      const netH = r.checkOut ? calcNetHours(r.checkIn,r.checkOut,r.date) : 0;
+      const otH = (r.otMin||0)/60;
+      csv += `${dateStr},${dayNames[d.getDay()]},${r.checkIn},${r.checkOut||''},${rawH.toFixed(2)},${i===0?deduct:0},${i===0?netH.toFixed(2):''},${otH.toFixed(2)},${r.isLate?'สาย':'ตรงเวลา'}\n`;
+    });
+  });
+
+  const totalNetH = mr.filter(r=>r.checkOut).reduce((s,r)=>s+calcNetHours(r.checkIn,r.checkOut,r.date),0);
+  const totalOT = mr.filter(r=>r.checkOut).reduce((s,r)=>s+(r.otMin||0),0);
+  const salKey2 = 'sal_' + email.replace(/[^a-zA-Z0-9]/g,'_') + '_' + year + '_' + month;
+  const salary = parseFloat(localStorage.getItem(salKey2)) || 0;
+  const perHour = salary > 0 && totalNetH > 0 ? salary/totalNetH : 0;
+  
+  csv += `\nสรุป,,,,,,${totalNetH.toFixed(2)},${(totalOT/60).toFixed(2)},\n`;
+  if (salary > 0) {
+    csv += `เงินเดือน,,,,,,,฿${salary.toLocaleString('th-TH')},\n`;
+    csv += `ค่าแรง/ชม.,,,,,,,฿${perHour.toFixed(2)},\n`;
+  }
+
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `ทีมงานลาล่า_${name}_${mons[month]}${year+543}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('✅ Export สำเร็จ', 'success');
+}
+
+// ===== REMINDER: FORGOT CHECKOUT =====
+function setupCheckoutReminder() {
+  // Check every minute
+  setInterval(async () => {
+    const now = new Date();
+    const hour = now.getHours();
+    // Only remind from 19:00 onwards
+    if (hour < 19) return;
+    
+    const recs = await loadRecords();
+    const openSession = recs.find(r => r.date === todayKey() && !r.checkOut);
+    if (!openSession) return;
+
+    // Check if we already reminded in the last 30 mins
+    const lastRemind = parseInt(localStorage.getItem('wp_last_remind') || '0');
+    const diff = (now.getTime() - lastRemind) / 60000;
+    if (diff < 30) return;
+
+    localStorage.setItem('wp_last_remind', now.getTime().toString());
+    
+    // Show toast reminder
+    const sinceMin = Math.floor((now.getTime() - openSession.checkInTs) / 60000);
+    const sinceHour = (sinceMin / 60).toFixed(1);
+    
+    showReminderBanner(openSession.checkIn, sinceHour);
+  }, 60000); // check every minute
+}
+
+function showReminderBanner(checkInTime, hours) {
+  let banner = document.getElementById('checkoutReminderBanner');
+  if (!banner) {
+    banner = document.createElement('div');
+    banner.id = 'checkoutReminderBanner';
+    banner.style.cssText = 'position:fixed;top:68px;left:12px;right:12px;background:#fff;border:2px solid #f59e0b;border-radius:16px;padding:14px 16px;z-index:400;box-shadow:0 8px 32px rgba(0,0,0,0.15);animation:slideUp .3s ease;display:flex;align-items:center;gap:12px;';
+    document.body.appendChild(banner);
+  }
+  banner.innerHTML = `
+    <span style="font-size:24px;">⏰</span>
+    <div style="flex:1;">
+      <div style="font-weight:700;font-size:14px;color:#92400e;">อย่าลืมออกงาน!</div>
+      <div style="font-size:12px;color:#b45309;">เข้างาน ${checkInTime} — ผ่านมา ${hours} ชม.แล้ว</div>
+    </div>
+    <button onclick="doCheckOut();document.getElementById('checkoutReminderBanner').remove();"
+      style="padding:8px 14px;background:#f59e0b;color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Sarabun',sans-serif;">
+      ออกงาน
+    </button>
+    <button onclick="this.parentElement.remove();"
+      style="width:28px;height:28px;background:var(--surface2);border:none;border-radius:8px;cursor:pointer;font-size:14px;">✕</button>
+  `;
+  banner.style.display = 'flex';
+  
+  // Auto hide after 10 seconds
+  setTimeout(() => { if (banner.parentElement) banner.remove(); }, 10000);
+}
+
 // ===== NAVIGATION =====
 function showPage(name) {
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
@@ -2042,6 +2296,7 @@ function showPage(name) {
     const saved = loadSalaryInput(m, y);
     if (saved) document.getElementById('salaryInput').value = saved;
     renderSalary();
+    if (isAdmin()) renderAdminSalary();
   }
 }
 
