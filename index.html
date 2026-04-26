@@ -946,6 +946,9 @@ body { font-family:'Sarabun',sans-serif; background:var(--bg); color:var(--text)
         <select id="salMonth" class="select-input" onchange="renderSalary()"></select>
         <select id="salYear" class="select-input" onchange="renderSalary()"></select>
       </div>
+      <div style="background:#fffbeb;border:1px solid #fcd34d;border-radius:12px;padding:12px 14px;margin-bottom:14px;font-size:13px;color:#92400e;">
+        ✂️ <strong>หักเวลาอัตโนมัติ:</strong> อา-พฤ หัก 2 ชม. (เดินทาง+พักเที่ยง) | ศุกร์ หัก 1 ชม. (เดินทาง) | เสาร์ ไม่หัก
+      </div>
       <div class="form-group" style="margin-bottom:12px;">
         <label class="form-label">เงินเดือนที่ได้รับเดือนนี้ (บาท)</label>
         <input type="number" id="salaryInput" class="form-input" placeholder="เช่น 15000" 
@@ -1156,6 +1159,30 @@ function fmtTime(d) { return `${String(d.getHours()).padStart(2,'0')}:${String(d
 function calcOT(t) { if(!t)return 0; const[h,m]=t.split(':').map(Number); return Math.max(0,h*60+m-990); }
 function calcHours(i,o) { if(!i||!o)return 0; const[ih,im]=i.split(':').map(Number); const[oh,om]=o.split(':').map(Number); return Math.max(0,(oh*60+om-ih*60-im)/60); }
 
+// Get deduction hours based on day of week
+// Sun=0, Mon=1, Tue=2, Wed=3, Thu=4, Fri=5, Sat=6
+function getDeduction(dateStr) {
+  if (!dateStr) return 0;
+  const d = new Date(dateStr);
+  const dow = d.getDay(); // 0=Sun, 5=Fri, 6=Sat
+  if (dow === 6) return 0;        // เสาร์ ไม่หัก
+  if (dow === 5) return 1;        // ศุกร์ หัก 1 ชม. (เดินทาง)
+  return 2;                        // อา-พฤ หัก 2 ชม. (เดินทาง + พักเที่ยง)
+}
+
+function calcNetHours(i, o, dateStr) {
+  const raw = calcHours(i, o);
+  const deduct = getDeduction(dateStr);
+  return Math.max(0, raw - deduct);
+}
+
+function deductionLabel(dateStr) {
+  const d = getDeduction(dateStr);
+  if (d === 0) return '';
+  if (d === 1) return 'หักเดินทาง 1 ชม.';
+  return 'หักเดินทาง+พักเที่ยง 2 ชม.';
+}
+
 // ===== CHECK IN/OUT =====
 async function doCheckIn() {
   const now = new Date(); const tk = todayKey();
@@ -1280,7 +1307,7 @@ async function renderHome() {
     document.getElementById('s-latestatus').textContent = '';
   }
 
-  const totalH = completed.reduce((s,r)=>s+calcHours(r.checkIn,r.checkOut),0);
+  const totalH = completed.reduce((s,r)=>s+calcNetHours(r.checkIn,r.checkOut,r.date),0);
   const totalOT = completed.reduce((s,r)=>s+(r.otMin||0),0);
   document.getElementById('s-hours').textContent = totalH.toFixed(1);
   document.getElementById('s-ot').textContent = (totalOT/60).toFixed(1);
@@ -1293,7 +1320,9 @@ async function renderHome() {
   }
 
   list.innerHTML = todayRecs.map((r,i) => {
-    const hrs = r.checkOut ? calcHours(r.checkIn,r.checkOut).toFixed(1) : null;
+    const rawHrs = r.checkOut ? calcHours(r.checkIn,r.checkOut) : null;
+    const hrs = r.checkOut ? calcNetHours(r.checkIn,r.checkOut,r.date).toFixed(1) : null;
+    const deductLbl = r.checkOut ? deductionLabel(r.date) : '';
     const ot = r.otMin>0 ? `${Math.floor(r.otMin/60)}:${String(r.otMin%60).padStart(2,'0')}` : null;
     const canEdit = isAdmin() || r.date === tk;
     return `<div class="record-item">
@@ -1304,6 +1333,7 @@ async function renderHome() {
           ${r.isLate ? `<span class="badge badge-late">⚠ สาย ${r.lateMin||r.lateMinutes||0}น.</span>` : '<span class="badge badge-ontime">✓ ตรงเวลา</span>'}
           ${ot ? `<span class="badge badge-ot">⚡ OT ${ot}</span>` : ''}
           ${hrs ? `<span class="badge" style="background:var(--surface2);color:var(--text2)">${hrs} ชม.</span>` : ''}
+          ${deductLbl ? `<span class="badge" style="background:#fef9c3;color:#92400e;font-size:10px;">✂️ ${deductLbl}</span>` : ''}
           ${r.note ? `<span class="badge" style="background:var(--surface2);color:var(--text2)">📝 ${r.note}</span>` : ''}
         </div>
       </div>
@@ -1370,7 +1400,7 @@ async function showDayDetail(dateKey, ownerEmail) {
   if (dr.length===0) {
     html = '<div class="empty-state"><div class="empty-icon">😴</div><div class="empty-text">ไม่มีข้อมูลวันนี้</div></div>';
   } else {
-    const totalH = dr.filter(r=>r.checkOut).reduce((s,r)=>s+calcHours(r.checkIn,r.checkOut),0);
+    const totalH = dr.filter(r=>r.checkOut).reduce((s,r)=>s+calcNetHours(r.checkIn,r.checkOut,r.date),0);
     const totalOT = dr.filter(r=>r.checkOut).reduce((s,r)=>s+(r.otMin||0),0);
     const hasLate = dr.some(r=>r.isLate);
     html += `<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px;">
@@ -1379,7 +1409,8 @@ async function showDayDetail(dateKey, ownerEmail) {
       <div class="sum-card"><div class="sum-val ${hasLate?'color-red':'color-green'}">${hasLate?'สาย':'ปกติ'}</div><div class="sum-lbl">สถานะ</div></div>
     </div>`;
     dr.forEach((r,i) => {
-      const hrs = r.checkOut ? calcHours(r.checkIn,r.checkOut).toFixed(1) : '-';
+      const hrs = r.checkOut ? calcNetHours(r.checkIn,r.checkOut,r.date).toFixed(1) : '-';
+      const dLbl = r.checkOut ? deductionLabel(r.date) : '';
       const canEdit = isAdmin() || email===currentUser.email;
       html += `<div class="record-item">
         <div class="record-num">${i+1}</div>
@@ -1389,6 +1420,7 @@ async function showDayDetail(dateKey, ownerEmail) {
             ${r.isLate?`<span class="badge badge-late">สาย ${r.lateMin||r.lateMinutes||0}น.</span>`:'<span class="badge badge-ontime">ตรงเวลา</span>'}
             ${r.otMin>0?`<span class="badge badge-ot">OT</span>`:''}
             ${r.checkOut?`<span class="badge" style="background:var(--surface2);color:var(--text2)">${hrs} ชม.</span>`:''}
+            ${dLbl?`<span class="badge" style="background:#fef9c3;color:#92400e;font-size:10px;">✂️ ${dLbl}</span>`:''}
             ${r.note?`<span class="badge" style="background:var(--surface2);color:var(--text2)">📝 ${r.note}</span>`:''}
           </div>
         </div>
@@ -1418,7 +1450,7 @@ async function renderStats() {
     labels.push(d);
     if (dr.length>0) {
       totalDays++;
-      const h=dr.reduce((s,r)=>s+calcHours(r.checkIn,r.checkOut),0);
+      const h=dr.reduce((s,r)=>s+calcNetHours(r.checkIn,r.checkOut,r.date),0);
       const ot=dr.reduce((s,r)=>s+(r.otMin||0),0);
       totalH+=h; totalOTMin+=ot;
       if (dr.some(r=>r.isLate)) lateCount++;
@@ -1477,7 +1509,7 @@ async function renderHistory() {
   list.innerHTML = sorted.map(date => {
     const rs = byDate[date];
     const comp = rs.filter(r=>r.checkOut);
-    const totalH = comp.reduce((s,r)=>s+calcHours(r.checkIn,r.checkOut),0);
+    const totalH = comp.reduce((s,r)=>s+calcNetHours(r.checkIn,r.checkOut,r.date),0);
     const totalOT = comp.reduce((s,r)=>s+(r.otMin||0),0);
     const hasLate = rs.some(r=>r.isLate);
     const [y,m,d] = date.split('-');
@@ -1571,7 +1603,7 @@ async function renderTeam() {
       const dr = recs.filter(r=>r.date===dateKey);
       const comp = dr.filter(r=>r.checkOut);
       const open = dr.find(r=>!r.checkOut);
-      const totalH = comp.reduce((s,r)=>s+calcHours(r.checkIn,r.checkOut),0);
+      const totalH = comp.reduce((s,r)=>s+calcNetHours(r.checkIn,r.checkOut,r.date),0);
       const totalOT = comp.reduce((s,r)=>s+(r.otMin||0),0);
       const hasLate = dr.some(r=>r.isLate);
       const name = data.name || member.name || member.email.split('@')[0];
@@ -1673,7 +1705,7 @@ async function renderTeamSilent() {
       const dr = recs.filter(r=>r.date===dateKey);
       const comp = dr.filter(r=>r.checkOut);
       const open = dr.find(r=>!r.checkOut);
-      const totalH = comp.reduce((s,r)=>s+calcHours(r.checkIn,r.checkOut),0);
+      const totalH = comp.reduce((s,r)=>s+calcNetHours(r.checkIn,r.checkOut,r.date),0);
       const totalOT = comp.reduce((s,r)=>s+(r.otMin||0),0);
       const hasLate = dr.some(r=>r.isLate);
       const name = data.name || member.name || member.email.split('@')[0];
@@ -1754,7 +1786,7 @@ async function renderSalary() {
 
   const days = Object.keys(byDate).length;
   const comp = mr.filter(r => r.checkOut);
-  const totalH = comp.reduce((s,r) => s + calcHours(r.checkIn, r.checkOut), 0);
+  const totalH = comp.reduce((s,r) => s + calcNetHours(r.checkIn, r.checkOut, r.date), 0);
   const totalOT = comp.reduce((s,r) => s + (r.otMin||0), 0);
   const totalOTH = totalOT / 60;
   const totalAllH = totalH; // OT already included in totalH
@@ -1814,7 +1846,7 @@ async function renderSalary() {
           <span style="font-weight:700;">฿${salary.toLocaleString('th-TH')}</span>
         </div>
         <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:14px;">
-          <span>ชั่วโมงทำงานรวม (รวมโอที)</span>
+          <span>ชั่วโมงทำงานสุทธิ (หักเดินทาง/พักเที่ยงแล้ว)</span>
           <span style="font-weight:700;">${totalAllH.toFixed(2)} ชม.</span>
         </div>
         <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:14px;">
@@ -1870,7 +1902,7 @@ async function renderTeamSummary() {
       const byDate = {};
       mr.forEach(r => { if(!byDate[r.date]) byDate[r.date]=[]; byDate[r.date].push(r); });
       const days = Object.keys(byDate).length;
-      const totalH = mr.filter(r=>r.checkOut).reduce((s,r)=>s+calcHours(r.checkIn,r.checkOut),0);
+      const totalH = mr.filter(r=>r.checkOut).reduce((s,r)=>s+calcNetHours(r.checkIn,r.checkOut,r.date),0);
       const totalOT = mr.filter(r=>r.checkOut).reduce((s,r)=>s+(r.otMin||0),0);
       const lateCount = Object.values(byDate).filter(rs=>rs.some(r=>r.isLate)).length;
       const avgIn = mr.length > 0 ? (() => {
@@ -1969,7 +2001,7 @@ async function showMemberMonthDetail(email, name, month, year) {
       sorted.forEach(date => {
         const rs = byDate[date];
         const comp = rs.filter(r=>r.checkOut);
-        const totalH = comp.reduce((s,r)=>s+calcHours(r.checkIn,r.checkOut),0);
+        const totalH = comp.reduce((s,r)=>s+calcNetHours(r.checkIn,r.checkOut,r.date),0);
         const totalOT = comp.reduce((s,r)=>s+(r.otMin||0),0);
         const hasLate = rs.some(r=>r.isLate);
         const [y,m,d] = date.split('-');
