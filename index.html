@@ -798,7 +798,9 @@ body.dark input[type=date]::-webkit-calendar-picker-indicator { filter: invert(1
       <button class="desktop-tab" onclick="showPage('teamsummary')" id="tabTeamSummary" style="display:none;">📈 สรุปทีม</button>
       <button class="desktop-tab" onclick="showPage('salary')">💰 ค่าแรง</button>
       <button class="desktop-tab" onclick="showPage('settings')">⚙️ ตั้งค่า</button>
+      <button class="desktop-tab" id="tabDashAdmin" style="display:none;" onclick="showPage('dashboard-admin')">📊 Dashboard</button>
       <button class="desktop-tab" onclick="showPage('settings')">⚙️ ตั้งค่า</button>
+      <button class="desktop-tab" id="tabDashAdmin" style="display:none;" onclick="showPage('dashboard-admin')">📊 Dashboard</button>
     </div>
     <div class="nav-right" title="กดรูปโปรไฟล์เพื่อเปลี่ยนรูป">
       <span id="adminBadge" class="admin-badge">👑 ADMIN</span>
@@ -1041,6 +1043,7 @@ body.dark input[type=date]::-webkit-calendar-picker-indicator { filter: invert(1
         <button class="btn-primary" onclick="renderSalary()" style="flex:1;">💰 คำนวณ</button>
         <button onclick="exportToCSV(parseInt(document.getElementById('salMonth').value),parseInt(document.getElementById('salYear').value))" style="padding:13px 16px;background:var(--green);color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Sarabun',sans-serif;">📥 CSV</button>
         <button onclick="generatePDF(parseInt(document.getElementById('salMonth').value),parseInt(document.getElementById('salYear').value))" style="padding:13px 16px;background:#7c3aed;color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Sarabun',sans-serif;">📄 PDF</button>
+        <button onclick="shareReport(parseInt(document.getElementById('salMonth').value),parseInt(document.getElementById('salYear').value))" style="padding:13px 16px;background:#06b6d4;color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Sarabun',sans-serif;">📤 แชร์</button>
       </div>
     </div>
 
@@ -1146,6 +1149,14 @@ body.dark input[type=date]::-webkit-calendar-picker-indicator { filter: invert(1
       </div>
     </div>
 
+    <div class="section-card" style="margin-bottom:16px;">
+      <div class="section-title" style="margin-bottom:10px;">🔗 ลิงก์ด่วน</div>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <button onclick="showPage('yearly')" style="padding:12px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;text-align:left;cursor:pointer;font-family:'Sarabun',sans-serif;font-size:14px;color:var(--text);">📆 สรุปรายปี</button>
+        <button onclick="showPage('editlogs')" style="padding:12px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;text-align:left;cursor:pointer;font-family:'Sarabun',sans-serif;font-size:14px;color:var(--text);" id="editLogsBtn" style="display:none;">📝 ประวัติการแก้ไข</button>
+        <button onclick="requestNotificationPermission().then(ok=>toast(ok?'✅ เปิดการแจ้งเตือนแล้ว':'❌ ไม่ได้รับอนุญาต','success'))" style="padding:12px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;text-align:left;cursor:pointer;font-family:'Sarabun',sans-serif;font-size:14px;color:var(--text);">🔔 เปิดการแจ้งเตือน</button>
+      </div>
+    </div>
     <div class="section-card">
       <div class="section-title" style="margin-bottom:10px;">✂️ การหักเวลาอัตโนมัติ</div>
       <div style="font-size:13px;color:var(--text2);line-height:2;">
@@ -1153,6 +1164,38 @@ body.dark input[type=date]::-webkit-calendar-picker-indicator { filter: invert(1
         <div>📅 <strong>ศุกร์:</strong> หัก 1 ชม. (เดินทาง)</div>
         <div>📅 <strong>เสาร์:</strong> ไม่หัก</div>
       </div>
+    </div>
+  </div>
+
+
+  <!-- ADMIN DASHBOARD -->
+  <div id="page-dashboard-admin" class="page">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+      <div style="font-family:'Prompt',sans-serif;font-size:18px;font-weight:700;">📊 Dashboard</div>
+      <button onclick="renderAdminDashboard()" style="padding:8px 14px;background:var(--accent-light);border:1px solid var(--accent);border-radius:10px;color:var(--accent);font-size:13px;cursor:pointer;font-family:'Sarabun',sans-serif;font-weight:700;">🔄 รีเฟรช</button>
+    </div>
+    <div id="dashboardContent"></div>
+  </div>
+
+
+  <!-- YEARLY SUMMARY PAGE -->
+  <div id="page-yearly" class="page">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+      <div style="font-family:'Prompt',sans-serif;font-size:18px;font-weight:700;">📆 สรุปรายปี</div>
+      <select id="yearlyYear" class="select-input" onchange="renderYearlySummary()"></select>
+    </div>
+    <div id="yearlyContent"></div>
+  </div>
+
+
+  <!-- EDIT LOGS PAGE -->
+  <div id="page-editlogs" class="page">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+      <div style="font-family:'Prompt',sans-serif;font-size:18px;font-weight:700;">📝 ประวัติการแก้ไข</div>
+      <button onclick="if(confirm('ล้างประวัติทั้งหมด?')){localStorage.removeItem('wp_edit_logs');renderEditLogs();}" style="padding:8px 14px;background:var(--red-light);border:1px solid var(--red);border-radius:10px;color:var(--red);font-size:12px;cursor:pointer;font-family:'Sarabun',sans-serif;">🗑 ล้างประวัติ</button>
+    </div>
+    <div class="section-card">
+      <div id="editLogsContent"></div>
     </div>
   </div>
 
@@ -1312,6 +1355,9 @@ async function startApp() {
   if (isAdmin()) {
     document.getElementById('tabTeamSummary').style.display = '';
     document.getElementById('mobileTabTeamSummary').style.display = '';
+    document.getElementById('tabDashAdmin').style.display = '';
+    document.getElementById('mobileTabDashAdmin').style.display = '';
+    document.getElementById('editLogsBtn') && (document.getElementById('editLogsBtn').style.display = 'block');
   }
 
   const now = new Date();
@@ -1323,6 +1369,7 @@ async function startApp() {
   startClock();
   setupCheckoutReminder();
   initDarkMode();
+  setupDailyReminders();
   loadProfilePhotos();
   setInterval(checkLateArrivals, 60000);
   await renderHome();
@@ -1480,6 +1527,7 @@ async function saveEdit() {
   const isLate = inMin > 360;
   recs[idx] = { ...recs[idx], date, checkIn:inT, checkOut:outT||null, isLate, lateMin:isLate?inMin-360:0, otMin:outT?calcOT(outT):0, note };
   await saveRecords(recs, ownerEmail);
+  logEdit('แก้ไขเวลา', ownerEmail, `${date} ${inT}→${outT||'?'} ${note||''}`);
   closeModal('editModal');
   toast('แก้ไขเรียบร้อย','success');
   if (ownerEmail===currentUser.email) { await renderHome(); renderCalendar(); renderStats(); renderHistory(); }
@@ -2911,6 +2959,275 @@ function saveAdminPassword() {
   document.getElementById('adminPassword').value = '';
 }
 
+
+// ===== PUSH NOTIFICATIONS =====
+async function requestNotificationPermission() {
+  if (!('Notification' in window)) return false;
+  if (Notification.permission === 'granted') return true;
+  const result = await Notification.requestPermission();
+  return result === 'granted';
+}
+
+function sendNotification(title, body, icon) {
+  if (Notification.permission !== 'granted') return;
+  new Notification(title, { 
+    body, 
+    icon: icon || '/favicon.ico',
+    badge: '/favicon.ico'
+  });
+}
+
+async function setupDailyReminders() {
+  const granted = await requestNotificationPermission();
+  if (!granted) return;
+  
+  // Check every minute for reminders
+  setInterval(async () => {
+    const now = new Date();
+    const h = now.getHours();
+    const m = now.getMinutes();
+    const [wh, wm] = getWorkStartTime().split(':').map(Number);
+    
+    // Remind 15 min before work starts
+    const reminderH = wh === 0 ? 23 : wh;
+    const reminderM = wm - 15 < 0 ? 45 : wm - 15;
+    
+    const notifKey = `wp_notif_${todayKey()}_${h}_${m}`;
+    if (localStorage.getItem(notifKey)) return;
+    
+    // Work start reminder
+    if (h === wh && m === wm) {
+      localStorage.setItem(notifKey, '1');
+      sendNotification('⏰ ทีมงานลาล่า', `ถึงเวลาเข้างานแล้วครับ! (${getWorkStartTime()})`, null);
+    }
+    
+    // Forgot checkout reminder (19:00+)
+    if (h >= 19) {
+      const recs = await loadRecords();
+      const open = recs.find(r => r.date === todayKey() && !r.checkOut);
+      if (open) {
+        const key2 = `wp_checkout_notif_${todayKey()}_${h}`;
+        if (!localStorage.getItem(key2)) {
+          localStorage.setItem(key2, '1');
+          sendNotification('⚠️ อย่าลืมออกงาน!', `คุณเข้างาน ${open.checkIn} แต่ยังไม่ได้บันทึกออกงานครับ`, null);
+        }
+      }
+    }
+  }, 60000);
+}
+
+// ===== ADMIN DASHBOARD =====
+async function renderAdminDashboard() {
+  if (!isAdmin()) return;
+  const el = document.getElementById('dashboardContent');
+  el.innerHTML = '<div class="empty-state"><div class="spinner" style="margin:0 auto"></div></div>';
+  
+  const today = todayKey();
+  let members = [];
+  try {
+    const snap = await db.collection('users').get();
+    members = snap.docs.map(d => d.data()).filter(u => u.email && u.name);
+  } catch(e) { members = []; }
+
+  const stats = { total: members.length, present: 0, late: 0, absent: 0, working: 0 };
+  const memberCards = [];
+
+  for (const member of members) {
+    try {
+      const snap = await db.collection('users').doc(skey(member.email)).get();
+      const recs = snap.exists ? (snap.data().records || []) : [];
+      const todayRecs = recs.filter(r => r.date === today);
+      const open = todayRecs.find(r => !r.checkOut);
+      const comp = todayRecs.filter(r => r.checkOut);
+      const totalH = comp.reduce((s,r) => s + calcNetHours(r.checkIn,r.checkOut,r.date), 0);
+      const hasLate = todayRecs.some(r => r.isLate);
+      
+      if (todayRecs.length > 0) {
+        stats.present++;
+        if (hasLate) stats.late++;
+        if (open) stats.working++;
+      } else {
+        stats.absent++;
+      }
+      
+      memberCards.push({ member, name: member.name, todayRecs, open, totalH, hasLate });
+    } catch(e) {}
+  }
+
+  const mons = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+  const now = new Date();
+  
+  el.innerHTML = `
+    <!-- Today Overview -->
+    <div class="section-card" style="margin-bottom:16px;">
+      <div class="section-title" style="margin-bottom:14px;">วันนี้ — ${now.getDate()} ${mons[now.getMonth()]} ${now.getFullYear()+543}</div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;">
+        <div class="sum-card"><div class="sum-val color-blue">${stats.total}</div><div class="sum-lbl">ทั้งหมด</div></div>
+        <div class="sum-card"><div class="sum-val color-green">${stats.present}</div><div class="sum-lbl">มาแล้ว</div></div>
+        <div class="sum-card"><div class="sum-val" style="color:#a855f7">${stats.working}</div><div class="sum-lbl">กำลังทำงาน</div></div>
+        <div class="sum-card"><div class="sum-val color-red">${stats.late}</div><div class="sum-lbl">มาสาย</div></div>
+      </div>
+    </div>
+
+    <!-- Absent Alert -->
+    ${stats.absent > 0 ? `
+    <div class="section-card" style="margin-bottom:16px;border-left:3px solid var(--orange);">
+      <div style="color:var(--orange);font-weight:700;margin-bottom:8px;">⚠️ ยังไม่ได้ลงเวลา ${stats.absent} คน</div>
+      <div style="font-size:13px;color:var(--text2);">
+        ${memberCards.filter(m => m.todayRecs.length === 0).map(m => m.name).join(', ')}
+      </div>
+    </div>` : `
+    <div class="section-card" style="margin-bottom:16px;border-left:3px solid var(--green);">
+      <div style="color:var(--green);font-weight:700;">✅ ทุกคนมาครบแล้ววันนี้!</div>
+    </div>`}
+
+    <!-- Member Status List -->
+    <div class="section-card">
+      <div class="section-title" style="margin-bottom:14px;">สถานะแต่ละคน</div>
+      ${memberCards.map(m => {
+        const firstIn = m.todayRecs.length > 0 ? m.todayRecs[0].checkIn : '-';
+        let status, statusColor;
+        if (m.open) { status = '🟢 กำลังทำงาน'; statusColor = 'var(--green)'; }
+        else if (m.todayRecs.length > 0 && m.hasLate) { status = '⚠️ มาสาย'; statusColor = 'var(--red)'; }
+        else if (m.todayRecs.length > 0) { status = '✅ มาแล้ว'; statusColor = 'var(--green)'; }
+        else { status = '❌ ยังไม่มา'; statusColor = 'var(--text3)'; }
+        
+        return `<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);">
+          <div>
+            <div style="font-weight:700;font-size:14px;">${m.name}</div>
+            <div style="font-size:12px;color:var(--text2);">เข้า: ${firstIn} | ${m.totalH.toFixed(1)} ชม.</div>
+          </div>
+          <span style="font-size:13px;font-weight:600;color:${statusColor};">${status}</span>
+        </div>`;
+      }).join('')}
+    </div>`;
+}
+
+// ===== EDIT HISTORY LOG =====
+function logEdit(action, targetEmail, detail) {
+  if (!isAdmin()) return;
+  const logs = JSON.parse(localStorage.getItem('wp_edit_logs') || '[]');
+  logs.unshift({
+    time: new Date().toISOString(),
+    admin: currentUser.email,
+    action,
+    targetEmail,
+    detail
+  });
+  // Keep only last 100 logs
+  localStorage.setItem('wp_edit_logs', JSON.stringify(logs.slice(0, 100)));
+}
+
+function renderEditLogs() {
+  const logs = JSON.parse(localStorage.getItem('wp_edit_logs') || '[]');
+  const mons = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+  const el = document.getElementById('editLogsContent');
+  if (!el) return;
+  
+  if (logs.length === 0) {
+    el.innerHTML = '<div class="empty-state"><div class="empty-icon">📋</div><div class="empty-text">ยังไม่มีประวัติการแก้ไข</div></div>';
+    return;
+  }
+  
+  el.innerHTML = logs.map(log => {
+    const d = new Date(log.time);
+    const dateStr = `${d.getDate()} ${mons[d.getMonth()]} ${d.getFullYear()+543} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+    return `<div style="padding:12px 0;border-bottom:1px solid var(--border);">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+        <span style="font-weight:700;font-size:14px;">${log.action}</span>
+        <span style="font-size:11px;color:var(--text3);">${dateStr}</span>
+      </div>
+      <div style="font-size:12px;color:var(--text2);">👤 ${log.targetEmail}</div>
+      <div style="font-size:12px;color:var(--text3);">${log.detail}</div>
+    </div>`;
+  }).join('');
+}
+
+// ===== YEARLY SUMMARY =====
+async function renderYearlySummary() {
+  const year = parseInt(document.getElementById('yearlyYear').value);
+  const el = document.getElementById('yearlyContent');
+  el.innerHTML = '<div class="empty-state"><div class="spinner" style="margin:0 auto"></div></div>';
+  
+  const recs = await loadRecords();
+  const yearRecs = recs.filter(r => r.date.startsWith(year.toString()));
+  const mons = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+  
+  const monthData = Array.from({length:12}, (_, i) => {
+    const mr = yearRecs.filter(r => parseInt(r.date.split('-')[1]) === i+1);
+    const comp = mr.filter(r => r.checkOut);
+    const byDate = {};
+    mr.forEach(r => { if(!byDate[r.date]) byDate[r.date]=[]; byDate[r.date].push(r); });
+    const days = Object.keys(byDate).length;
+    const totalH = comp.reduce((s,r) => s + calcNetHours(r.checkIn,r.checkOut,r.date), 0);
+    const totalOT = comp.reduce((s,r) => s + (r.otMin||0), 0);
+    const lateCount = Object.values(byDate).filter(rs => rs.some(r => r.isLate)).length;
+    return { month: mons[i], days, totalH, totalOT, lateCount };
+  });
+
+  const totalDays = monthData.reduce((s,m) => s+m.days, 0);
+  const totalH = monthData.reduce((s,m) => s+m.totalH, 0);
+  const totalOT = monthData.reduce((s,m) => s+m.totalOT, 0);
+  const totalLate = monthData.reduce((s,m) => s+m.lateCount, 0);
+
+  el.innerHTML = `
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:16px;">
+      <div class="sum-card"><div class="sum-val color-blue">${totalDays}</div><div class="sum-lbl">วันที่มาทั้งปี</div></div>
+      <div class="sum-card"><div class="sum-val color-green">${totalH.toFixed(0)}</div><div class="sum-lbl">ชม.ทำงานรวม</div></div>
+      <div class="sum-card"><div class="sum-val color-orange">${(totalOT/60).toFixed(0)}</div><div class="sum-lbl">ชม.โอทีรวม</div></div>
+      <div class="sum-card"><div class="sum-val color-red">${totalLate}</div><div class="sum-lbl">ครั้งสายทั้งปี</div></div>
+    </div>
+    <div class="section-card">
+      <table class="ts-table">
+        <thead><tr>
+          <th>เดือน</th><th>วันที่มา</th><th>ชม.ทำงาน</th><th>ชม.โอที</th><th>ครั้งสาย</th>
+        </tr></thead>
+        <tbody>
+          ${monthData.map((m,i) => `<tr onclick="switchToMonth(${i})" style="cursor:pointer;">
+            <td style="font-weight:700;">${m.month}</td>
+            <td style="color:var(--accent);">${m.days}</td>
+            <td style="color:var(--green);font-weight:600;">${m.totalH.toFixed(1)}</td>
+            <td style="color:var(--orange);">${(m.totalOT/60).toFixed(1)}</td>
+            <td>${m.lateCount > 0 ? '<span class="badge badge-late">'+m.lateCount+'</span>' : '<span class="badge badge-ontime">0</span>'}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>`;
+}
+
+function switchToMonth(monthIdx) {
+  document.getElementById('statMonth').value = monthIdx;
+  document.getElementById('histMonth').value = monthIdx;
+  showPage('stats');
+}
+
+// ===== SHARE PDF VIA LINE =====
+function sharePDFViaLine(month, year) {
+  const mons = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+  const text = `รายงานเวลาทำงาน ${currentUser.name} เดือน${mons[month]} ${year+543}%0Aดูรายละเอียดที่: https://chitipat-workpulse.netlify.app`;
+  window.open(`https://line.me/R/msg/text/?${text}`, '_blank');
+}
+
+async function shareReport(month, year) {
+  const mons = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+  const recs = await loadRecords();
+  const mr = recs.filter(r => { const [y,m] = r.date.split('-').map(Number); return y===year&&m===month+1; });
+  const totalH = mr.filter(r=>r.checkOut).reduce((s,r)=>s+calcNetHours(r.checkIn,r.checkOut,r.date),0);
+  const totalOT = mr.filter(r=>r.checkOut).reduce((s,r)=>s+(r.otMin||0),0);
+  const days = new Set(mr.map(r=>r.date)).size;
+  
+  const text = `📊 รายงานเวลาทำงาน\n👤 ${currentUser.name}\n📅 ${mons[month]} ${year+543}\n⏱ ${days} วัน | ${totalH.toFixed(1)} ชม. | OT ${(totalOT/60).toFixed(1)} ชม.\n🔗 https://chitipat-workpulse.netlify.app`;
+  
+  if (navigator.share) {
+    try {
+      await navigator.share({ title: 'รายงานเวลาทำงาน', text });
+      return;
+    } catch(e) {}
+  }
+  // Fallback: copy to clipboard
+  navigator.clipboard.writeText(text).then(() => toast('✅ คัดลอกข้อความแล้ว กด Paste ใน Line ได้เลย','success'));
+}
+
 // ===== NAVIGATION =====
 function showPage(name) {
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
@@ -2930,6 +3247,21 @@ function showPage(name) {
     if (isAdmin()) document.getElementById('bulkSection'); // already handled by button
   }
   if (name==='teamsummary') renderTeamSummary();
+  if (name==='dashboard-admin') renderAdminDashboard();
+  if (name==='yearly') {
+    const yearSel = document.getElementById('yearlyYear');
+    const now = new Date();
+    if (!yearSel.options.length) {
+      [now.getFullYear()-1, now.getFullYear()].forEach(y => {
+        const opt = document.createElement('option');
+        opt.value = y; opt.textContent = y+543;
+        if (y === now.getFullYear()) opt.selected = true;
+        yearSel.appendChild(opt);
+      });
+    }
+    renderYearlySummary();
+  }
+  if (name==='editlogs') renderEditLogs();
   if (name==='settings') {
     document.getElementById('settingWorkStart').value = getWorkStartTime();
     document.getElementById('settingOTStart').value = getWorkOTStart();
@@ -2941,6 +3273,21 @@ function showPage(name) {
     else av.textContent = currentUser.name.charAt(0).toUpperCase();
     if (isAdmin()) document.getElementById('adminPasswordSection').style.display = 'block';
   }
+  if (name==='dashboard-admin') renderAdminDashboard();
+  if (name==='yearly') {
+    const yearSel = document.getElementById('yearlyYear');
+    const now = new Date();
+    if (!yearSel.options.length) {
+      [now.getFullYear()-1, now.getFullYear()].forEach(y => {
+        const opt = document.createElement('option');
+        opt.value = y; opt.textContent = y+543;
+        if (y === now.getFullYear()) opt.selected = true;
+        yearSel.appendChild(opt);
+      });
+    }
+    renderYearlySummary();
+  }
+  if (name==='editlogs') renderEditLogs();
   if (name==='settings') {
     document.getElementById('settingWorkStart').value = getWorkStartTime();
     document.getElementById('settingOTStart').value = getWorkOTStart();
@@ -3018,7 +3365,9 @@ document.addEventListener('DOMContentLoaded', () => {
     <button class="mobile-nav-btn" onclick="showPage('teamsummary')" id="mobileTabTeamSummary" style="display:none;"><span class="icon">📈</span><span>สรุปทีม</span></button>
     <button class="mobile-nav-btn" onclick="showPage('salary')"><span class="icon">💰</span><span>ค่าแรง</span></button>
     <button class="mobile-nav-btn" onclick="showPage('settings')"><span class="icon">⚙️</span><span>ตั้งค่า</span></button>
+    <button class="mobile-nav-btn" id="mobileTabDashAdmin" style="display:none;" onclick="showPage('dashboard-admin')"><span class="icon">📊</span><span>Dashboard</span></button>
     <button class="mobile-nav-btn" onclick="showPage('settings')"><span class="icon">⚙️</span><span>ตั้งค่า</span></button>
+    <button class="mobile-nav-btn" id="mobileTabDashAdmin" style="display:none;" onclick="showPage('dashboard-admin')"><span class="icon">📊</span><span>Dashboard</span></button>
   </div>
 </div>
 
