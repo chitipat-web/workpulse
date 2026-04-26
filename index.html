@@ -1638,15 +1638,33 @@ async function getMembers() {
   try {
     const snap = await db.collection('members').get();
     _membersCache = snap.docs.map(d => d.data()).filter(m => m.email !== currentUser.email);
+    if (_membersCache.length === 0) {
+      // Fallback to localStorage
+      _membersCache = JSON.parse(localStorage.getItem('wp_team')||'[]').filter(m => m.email !== currentUser.email);
+    }
     return _membersCache;
-  } catch(e) { return []; }
+  } catch(e) { 
+    _membersCache = JSON.parse(localStorage.getItem('wp_team')||'[]').filter(m => m.email !== currentUser.email);
+    return _membersCache;
+  }
 }
 
 async function getAllMembers() {
   try {
-    const snap = await db.collection('members').get();
-    return snap.docs.map(d => d.data());
-  } catch(e) { return []; }
+    // Read from 'users' collection - everyone who has ever logged in
+    const snap = await Promise.race([
+      db.collection('users').get(),
+      new Promise((_, r) => setTimeout(() => r(new Error('timeout')), 5000))
+    ]);
+    if (snap && snap.docs) {
+      const users = snap.docs.map(d => d.data()).filter(u => u.email);
+      if (users.length > 0) return users;
+    }
+  } catch(e) { 
+    console.warn('getAllMembers error:', e.message);
+  }
+  // Fallback to localStorage
+  return JSON.parse(localStorage.getItem('wp_team')||'[]');
 }
 
 function saveMembers(m) { _membersCache = null; } // just invalidate cache
@@ -1679,20 +1697,37 @@ async function removeMember(email) {
 }
 
 async function renderTeam() {
-  // Admin sees all members, others see all too
-  const members = isAdmin() ? await getAllMembers() : await getMembers();
   const dateKey = document.getElementById('teamDate').value || todayKey();
   const list = document.getElementById('teamList');
+  list.innerHTML = '<div class="empty-state"><div class="spinner" style="margin:0 auto"></div></div>';
 
-  if (members.length===0) {
+  // Get members from localStorage first (fast), then try Firestore
+  let members = JSON.parse(localStorage.getItem('wp_team') || '[]');
+  
+  // Try to get from Firestore 'users' collection with 5s timeout
+  try {
+    const snap = await Promise.race([
+      db.collection('users').get(),
+      new Promise((_, r) => setTimeout(() => r(new Error('timeout')), 5000))
+    ]);
+    if (snap && snap.docs) {
+      const firestoreMembers = snap.docs.map(d => d.data()).filter(u => u.email);
+      if (firestoreMembers.length > 0) {
+        members = firestoreMembers;
+        localStorage.setItem('wp_team', JSON.stringify(members));
+      }
+    }
+  } catch(e) {
+    console.warn('Firestore fetch failed, using localStorage:', e.message);
+  }
+
+  if (members.length === 0) {
     list.innerHTML = `<div class="empty-state">
       <div class="empty-icon">👥</div>
       <div class="empty-text">${isAdmin()?'เพิ่มสมาชิกด้านบนเพื่อเริ่มต้น':'ยังไม่มีสมาชิกทีม'}</div>
     </div>`;
     return;
   }
-
-  list.innerHTML = '<div class="empty-state"><div class="spinner" style="margin:0 auto"></div></div>';
 
   const colors = ['#2563eb','#059669','#7c3aed','#d97706','#dc2626','#0891b2'];
   const results = [];
