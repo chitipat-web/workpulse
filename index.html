@@ -1753,6 +1753,24 @@ async function renderTeam() {
 
   // Real-time listeners
   setupRealtimeListeners(members, dateKey);
+
+  // Load profile photos in background (non-blocking)
+  setTimeout(async () => {
+    for (const r of results) {
+      const cached = getProfilePhoto(r.member.email);
+      if (cached) continue; // already have it
+      try {
+        const snap = await db.collection('users').doc(skey(r.member.email)).get();
+        if (snap.exists && snap.data().photo) {
+          const photo = snap.data().photo;
+          localStorage.setItem('wp_photo_' + r.member.email.replace(/[^a-zA-Z0-9]/g,'_'), photo);
+          // Update avatar in DOM if exists
+          const avatarEl = document.querySelector(`[data-email="${r.member.email}"] .team-avatar`);
+          if (avatarEl) avatarEl.innerHTML = `<img src="${photo}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+        }
+      } catch(e) {}
+    }
+  }, 100);
 }
 
 let _teamRenderTimer = null;
@@ -1826,7 +1844,7 @@ async function renderTeamSilent() {
     else if (r.dr.length>0) statusBadge = r.hasLate ? '<span class="badge badge-late">⚠ มาสาย</span>' : '<span class="badge badge-ontime">✓ มาแล้ว</span>';
     else statusBadge = '<span class="badge" style="background:var(--surface2);color:var(--text3)">— ยังไม่มา</span>';
 
-    return `<div class="team-card" onclick="showDayDetail('${dateKey}','${r.member.email}')">
+    return `<div class="team-card" data-email="${r.member.email}" onclick="showDayDetail('${dateKey}','${r.member.email}')">
       <div class="team-card-top">
         <div class="team-avatar" style="background:${r.color}">
           ${photos[r.member.email] ? `<img src="${photos[r.member.email]}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">` : r.name.charAt(0).toUpperCase()}
