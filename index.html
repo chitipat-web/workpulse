@@ -758,7 +758,7 @@ transition:all .2s;
 
 <!-- LOADING -->
 
-<div id="loadingOverlay">
+<div id="loadingOverlay" class="show">
   <div class="spinner"></div>
   <div style="font-size:14px;color:var(--text2)">กำลังโหลด...</div>
 </div>
@@ -2942,6 +2942,18 @@ ${salary>0?`
   <div style="margin-top:24px;text-align:center;color:#94a3b8;font-size:12px;">
     สร้างโดย ทีมงานลาล่า — ${new Date().toLocaleDateString('th-TH',{year:'numeric',month:'long',day:'numeric'})}
   </div>
+
+// FAILSAFE - show login if nothing happens after 3s
+setTimeout(function() {
+var login = document.getElementById(‘loginScreen’);
+var app = document.getElementById(‘app’);
+var overlay = document.getElementById(‘loadingOverlay’);
+if (login && app && login.style.display === ‘none’ && app.style.display === ‘none’) {
+if (overlay) overlay.classList.remove(‘show’);
+login.style.display = ‘flex’;
+}
+}, 3000);
+
 </body></html>`;
 
 const win = window.open(’’, ‘_blank’);
@@ -5090,6 +5102,18 @@ ${salary>0?`
   <div style="margin-top:24px;text-align:center;color:#94a3b8;font-size:12px;">
     สร้างโดย ทีมงานลาล่า — ${new Date().toLocaleDateString('th-TH',{year:'numeric',month:'long',day:'numeric'})}
   </div>
+
+// FAILSAFE - show login if nothing happens after 3s
+setTimeout(function() {
+var login = document.getElementById(‘loginScreen’);
+var app = document.getElementById(‘app’);
+var overlay = document.getElementById(‘loadingOverlay’);
+if (login && app && login.style.display === ‘none’ && app.style.display === ‘none’) {
+if (overlay) overlay.classList.remove(‘show’);
+login.style.display = ‘flex’;
+}
+}, 3000);
+
 </body></html>`;
 
 const win = window.open(’’, ‘_blank’);
@@ -5785,6 +5809,17 @@ window.addEventListener('appinstalled', () => {
   console.log('PWA installed!');
 });
 </script>
+
+// FAILSAFE - show login if nothing happens after 3s
+setTimeout(function() {
+var login = document.getElementById(‘loginScreen’);
+var app = document.getElementById(‘app’);
+var overlay = document.getElementById(‘loadingOverlay’);
+if (login && app && login.style.display === ‘none’ && app.style.display === ‘none’) {
+if (overlay) overlay.classList.remove(‘show’);
+login.style.display = ‘flex’;
+}
+}, 3000);
 
 </body>
 </html>
