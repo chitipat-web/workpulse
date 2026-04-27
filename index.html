@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="th">
 <head>
 <meta charset="UTF-8">
@@ -35,140 +36,140 @@
   --shadow-lg: 0 4px 24px rgba(0,0,0,0.1), 0 8px 40px rgba(0,0,0,0.08);
 }
 
-* { margin:0; padding:0; box-sizing:border-box; }
-body { font-family:'Sarabun',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
+- { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:‘Sarabun’,sans-serif; background:var(–bg); color:var(–text); min-height:100vh; }
 
 /* ===== LOGIN ===== */
 #loginScreen {
-  min-height:100vh;
-  display:none;
-  align-items:center;
-  justify-content:center;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  padding:20px;
+min-height:100vh;
+display:none;
+align-items:center;
+justify-content:center;
+background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+padding:20px;
 }
 
 .login-card {
-  background:#fff;
-  border-radius:24px;
-  padding:48px 40px;
-  width:100%;
-  max-width:400px;
-  box-shadow:var(--shadow-lg);
-  animation:slideUp .4s ease;
+background:#fff;
+border-radius:24px;
+padding:48px 40px;
+width:100%;
+max-width:400px;
+box-shadow:var(–shadow-lg);
+animation:slideUp .4s ease;
 }
 
 .login-logo {
-  width:72px; height:72px;
-  background:linear-gradient(135deg,#667eea,#764ba2);
-  border-radius:20px;
-  display:flex; align-items:center; justify-content:center;
-  font-size:32px; margin:0 auto 20px;
-  box-shadow:0 8px 24px rgba(102,126,234,0.4);
+width:72px; height:72px;
+background:linear-gradient(135deg,#667eea,#764ba2);
+border-radius:20px;
+display:flex; align-items:center; justify-content:center;
+font-size:32px; margin:0 auto 20px;
+box-shadow:0 8px 24px rgba(102,126,234,0.4);
 }
 
 .login-card h1 {
-  font-family:'Prompt',sans-serif;
-  font-size:26px; font-weight:700;
-  text-align:center; margin-bottom:6px;
-  color:var(--text);
+font-family:‘Prompt’,sans-serif;
+font-size:26px; font-weight:700;
+text-align:center; margin-bottom:6px;
+color:var(–text);
 }
 
 .login-card .subtitle {
-  text-align:center; color:var(--text2);
-  font-size:14px; margin-bottom:32px;
+text-align:center; color:var(–text2);
+font-size:14px; margin-bottom:32px;
 }
 
 .form-field { margin-bottom:14px; }
-.form-field label { display:block; font-size:13px; font-weight:600; color:var(--text2); margin-bottom:6px; }
+.form-field label { display:block; font-size:13px; font-weight:600; color:var(–text2); margin-bottom:6px; }
 .form-field input {
-  width:100%; padding:13px 16px;
-  border:2px solid var(--border);
-  border-radius:12px; font-size:15px;
-  font-family:'Sarabun',sans-serif;
-  color:var(--text); outline:none;
-  transition:border-color .2s;
-  background:#fff;
+width:100%; padding:13px 16px;
+border:2px solid var(–border);
+border-radius:12px; font-size:15px;
+font-family:‘Sarabun’,sans-serif;
+color:var(–text); outline:none;
+transition:border-color .2s;
+background:#fff;
 }
-.form-field input:focus { border-color:var(--accent); }
+.form-field input:focus { border-color:var(–accent); }
 
 .btn-login {
-  width:100%; padding:15px;
-  background:linear-gradient(135deg,#667eea,#764ba2);
-  border:none; border-radius:12px;
-  color:#fff; font-size:16px; font-weight:700;
-  font-family:'Sarabun',sans-serif;
-  cursor:pointer; margin-top:8px;
-  transition:transform .2s, box-shadow .2s;
-  box-shadow:0 4px 16px rgba(102,126,234,0.4);
+width:100%; padding:15px;
+background:linear-gradient(135deg,#667eea,#764ba2);
+border:none; border-radius:12px;
+color:#fff; font-size:16px; font-weight:700;
+font-family:‘Sarabun’,sans-serif;
+cursor:pointer; margin-top:8px;
+transition:transform .2s, box-shadow .2s;
+box-shadow:0 4px 16px rgba(102,126,234,0.4);
 }
 .btn-login:hover { transform:translateY(-1px); box-shadow:0 8px 24px rgba(102,126,234,0.5); }
 
-.login-note { text-align:center; font-size:12px; color:var(--text3); margin-top:16px; line-height:1.6; }
+.login-note { text-align:center; font-size:12px; color:var(–text3); margin-top:16px; line-height:1.6; }
 
 /* ===== APP ===== */
 #app { display:none; }
 
 /* NAVBAR */
 .navbar {
-  background:#fff;
-  border-bottom:1px solid var(--border);
-  padding:0 20px;
-  height:60px;
-  display:flex; align-items:center; justify-content:space-between;
-  position:sticky; top:0; z-index:100;
-  box-shadow:0 1px 8px rgba(0,0,0,0.06);
+background:#fff;
+border-bottom:1px solid var(–border);
+padding:0 20px;
+height:60px;
+display:flex; align-items:center; justify-content:space-between;
+position:sticky; top:0; z-index:100;
+box-shadow:0 1px 8px rgba(0,0,0,0.06);
 }
 
 .nav-brand {
-  font-family:'Prompt',sans-serif;
-  font-weight:700; font-size:18px;
-  color:var(--text);
-  display:flex; align-items:center; gap:8px;
+font-family:‘Prompt’,sans-serif;
+font-weight:700; font-size:18px;
+color:var(–text);
+display:flex; align-items:center; gap:8px;
 }
 
 .nav-brand-icon {
-  width:30px; height:30px;
-  background:linear-gradient(135deg,#667eea,#764ba2);
-  border-radius:8px;
-  display:flex; align-items:center; justify-content:center;
-  font-size:14px;
+width:30px; height:30px;
+background:linear-gradient(135deg,#667eea,#764ba2);
+border-radius:8px;
+display:flex; align-items:center; justify-content:center;
+font-size:14px;
 }
 
 .nav-right {
-  display:flex; align-items:center; gap:10px;
+display:flex; align-items:center; gap:10px;
 }
 
 .admin-badge {
-  display:none;
-  background:linear-gradient(135deg,#f59e0b,#d97706);
-  color:#fff; font-size:11px; font-weight:700;
-  padding:3px 10px; border-radius:20px;
-  letter-spacing:.5px;
+display:none;
+background:linear-gradient(135deg,#f59e0b,#d97706);
+color:#fff; font-size:11px; font-weight:700;
+padding:3px 10px; border-radius:20px;
+letter-spacing:.5px;
 }
 
 .user-pill {
-  display:flex; align-items:center; gap:8px;
-  background:var(--surface2);
-  border:1px solid var(--border);
-  border-radius:20px; padding:5px 12px 5px 5px;
+display:flex; align-items:center; gap:8px;
+background:var(–surface2);
+border:1px solid var(–border);
+border-radius:20px; padding:5px 12px 5px 5px;
 }
 
 .user-avatar {
-  width:28px; height:28px; border-radius:50%;
-  background:linear-gradient(135deg,#667eea,#764ba2);
-  display:flex; align-items:center; justify-content:center;
-  font-size:12px; font-weight:700; color:#fff;
-  overflow:hidden; flex-shrink:0;
+width:28px; height:28px; border-radius:50%;
+background:linear-gradient(135deg,#667eea,#764ba2);
+display:flex; align-items:center; justify-content:center;
+font-size:12px; font-weight:700; color:#fff;
+overflow:hidden; flex-shrink:0;
 }
 .user-avatar img { width:100%; height:100%; object-fit:cover; }
 .profile-upload-wrap { position:relative; cursor:pointer; display:inline-block; }
 .profile-upload-wrap input { display:none; }
 .profile-upload-overlay {
-  position:absolute; inset:0; border-radius:50%;
-  background:rgba(0,0,0,0.4); display:none;
-  align-items:center; justify-content:center;
-  font-size:14px; color:#fff;
+position:absolute; inset:0; border-radius:50%;
+background:rgba(0,0,0,0.4); display:none;
+align-items:center; justify-content:center;
+font-size:14px; color:#fff;
 }
 .profile-upload-wrap:hover .profile-upload-overlay { display:flex; }
 .team-avatar { overflow:hidden; }
@@ -177,42 +178,42 @@ body { font-family:'Sarabun',sans-serif; background:var(--bg); color:var(--text)
 .user-name { font-size:13px; font-weight:600; }
 
 .btn-logout {
-  padding:6px 12px;
-  background:none; border:1px solid var(--border);
-  border-radius:8px; color:var(--text2);
-  font-size:12px; cursor:pointer;
-  font-family:'Sarabun',sans-serif;
-  transition:all .2s;
+padding:6px 12px;
+background:none; border:1px solid var(–border);
+border-radius:8px; color:var(–text2);
+font-size:12px; cursor:pointer;
+font-family:‘Sarabun’,sans-serif;
+transition:all .2s;
 }
-.btn-logout:hover { border-color:var(--red); color:var(--red); }
+.btn-logout:hover { border-color:var(–red); color:var(–red); }
 
 /* MOBILE NAV */
 .mobile-nav {
-  display:none;
-  position:fixed; bottom:0; left:0; right:0;
-  background:#fff; border-top:1px solid var(--border);
-  padding:8px 0 max(8px, env(safe-area-inset-bottom));
-  z-index:100;
-  box-shadow:0 -4px 20px rgba(0,0,0,0.08);
+display:none;
+position:fixed; bottom:0; left:0; right:0;
+background:#fff; border-top:1px solid var(–border);
+padding:8px 0 max(8px, env(safe-area-inset-bottom));
+z-index:100;
+box-shadow:0 -4px 20px rgba(0,0,0,0.08);
 }
 
 .mobile-nav-inner {
-  display:flex; justify-content:space-around;
+display:flex; justify-content:space-around;
 }
 
 .mobile-nav-btn {
-  flex:1; display:flex; flex-direction:column;
-  align-items:center; gap:3px;
-  padding:6px 4px;
-  background:none; border:none;
-  color:var(--text3); font-size:11px;
-  font-family:'Sarabun',sans-serif;
-  cursor:pointer; transition:color .2s;
-  border-radius:10px;
+flex:1; display:flex; flex-direction:column;
+align-items:center; gap:3px;
+padding:6px 4px;
+background:none; border:none;
+color:var(–text3); font-size:11px;
+font-family:‘Sarabun’,sans-serif;
+cursor:pointer; transition:color .2s;
+border-radius:10px;
 }
 
 .mobile-nav-btn .icon { font-size:22px; }
-.mobile-nav-btn.active { color:var(--accent); }
+.mobile-nav-btn.active { color:var(–accent); }
 .mobile-nav-btn.active .icon { transform:scale(1.1); }
 
 /* PAGES */
@@ -221,141 +222,141 @@ body { font-family:'Sarabun',sans-serif; background:var(--bg); color:var(--text)
 
 /* CLOCK HERO */
 .clock-hero {
-  background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border-radius:24px;
-  padding:32px 24px;
-  text-align:center;
-  margin-bottom:20px;
-  color:#fff;
-  position:relative;
-  overflow:hidden;
+background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+border-radius:24px;
+padding:32px 24px;
+text-align:center;
+margin-bottom:20px;
+color:#fff;
+position:relative;
+overflow:hidden;
 }
 
 .clock-hero::before {
-  content:'';
-  position:absolute; top:-30px; right:-30px;
-  width:150px; height:150px;
-  background:rgba(255,255,255,0.08);
-  border-radius:50%;
+content:’’;
+position:absolute; top:-30px; right:-30px;
+width:150px; height:150px;
+background:rgba(255,255,255,0.08);
+border-radius:50%;
 }
 
 .clock-hero::after {
-  content:'';
-  position:absolute; bottom:-20px; left:-20px;
-  width:100px; height:100px;
-  background:rgba(255,255,255,0.06);
-  border-radius:50%;
+content:’’;
+position:absolute; bottom:-20px; left:-20px;
+width:100px; height:100px;
+background:rgba(255,255,255,0.06);
+border-radius:50%;
 }
 
 .live-clock {
-  font-family:'Prompt',sans-serif;
-  font-size:56px; font-weight:700;
-  letter-spacing:-1px;
-  line-height:1; margin-bottom:4px;
-  position:relative; z-index:1;
+font-family:‘Prompt’,sans-serif;
+font-size:56px; font-weight:700;
+letter-spacing:-1px;
+line-height:1; margin-bottom:4px;
+position:relative; z-index:1;
 }
 
 .live-date {
-  font-size:14px; opacity:.85;
-  margin-bottom:24px;
-  position:relative; z-index:1;
+font-size:14px; opacity:.85;
+margin-bottom:24px;
+position:relative; z-index:1;
 }
 
 .clock-btns {
-  display:flex; gap:12px; justify-content:center;
-  position:relative; z-index:1;
+display:flex; gap:12px; justify-content:center;
+position:relative; z-index:1;
 }
 
 .btn-checkin {
-  flex:1; max-width:160px;
-  padding:14px 20px;
-  background:#fff; color:#059669;
-  border:none; border-radius:14px;
-  font-size:16px; font-weight:700;
-  font-family:'Sarabun',sans-serif;
-  cursor:pointer; display:flex; align-items:center;
-  justify-content:center; gap:8px;
-  transition:all .2s;
-  box-shadow:0 4px 16px rgba(0,0,0,0.15);
+flex:1; max-width:160px;
+padding:14px 20px;
+background:#fff; color:#059669;
+border:none; border-radius:14px;
+font-size:16px; font-weight:700;
+font-family:‘Sarabun’,sans-serif;
+cursor:pointer; display:flex; align-items:center;
+justify-content:center; gap:8px;
+transition:all .2s;
+box-shadow:0 4px 16px rgba(0,0,0,0.15);
 }
 .btn-checkin:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(0,0,0,0.2); }
 .btn-checkin:disabled { opacity:.4; cursor:not-allowed; transform:none; }
 
 .btn-checkout {
-  flex:1; max-width:160px;
-  padding:14px 20px;
-  background:rgba(255,255,255,0.2);
-  color:#fff; border:2px solid rgba(255,255,255,0.4);
-  border-radius:14px; font-size:16px; font-weight:700;
-  font-family:'Sarabun',sans-serif;
-  cursor:pointer; display:flex; align-items:center;
-  justify-content:center; gap:8px;
-  transition:all .2s;
+flex:1; max-width:160px;
+padding:14px 20px;
+background:rgba(255,255,255,0.2);
+color:#fff; border:2px solid rgba(255,255,255,0.4);
+border-radius:14px; font-size:16px; font-weight:700;
+font-family:‘Sarabun’,sans-serif;
+cursor:pointer; display:flex; align-items:center;
+justify-content:center; gap:8px;
+transition:all .2s;
 }
 .btn-checkout:hover { background:rgba(255,255,255,0.3); }
 .btn-checkout:disabled { opacity:.35; cursor:not-allowed; }
 
 /* STAT CARDS */
 .stats-row {
-  display:grid; grid-template-columns:1fr 1fr;
-  gap:12px; margin-bottom:20px;
+display:grid; grid-template-columns:1fr 1fr;
+gap:12px; margin-bottom:20px;
 }
 
 .stat-card {
-  background:#fff; border-radius:16px;
-  padding:16px; box-shadow:var(--shadow);
-  border:1px solid var(--border);
+background:#fff; border-radius:16px;
+padding:16px; box-shadow:var(–shadow);
+border:1px solid var(–border);
 }
 
 .stat-icon { font-size:22px; margin-bottom:8px; }
-.stat-val { font-family:'Prompt',sans-serif; font-size:24px; font-weight:700; line-height:1; }
-.stat-lbl { font-size:12px; color:var(--text2); margin-top:4px; }
+.stat-val { font-family:‘Prompt’,sans-serif; font-size:24px; font-weight:700; line-height:1; }
+.stat-lbl { font-size:12px; color:var(–text2); margin-top:4px; }
 .stat-sub { font-size:11px; margin-top:3px; }
 
-.color-green { color:var(--green); }
-.color-red { color:var(--red); }
-.color-orange { color:var(--orange); }
-.color-blue { color:var(--accent); }
-.color-purple { color:var(--purple); }
+.color-green { color:var(–green); }
+.color-red { color:var(–red); }
+.color-orange { color:var(–orange); }
+.color-blue { color:var(–accent); }
+.color-purple { color:var(–purple); }
 
 /* SECTION */
 .section-card {
-  background:#fff; border-radius:16px;
-  padding:20px; margin-bottom:16px;
-  box-shadow:var(--shadow);
-  border:1px solid var(--border);
+background:#fff; border-radius:16px;
+padding:20px; margin-bottom:16px;
+box-shadow:var(–shadow);
+border:1px solid var(–border);
 }
 
 .section-header {
-  display:flex; align-items:center;
-  justify-content:space-between;
-  margin-bottom:16px;
+display:flex; align-items:center;
+justify-content:space-between;
+margin-bottom:16px;
 }
 
 .section-title {
-  font-size:15px; font-weight:700;
-  display:flex; align-items:center; gap:6px;
+font-size:15px; font-weight:700;
+display:flex; align-items:center; gap:6px;
 }
 
 /* RECORD ITEMS */
 .record-item {
-  display:flex; align-items:center;
-  gap:12px; padding:12px;
-  background:var(--surface2);
-  border-radius:12px; margin-bottom:8px;
-  border:1px solid var(--border);
-  transition:background .15s;
+display:flex; align-items:center;
+gap:12px; padding:12px;
+background:var(–surface2);
+border-radius:12px; margin-bottom:8px;
+border:1px solid var(–border);
+transition:background .15s;
 }
 
 .record-item:last-child { margin-bottom:0; }
 
 .record-num {
-  width:28px; height:28px; border-radius:50%;
-  background:var(--accent-light);
-  color:var(--accent);
-  display:flex; align-items:center; justify-content:center;
-  font-size:12px; font-weight:700;
-  flex-shrink:0;
+width:28px; height:28px; border-radius:50%;
+background:var(–accent-light);
+color:var(–accent);
+display:flex; align-items:center; justify-content:center;
+font-size:12px; font-weight:700;
+flex-shrink:0;
 }
 
 .record-times { flex:1; }
@@ -363,9 +364,9 @@ body { font-family:'Sarabun',sans-serif; background:var(--bg); color:var(--text)
 .record-status-row { display:flex; gap:6px; margin-top:4px; flex-wrap:wrap; }
 
 .badge {
-  display:inline-flex; align-items:center; gap:3px;
-  padding:3px 9px; border-radius:20px;
-  font-size:11px; font-weight:600;
+display:inline-flex; align-items:center; gap:3px;
+padding:3px 9px; border-radius:20px;
+font-size:11px; font-weight:600;
 }
 
 .badge-late { background:linear-gradient(135deg,#ff3b30,#ff6961); color:#fff; box-shadow:0 2px 8px rgba(255,59,48,.25); }
@@ -376,92 +377,92 @@ body { font-family:'Sarabun',sans-serif; background:var(--bg); color:var(--text)
 .record-actions { display:flex; gap:6px; }
 
 .btn-icon {
-  width:32px; height:32px;
-  border-radius:8px; border:1px solid var(--border);
-  background:#fff; cursor:pointer;
-  display:flex; align-items:center; justify-content:center;
-  font-size:14px; transition:all .2s;
+width:32px; height:32px;
+border-radius:8px; border:1px solid var(–border);
+background:#fff; cursor:pointer;
+display:flex; align-items:center; justify-content:center;
+font-size:14px; transition:all .2s;
 }
-.btn-icon:hover { background:var(--red-light); border-color:var(--red); }
-.btn-icon.edit:hover { background:var(--accent-light); border-color:var(--accent); }
+.btn-icon:hover { background:var(–red-light); border-color:var(–red); }
+.btn-icon.edit:hover { background:var(–accent-light); border-color:var(–accent); }
 
 /* MANUAL ENTRY */
 .manual-grid {
-  display:grid; grid-template-columns:1fr 1fr;
-  gap:10px; margin-bottom:12px;
+display:grid; grid-template-columns:1fr 1fr;
+gap:10px; margin-bottom:12px;
 }
 
 .form-group { }
-.form-label { font-size:12px; font-weight:600; color:var(--text2); margin-bottom:5px; display:block; }
+.form-label { font-size:12px; font-weight:600; color:var(–text2); margin-bottom:5px; display:block; }
 .form-input {
-  width:100%; padding:10px 13px;
-  border:2px solid var(--border); border-radius:10px;
-  font-size:14px; font-family:'Sarabun',sans-serif;
-  color:var(--text); outline:none; transition:border-color .2s;
-  background:#fff;
+width:100%; padding:10px 13px;
+border:2px solid var(–border); border-radius:10px;
+font-size:14px; font-family:‘Sarabun’,sans-serif;
+color:var(–text); outline:none; transition:border-color .2s;
+background:#fff;
 }
-.form-input:focus { border-color:var(--accent); }
+.form-input:focus { border-color:var(–accent); }
 
 .btn-primary {
-  width:100%; padding:13px;
-  background:var(--accent); color:#fff;
-  border:none; border-radius:12px;
-  font-size:15px; font-weight:700;
-  font-family:'Sarabun',sans-serif;
-  cursor:pointer; transition:all .2s;
+width:100%; padding:13px;
+background:var(–accent); color:#fff;
+border:none; border-radius:12px;
+font-size:15px; font-weight:700;
+font-family:‘Sarabun’,sans-serif;
+cursor:pointer; transition:all .2s;
 }
-.btn-primary:hover { background:var(--accent-dark); transform:translateY(-1px); }
+.btn-primary:hover { background:var(–accent-dark); transform:translateY(-1px); }
 
 /* CALENDAR */
 .cal-nav {
-  display:flex; align-items:center;
-  justify-content:space-between; margin-bottom:16px;
+display:flex; align-items:center;
+justify-content:space-between; margin-bottom:16px;
 }
 
 .cal-nav-btn {
-  width:38px; height:38px;
-  border-radius:10px; border:1px solid var(--border);
-  background:#fff; cursor:pointer;
-  font-size:18px; display:flex; align-items:center;
-  justify-content:center; transition:all .2s;
-  box-shadow:var(--shadow);
+width:38px; height:38px;
+border-radius:10px; border:1px solid var(–border);
+background:#fff; cursor:pointer;
+font-size:18px; display:flex; align-items:center;
+justify-content:center; transition:all .2s;
+box-shadow:var(–shadow);
 }
-.cal-nav-btn:hover { border-color:var(--accent); color:var(--accent); }
+.cal-nav-btn:hover { border-color:var(–accent); color:var(–accent); }
 
-.cal-title { font-family:'Prompt',sans-serif; font-size:18px; font-weight:700; }
+.cal-title { font-family:‘Prompt’,sans-serif; font-size:18px; font-weight:700; }
 
 .cal-grid {
-  background:#fff; border-radius:16px;
-  padding:16px; box-shadow:var(--shadow);
-  border:1px solid var(--border);
+background:#fff; border-radius:16px;
+padding:16px; box-shadow:var(–shadow);
+border:1px solid var(–border);
 }
 
 .cal-weekdays {
-  display:grid; grid-template-columns:repeat(7,1fr);
-  margin-bottom:8px;
+display:grid; grid-template-columns:repeat(7,1fr);
+margin-bottom:8px;
 }
 
 .cal-weekday {
-  text-align:center; font-size:11px;
-  font-weight:700; color:var(--text3);
-  padding:6px; text-transform:uppercase;
+text-align:center; font-size:11px;
+font-weight:700; color:var(–text3);
+padding:6px; text-transform:uppercase;
 }
 
 .cal-days { display:grid; grid-template-columns:repeat(7,1fr); gap:4px; }
 
 .cal-day {
-  aspect-ratio:1; border-radius:10px;
-  display:flex; flex-direction:column;
-  align-items:center; justify-content:center;
-  cursor:pointer; transition:all .2s;
-  position:relative; padding:4px;
+aspect-ratio:1; border-radius:10px;
+display:flex; flex-direction:column;
+align-items:center; justify-content:center;
+cursor:pointer; transition:all .2s;
+position:relative; padding:4px;
 }
 
-.cal-day:hover { background:var(--surface2); }
+.cal-day:hover { background:var(–surface2); }
 .cal-day.other { opacity:.3; pointer-events:none; }
-.cal-day.today { background:var(--accent); color:#fff; }
+.cal-day.today { background:var(–accent); color:#fff; }
 .cal-day.today .cal-day-num { color:#fff; }
-.cal-day.has-data { background:var(--accent-light); }
+.cal-day.has-data { background:var(–accent-light); }
 .cal-day.has-data:hover { background:#dbeafe; }
 
 .cal-day-num { font-size:14px; font-weight:600; }
@@ -469,157 +470,157 @@ body { font-family:'Sarabun',sans-serif; background:var(--bg); color:var(--text)
 .cal-dot { width:5px; height:5px; border-radius:50%; }
 
 .cal-legend {
-  display:flex; gap:16px; margin-top:12px;
-  flex-wrap:wrap; font-size:12px; color:var(--text2);
+display:flex; gap:16px; margin-top:12px;
+flex-wrap:wrap; font-size:12px; color:var(–text2);
 }
 .legend-item { display:flex; align-items:center; gap:5px; }
 .legend-dot { width:10px; height:10px; border-radius:50%; }
 
 /* STATS PAGE */
 .month-summary {
-  display:grid; grid-template-columns:repeat(3,1fr);
-  gap:10px; margin-bottom:16px;
+display:grid; grid-template-columns:repeat(3,1fr);
+gap:10px; margin-bottom:16px;
 }
 
 .sum-card {
-  background:#fff; border-radius:14px;
-  padding:14px 12px; text-align:center;
-  box-shadow:var(--shadow); border:1px solid var(--border);
+background:#fff; border-radius:14px;
+padding:14px 12px; text-align:center;
+box-shadow:var(–shadow); border:1px solid var(–border);
 }
 
-.sum-val { font-family:'Prompt',sans-serif; font-size:22px; font-weight:700; }
-.sum-lbl { font-size:11px; color:var(--text2); margin-top:3px; }
+.sum-val { font-family:‘Prompt’,sans-serif; font-size:22px; font-weight:700; }
+.sum-lbl { font-size:11px; color:var(–text2); margin-top:3px; }
 
 /* TEAM PAGE */
 .team-card {
-  background:#fff; border-radius:16px;
-  padding:16px; margin-bottom:12px;
-  box-shadow:var(--shadow); border:1px solid var(--border);
-  cursor:pointer; transition:all .2s;
+background:#fff; border-radius:16px;
+padding:16px; margin-bottom:12px;
+box-shadow:var(–shadow); border:1px solid var(–border);
+cursor:pointer; transition:all .2s;
 }
-.team-card:hover { box-shadow:var(--shadow-lg); transform:translateY(-1px); }
+.team-card:hover { box-shadow:var(–shadow-lg); transform:translateY(-1px); }
 
 .team-card-top {
-  display:flex; align-items:center; gap:12px;
-  margin-bottom:12px;
+display:flex; align-items:center; gap:12px;
+margin-bottom:12px;
 }
 
 .team-avatar {
-  width:44px; height:44px; border-radius:50%;
-  display:flex; align-items:center; justify-content:center;
-  font-size:18px; font-weight:700; color:#fff;
-  flex-shrink:0;
+width:44px; height:44px; border-radius:50%;
+display:flex; align-items:center; justify-content:center;
+font-size:18px; font-weight:700; color:#fff;
+flex-shrink:0;
 }
 
 .team-info { flex:1; }
 .team-name { font-size:15px; font-weight:700; }
-.team-email { font-size:12px; color:var(--text2); margin-top:1px; }
+.team-email { font-size:12px; color:var(–text2); margin-top:1px; }
 
 .team-status { }
 
 .team-stats-row {
-  display:grid; grid-template-columns:repeat(3,1fr);
-  gap:8px;
+display:grid; grid-template-columns:repeat(3,1fr);
+gap:8px;
 }
 
 .team-stat {
-  background:var(--surface2); border-radius:10px;
-  padding:10px 8px; text-align:center;
+background:var(–surface2); border-radius:10px;
+padding:10px 8px; text-align:center;
 }
-.team-stat-val { font-family:'Prompt',sans-serif; font-size:16px; font-weight:700; }
-.team-stat-lbl { font-size:10px; color:var(--text2); margin-top:2px; }
+.team-stat-val { font-family:‘Prompt’,sans-serif; font-size:16px; font-weight:700; }
+.team-stat-lbl { font-size:10px; color:var(–text2); margin-top:2px; }
 
 .realtime-dot {
-  display:inline-block;
-  width:7px; height:7px; border-radius:50%;
-  background:var(--green);
-  animation:pulse 2s infinite;
-  margin-right:4px;
+display:inline-block;
+width:7px; height:7px; border-radius:50%;
+background:var(–green);
+animation:pulse 2s infinite;
+margin-right:4px;
 }
 
 /* HISTORY */
 .history-item {
-  background:#fff; border-radius:14px;
-  padding:14px 16px; margin-bottom:10px;
-  box-shadow:var(--shadow); border:1px solid var(--border);
-  cursor:pointer; transition:all .2s;
+background:#fff; border-radius:14px;
+padding:14px 16px; margin-bottom:10px;
+box-shadow:var(–shadow); border:1px solid var(–border);
+cursor:pointer; transition:all .2s;
 }
-.history-item:hover { box-shadow:var(--shadow-lg); }
+.history-item:hover { box-shadow:var(–shadow-lg); }
 
-.history-date { font-size:13px; font-weight:700; color:var(--text); margin-bottom:6px; }
-.history-times { font-size:12px; color:var(--text2); margin-bottom:6px; }
+.history-date { font-size:13px; font-weight:700; color:var(–text); margin-bottom:6px; }
+.history-times { font-size:12px; color:var(–text2); margin-bottom:6px; }
 .history-stats { display:flex; gap:8px; flex-wrap:wrap; }
 
 /* MODAL */
 .modal-overlay {
-  display:none; position:fixed; inset:0;
-  background:rgba(0,0,0,0.5); z-index:200;
-  align-items:flex-end; justify-content:center;
-  backdrop-filter:blur(4px);
-  padding:0;
+display:none; position:fixed; inset:0;
+background:rgba(0,0,0,0.5); z-index:200;
+align-items:flex-end; justify-content:center;
+backdrop-filter:blur(4px);
+padding:0;
 }
 .modal-overlay.open { display:flex; }
 
 .modal {
-  background:#fff;
-  border-radius:24px 24px 0 0;
-  padding:24px 20px 40px;
-  width:100%; max-width:600px;
-  max-height:85vh; overflow-y:auto;
-  animation:slideUp .3s ease;
-  box-shadow:0 -8px 40px rgba(0,0,0,0.15);
+background:#fff;
+border-radius:24px 24px 0 0;
+padding:24px 20px 40px;
+width:100%; max-width:600px;
+max-height:85vh; overflow-y:auto;
+animation:slideUp .3s ease;
+box-shadow:0 -8px 40px rgba(0,0,0,0.15);
 }
 
 .modal-handle {
-  width:40px; height:4px;
-  background:var(--border); border-radius:2px;
-  margin:0 auto 16px;
+width:40px; height:4px;
+background:var(–border); border-radius:2px;
+margin:0 auto 16px;
 }
 
 .modal-title {
-  font-family:'Prompt',sans-serif;
-  font-size:18px; font-weight:700;
-  margin-bottom:20px;
-  display:flex; align-items:center; justify-content:space-between;
+font-family:‘Prompt’,sans-serif;
+font-size:18px; font-weight:700;
+margin-bottom:20px;
+display:flex; align-items:center; justify-content:space-between;
 }
 
 .modal-close {
-  width:32px; height:32px;
-  background:var(--surface2); border:none;
-  border-radius:8px; cursor:pointer;
-  font-size:16px; display:flex;
-  align-items:center; justify-content:center;
+width:32px; height:32px;
+background:var(–surface2); border:none;
+border-radius:8px; cursor:pointer;
+font-size:16px; display:flex;
+align-items:center; justify-content:center;
 }
 
 /* LOADING */
 #loadingOverlay {
-  display:none; position:fixed; inset:0;
-  background:rgba(255,255,255,0.9); z-index:999;
-  align-items:center; justify-content:center;
-  flex-direction:column; gap:12px;
+display:none; position:fixed; inset:0;
+background:rgba(255,255,255,0.9); z-index:999;
+align-items:center; justify-content:center;
+flex-direction:column; gap:12px;
 }
 #loadingOverlay.show { display:flex; }
 
 .spinner {
-  width:36px; height:36px;
-  border:3px solid var(--border);
-  border-top-color:var(--accent);
-  border-radius:50%;
-  animation:spin 1s linear infinite;
+width:36px; height:36px;
+border:3px solid var(–border);
+border-top-color:var(–accent);
+border-radius:50%;
+animation:spin 1s linear infinite;
 }
 
 /* TOAST */
 .toast {
-  position:fixed; bottom:80px; left:50%;
-  transform:translateX(-50%) translateY(20px);
-  background:#1e293b; color:#fff;
-  border-radius:12px; padding:12px 20px;
-  font-size:14px; font-weight:500;
-  z-index:500; opacity:0;
-  transition:all .3s cubic-bezier(.4,0,.2,1);
-  display:flex; align-items:center; gap:8px;
-  white-space:nowrap; max-width:90vw;
-  box-shadow:0 8px 32px rgba(0,0,0,0.2);
+position:fixed; bottom:80px; left:50%;
+transform:translateX(-50%) translateY(20px);
+background:#1e293b; color:#fff;
+border-radius:12px; padding:12px 20px;
+font-size:14px; font-weight:500;
+z-index:500; opacity:0;
+transition:all .3s cubic-bezier(.4,0,.2,1);
+display:flex; align-items:center; gap:8px;
+white-space:nowrap; max-width:90vw;
+box-shadow:0 8px 32px rgba(0,0,0,0.2);
 }
 .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
 .toast.success { background:#059669; }
@@ -630,17 +631,17 @@ body { font-family:'Sarabun',sans-serif; background:var(--bg); color:var(--text)
 .month-selector { display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap; }
 .month-select-group { display:flex; gap:8px; }
 .select-input {
-  padding:9px 14px;
-  border:2px solid var(--border); border-radius:10px;
-  font-size:14px; font-family:'Sarabun',sans-serif;
-  color:var(--text); outline:none; background:#fff;
+padding:9px 14px;
+border:2px solid var(–border); border-radius:10px;
+font-size:14px; font-family:‘Sarabun’,sans-serif;
+color:var(–text); outline:none; background:#fff;
 }
-.select-input:focus { border-color:var(--accent); }
+.select-input:focus { border-color:var(–accent); }
 
 /* EMPTY STATE */
 .empty-state {
-  text-align:center; padding:40px 20px;
-  color:var(--text3);
+text-align:center; padding:40px 20px;
+color:var(–text3);
 }
 .empty-icon { font-size:48px; margin-bottom:12px; }
 .empty-text { font-size:15px; }
@@ -649,57 +650,56 @@ body { font-family:'Sarabun',sans-serif; background:var(--bg); color:var(--text)
 .add-member-row { display:flex; gap:8px; flex-wrap:wrap; }
 .add-member-row .form-input { flex:1; min-width:150px; }
 .btn-add {
-  padding:10px 18px;
-  background:var(--accent); color:#fff;
-  border:none; border-radius:10px;
-  font-size:14px; font-weight:700;
-  font-family:'Sarabun',sans-serif;
-  cursor:pointer; white-space:nowrap;
-  transition:all .2s;
+padding:10px 18px;
+background:var(–accent); color:#fff;
+border:none; border-radius:10px;
+font-size:14px; font-weight:700;
+font-family:‘Sarabun’,sans-serif;
+cursor:pointer; white-space:nowrap;
+transition:all .2s;
 }
-.btn-add:hover { background:var(--accent-dark); }
+.btn-add:hover { background:var(–accent-dark); }
 
 /* CHART */
 .chart-card {
-  background:#fff; border-radius:16px;
-  padding:20px; margin-bottom:16px;
-  box-shadow:var(--shadow); border:1px solid var(--border);
+background:#fff; border-radius:16px;
+padding:20px; margin-bottom:16px;
+box-shadow:var(–shadow); border:1px solid var(–border);
 }
-.chart-title { font-size:14px; font-weight:700; margin-bottom:16px; color:var(--text2); }
+.chart-title { font-size:14px; font-weight:700; margin-bottom:16px; color:var(–text2); }
 
 /* TEAM SUMMARY TABLE */
 .ts-table { width:100%; border-collapse:collapse; font-size:13px; }
-.ts-table th { background:var(--surface2); padding:10px 12px; text-align:left; font-weight:700; color:var(--text2); font-size:11px; text-transform:uppercase; letter-spacing:.5px; }
-.ts-table td { padding:12px; border-bottom:1px solid var(--border); vertical-align:middle; }
+.ts-table th { background:var(–surface2); padding:10px 12px; text-align:left; font-weight:700; color:var(–text2); font-size:11px; text-transform:uppercase; letter-spacing:.5px; }
+.ts-table td { padding:12px; border-bottom:1px solid var(–border); vertical-align:middle; }
 .ts-table tr:last-child td { border-bottom:none; }
-.ts-table tr:hover td { background:var(--surface2); }
+.ts-table tr:hover td { background:var(–surface2); }
 .ts-rank { width:28px; height:28px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; color:#fff; }
 .ts-member-info { display:flex; align-items:center; gap:8px; }
 .ts-avatar { width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; color:#fff; flex-shrink:0; }
 
-
 /* DARK MODE */
 body.dark {
-  --bg: #0f172a;
-  --surface: #1e293b;
-  --surface2: #334155;
-  --border: #334155;
-  --accent-light: #1e3a5f;
-  --green-light: #052e16;
-  --red-light: #2d0a0a;
-  --orange-light: #2d1a00;
-  --purple-light: #1e1040;
-  --text: #f1f5f9;
-  --text2: #94a3b8;
-  --text3: #64748b;
+–bg: #0f172a;
+–surface: #1e293b;
+–surface2: #334155;
+–border: #334155;
+–accent-light: #1e3a5f;
+–green-light: #052e16;
+–red-light: #2d0a0a;
+–orange-light: #2d1a00;
+–purple-light: #1e1040;
+–text: #f1f5f9;
+–text2: #94a3b8;
+–text3: #64748b;
 }
 body.dark .login-card { background:#1e293b; color:#f1f5f9; }
 body.dark .login-card h1 { color:#f1f5f9; }
 body.dark .form-field input { background:#334155; border-color:#475569; color:#f1f5f9; }
 body.dark .section-card, body.dark .stat-card, body.dark .team-card,
 body.dark .history-item, body.dark .cal-grid, body.dark .chart-card,
-body.dark .month-summary .sum-card, body.dark .sum-card { 
-  background:#1e293b; border-color:#334155; 
+body.dark .month-summary .sum-card, body.dark .sum-card {
+background:#1e293b; border-color:#334155;
 }
 body.dark .record-item, body.dark .team-stat { background:#334155; border-color:#475569; }
 body.dark .form-input, body.dark .select-input { background:#334155; border-color:#475569; color:#f1f5f9; }
@@ -721,47 +721,50 @@ body.dark input[type=date]::-webkit-calendar-picker-indicator { filter: invert(1
 
 /* DESKTOP TABS */
 .desktop-tabs {
-  display:none;
-  gap:4px;
+display:none;
+gap:4px;
 }
 .desktop-tab {
-  padding:8px 16px; border-radius:8px;
-  font-size:14px; font-weight:600;
-  cursor:pointer; color:var(--text2);
-  background:none; border:none;
-  font-family:'Sarabun',sans-serif;
-  transition:all .2s;
+padding:8px 16px; border-radius:8px;
+font-size:14px; font-weight:600;
+cursor:pointer; color:var(–text2);
+background:none; border:none;
+font-family:‘Sarabun’,sans-serif;
+transition:all .2s;
 }
-.desktop-tab:hover { color:var(--text); background:var(--surface2); }
-.desktop-tab.active { color:var(--accent); background:var(--accent-light); }
+.desktop-tab:hover { color:var(–text); background:var(–surface2); }
+.desktop-tab.active { color:var(–accent); background:var(–accent-light); }
 
 @media (min-width:640px) {
-  .desktop-tabs { display:flex; }
-  .mobile-nav { display:none; }
-  .page { padding:24px 20px 40px; }
-  .clock-hero { padding:40px 32px; }
-  .live-clock { font-size:72px; }
+.desktop-tabs { display:flex; }
+.mobile-nav { display:none; }
+.page { padding:24px 20px 40px; }
+.clock-hero { padding:40px 32px; }
+.live-clock { font-size:72px; }
 }
 
 @media (max-width:639px) {
-  .mobile-nav { display:block; }
-  .nav-right .user-name { display:none; }
+.mobile-nav { display:block; }
+.nav-right .user-name { display:none; }
 }
 
 @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.5;}}
 .section-card { transition: box-shadow .2s; }
 .stat-card:active { transform: scale(.97); transition: transform .1s; }
 </style>
+
 </head>
 <body>
 
 <!-- LOADING -->
+
 <div id="loadingOverlay">
   <div class="spinner"></div>
   <div style="font-size:14px;color:var(--text2)">กำลังโหลด...</div>
 </div>
 
 <!-- LOGIN -->
+
 <div id="loginScreen" style="display:none;">
 <div class="login-card">
     <div class="login-logo"style="width:80px;height:80px;border-radius:20px;overflow:hidden;padding:0;background:none;box-shadow:0 8px 24px rgba(102,126,234,0.3);"><img src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAA0JCgsKCA0LCgsODg0PEyAVExISEyccHhcgLikxMC4pLSwzOko+MzZGNywtQFdBRkxOUlNSMj5aYVpQYEpRUk//2wBDAQ4ODhMREyYVFSZPNS01T09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0//wAARCABQAFADASIAAhEBAxEB/8QAGwAAAgMBAQEAAAAAAAAAAAAAAQUAAwQGAgf/xAA5EAACAQMCBAUBBAcJAAAAAAABAgMABBESIQUxQVETFCJhcYEGMnKRJFJTYoKhsSUzQkNEY3OS0f/EABcBAQEBAQAAAAAAAAAAAAAAAAABAwL/xAAbEQEBAQEBAQEBAAAAAAAAAAAAARECITESQf/aAAwDAQACEQMRAD8A7rNDrUNTrWboamapubqG0h8W4kCJkDOMknoABuT7CsUtzePu5j4bDp1Bp08SUjIGdI9K8+RJNEMiQdsioCPalMwhikkSbiPFZmjTWxjkWNcYBJGkDkCD/wC1QJ4gszRcUv0MZbQjsJtWO4YHHXry3ppp9U3pat1e28YkuYluYDzmtgdS99UeTy3zpJ5cq3QTRzxLLE6ujjKspyGHsaCygc7URgVDyoB13qq6uI7W2knmJCRjJwMk9gB1JOAB3NXdsUtuJEk4iDMf0bh8XmpfdzkIPoAzfJFBFt7tI2v5I0k4lpzDA3qW3T9Ve7dz1O3KsepFuY7h5WeYJ6dZL7kYIQbFxnPPA361bf3MlvbpG4D3VziWeLO7Kdgg+OWPY96zcJ4g0t0sLeGzhmeaRv8ALTGce22Pqaks31x1f5GtPNMdEMb4QBSDMExtsMLyGO9VtHOXKzW5cKeQZZQm2dwd+/Uc683uuC9h4hw1xMLpgFgwdUjciR+7gZq/7PwtLbTcSuZtTyM50/dCDqT7nA58hXe8ufz1msKRI4SW0yzLIMKWypx0AJGDywGO+NjuaYTobRpL63UAqQ19axnOCRnWv7wG5xswz1FJ4+POZngmtYQ0yameRdClgpJXYnPYGnPjvDEl96i1uq+Lq5vA2+/7y8/oe9c3PsaSWedGEUqyxhlYMCAQVOQQdwR7Eb17zsKWWa+SvZ7Af3cbB4f+N8kAfhYMPgimW4FFBjhSewJpSFEkV4pGfMcTjgb8K6Bj+R/OmzjKMB1BpSrBY7tj/p+JRTn8LBDn+Z/KlHP8cvo7i/uIZH8VRIzJIrBSce5+MYqm04g0vpZ/EPqRIx6dzzJI6+/vQ46rRcdukjRpmml9AMeWZwdiPrty5d6UXEnl5HgkiltjkM8b75PQ/wBd+uaxsZSW3x9A4Zd2AKXshzJHEsHis5IB+Dy7Z+m1e7lQrteWl9FApOJI1i1+IzfrLntv32rjcXtlA3pQgkLKhZXKsTsGUHIzsMGpe3d1bW6290VjDFmHhsHDMDhskHmDsRSWyfGkvTXd2YkPhSz2wjJGJlYsSOwQ75589qbcJvRd8XkgdyPMiRJBJj7uMADHU4rmEiufLC8mEy22NeVGMjOAccwM9eVN/smxbjDXRbXDbwFnfThVAHY9efxTndXrrq2aclz/AGVMSS72UkbHuU0MP6H86dUiAIi4VEdnSykkYdjIUA/qfyp7W0Az1pXKiRcSMc+1vex+VkPZtzGfrll+QKa+1Zb61W5gdXQuGXSy5wSOex6EHBB7ig9wr52yMV2qtdwK0TkjcNpI1D2YHP1pF9n+KWEfALa1kjMt7BE6+F5dmOV1EDOMVvtruQTIkzauIKpWJx6VvUHQ9mHMjmDkjY1snuPPWclrE5guW0ho3OlgMjVjvtneoOa4Xw/iFjJwm/ls42WR9Fxo1NI4kOrLrjbBx8Vr4FNbWltJa8R4fcG4E8z5a0ZhgnP3sdQKYW9pxi2QQxPGI0BK5cb7HAO3UkHPerRBxlBA63JkbSPGRpABkMNgcfq5yepokmOXjiuoZbLjF7YKguboeLIXBzFINIjKYyABXW3VtCkK8MtY1jFwSJNAxpjz6ifnl9a9JdSpaQQMBc3uhQ4U5GrG5J5YzS+/u1uTLbWzEq50Xc6NnJ/Yxnqe5/wgk8zRZ4ls4vuJSXaY8KRgI8fso8hT/ExY/AFNz1rNZQeDGWYKrsBlVGygbBR7AbVoqg0KNCgyXljHcRspRWDEFkbkxHI7bgjoRvWF3uoAI5vDuo12Vbs6ZF/DKBg/xAH3pyahGcgjOaBRHc6V9FtxeIf7TpOv0IY0JbnUp1WnEpQeYuZkgT65OcfSmD2Nq5y1vH/1qJYWsZytvGD300wwqBuLpPBXRHCecFnlUP45TgkeygfNMbOxWEKzhNSLpRUXSsY7KOlbAoAGAB8VO9BB75o7UBRHKqP/2Q==" style="width:100%;height:100%;object-fit:cover;border-radius:20px;"></div>
@@ -782,6 +785,7 @@ body.dark input[type=date]::-webkit-calendar-picker-indicator { filter: invert(1
 </div>
 
 <!-- APP -->
+
 <div id="app">
   <!-- NAVBAR -->
   <nav class="navbar">
@@ -815,8 +819,12 @@ body.dark input[type=date]::-webkit-calendar-picker-indicator { filter: invert(1
     </div>
   </nav>
 
-    <div id="content">
+```
+<div id="content">
+```
+
 <!-- HOME PAGE -->
+
   <div id="page-home" class="page active">
     <!-- Clock Hero -->
     <div class="clock-hero">
@@ -828,87 +836,91 @@ body.dark input[type=date]::-webkit-calendar-picker-indicator { filter: invert(1
       </div>
     </div>
 
-    <!-- Stats -->
-    <div class="stats-row">
-      <div class="stat-card">
-        <div class="stat-icon">🕐</div>
-        <div id="s-firstin" class="stat-val color-blue">--:--</div>
-        <div class="stat-lbl">เวลาเข้าครั้งแรก</div>
-        <div id="s-latestatus" class="stat-sub"></div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon"><img src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAA0JCgsKCA0LCgsODg0PEyAVExISEyccHhcgLikxMC4pLSwzOko+MzZGNywtQFdBRkxOUlNSMj5aYVpQYEpRUk//2wBDAQ4ODhMREyYVFSZPNS01T09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0//wAARCABQAFADASIAAhEBAxEB/8QAGwAAAgMBAQEAAAAAAAAAAAAAAQUAAwQGAgf/xAA5EAACAQMCBAUBBAcJAAAAAAABAgMABBESIQUxQVETFCJhcYEGMnKRJFJTYoKhsSUzQkNEY3OS0f/EABcBAQEBAQAAAAAAAAAAAAAAAAABAwL/xAAbEQEBAQEBAQEBAAAAAAAAAAAAARECITESQf/aAAwDAQACEQMRAD8A7rNDrUNTrWboamapubqG0h8W4kCJkDOMknoABuT7CsUtzePu5j4bDp1Bp08SUjIGdI9K8+RJNEMiQdsioCPalMwhikkSbiPFZmjTWxjkWNcYBJGkDkCD/wC1QJ4gszRcUv0MZbQjsJtWO4YHHXry3ppp9U3pat1e28YkuYluYDzmtgdS99UeTy3zpJ5cq3QTRzxLLE6ujjKspyGHsaCygc7URgVDyoB13qq6uI7W2knmJCRjJwMk9gB1JOAB3NXdsUtuJEk4iDMf0bh8XmpfdzkIPoAzfJFBFt7tI2v5I0k4lpzDA3qW3T9Ve7dz1O3KsepFuY7h5WeYJ6dZL7kYIQbFxnPPA361bf3MlvbpG4D3VziWeLO7Kdgg+OWPY96zcJ4g0t0sLeGzhmeaRv8ALTGce22Pqaks31x1f5GtPNMdEMb4QBSDMExtsMLyGO9VtHOXKzW5cKeQZZQm2dwd+/Uc683uuC9h4hw1xMLpgFgwdUjciR+7gZq/7PwtLbTcSuZtTyM50/dCDqT7nA58hXe8ufz1msKRI4SW0yzLIMKWypx0AJGDywGO+NjuaYTobRpL63UAqQ19axnOCRnWv7wG5xswz1FJ4+POZngmtYQ0yameRdClgpJXYnPYGnPjvDEl96i1uq+Lq5vA2+/7y8/oe9c3PsaSWedGEUqyxhlYMCAQVOQQdwR7Eb17zsKWWa+SvZ7Af3cbB4f+N8kAfhYMPgimW4FFBjhSewJpSFEkV4pGfMcTjgb8K6Bj+R/OmzjKMB1BpSrBY7tj/p+JRTn8LBDn+Z/KlHP8cvo7i/uIZH8VRIzJIrBSce5+MYqm04g0vpZ/EPqRIx6dzzJI6+/vQ46rRcdukjRpmml9AMeWZwdiPrty5d6UXEnl5HgkiltjkM8b75PQ/wBd+uaxsZSW3x9A4Zd2AKXshzJHEsHis5IB+Dy7Z+m1e7lQrteWl9FApOJI1i1+IzfrLntv32rjcXtlA3pQgkLKhZXKsTsGUHIzsMGpe3d1bW6290VjDFmHhsHDMDhskHmDsRSWyfGkvTXd2YkPhSz2wjJGJlYsSOwQ75589qbcJvRd8XkgdyPMiRJBJj7uMADHU4rmEiufLC8mEy22NeVGMjOAccwM9eVN/smxbjDXRbXDbwFnfThVAHY9efxTndXrrq2aclz/AGVMSS72UkbHuU0MP6H86dUiAIi4VEdnSykkYdjIUA/qfyp7W0Az1pXKiRcSMc+1vex+VkPZtzGfrll+QKa+1Zb61W5gdXQuGXSy5wSOex6EHBB7ig9wr52yMV2qtdwK0TkjcNpI1D2YHP1pF9n+KWEfALa1kjMt7BE6+F5dmOV1EDOMVvtruQTIkzauIKpWJx6VvUHQ9mHMjmDkjY1snuPPWclrE5guW0ho3OlgMjVjvtneoOa4Xw/iFjJwm/ls42WR9Fxo1NI4kOrLrjbBx8Vr4FNbWltJa8R4fcG4E8z5a0ZhgnP3sdQKYW9pxi2QQxPGI0BK5cb7HAO3UkHPerRBxlBA63JkbSPGRpABkMNgcfq5yepokmOXjiuoZbLjF7YKguboeLIXBzFINIjKYyABXW3VtCkK8MtY1jFwSJNAxpjz6ifnl9a9JdSpaQQMBc3uhQ4U5GrG5J5YzS+/u1uTLbWzEq50Xc6NnJ/Yxnqe5/wgk8zRZ4ls4vuJSXaY8KRgI8fso8hT/ExY/AFNz1rNZQeDGWYKrsBlVGygbBR7AbVoqg0KNCgyXljHcRspRWDEFkbkxHI7bgjoRvWF3uoAI5vDuo12Vbs6ZF/DKBg/xAH3pyahGcgjOaBRHc6V9FtxeIf7TpOv0IY0JbnUp1WnEpQeYuZkgT65OcfSmD2Nq5y1vH/1qJYWsZytvGD300wwqBuLpPBXRHCecFnlUP45TgkeygfNMbOxWEKzhNSLpRUXSsY7KOlbAoAGAB8VO9BB75o7UBRHKqP/2Q==" style="width:100%;height:100%;object-fit:cover;border-radius:10px;"></div>
-        <div id="s-hours" class="stat-val color-green">0.0</div>
-        <div class="stat-lbl">ชั่วโมงทำงาน (ชม.)</div>
-        <div class="stat-sub" style="color:var(--text3)">รวมทุกรอบวันนี้</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon">⚡</div>
-        <div id="s-ot" class="stat-val color-orange">0.0</div>
-        <div class="stat-lbl">ชั่วโมงโอที (ชม.)</div>
-        <div class="stat-sub" style="color:var(--text3)">หลัง 16:30 น.</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon">🔄</div>
-        <div id="s-rounds" class="stat-val color-purple">0</div>
-        <div class="stat-lbl">รอบเข้า-ออก</div>
-        <div class="stat-sub" style="color:var(--text3)">วันนี้</div>
-      </div>
-    </div>
+```
+<!-- Stats -->
+<div class="stats-row">
+  <div class="stat-card">
+    <div class="stat-icon">🕐</div>
+    <div id="s-firstin" class="stat-val color-blue">--:--</div>
+    <div class="stat-lbl">เวลาเข้าครั้งแรก</div>
+    <div id="s-latestatus" class="stat-sub"></div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon"><img src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAA0JCgsKCA0LCgsODg0PEyAVExISEyccHhcgLikxMC4pLSwzOko+MzZGNywtQFdBRkxOUlNSMj5aYVpQYEpRUk//2wBDAQ4ODhMREyYVFSZPNS01T09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0//wAARCABQAFADASIAAhEBAxEB/8QAGwAAAgMBAQEAAAAAAAAAAAAAAQUAAwQGAgf/xAA5EAACAQMCBAUBBAcJAAAAAAABAgMABBESIQUxQVETFCJhcYEGMnKRJFJTYoKhsSUzQkNEY3OS0f/EABcBAQEBAQAAAAAAAAAAAAAAAAABAwL/xAAbEQEBAQEBAQEBAAAAAAAAAAAAARECITESQf/aAAwDAQACEQMRAD8A7rNDrUNTrWboamapubqG0h8W4kCJkDOMknoABuT7CsUtzePu5j4bDp1Bp08SUjIGdI9K8+RJNEMiQdsioCPalMwhikkSbiPFZmjTWxjkWNcYBJGkDkCD/wC1QJ4gszRcUv0MZbQjsJtWO4YHHXry3ppp9U3pat1e28YkuYluYDzmtgdS99UeTy3zpJ5cq3QTRzxLLE6ujjKspyGHsaCygc7URgVDyoB13qq6uI7W2knmJCRjJwMk9gB1JOAB3NXdsUtuJEk4iDMf0bh8XmpfdzkIPoAzfJFBFt7tI2v5I0k4lpzDA3qW3T9Ve7dz1O3KsepFuY7h5WeYJ6dZL7kYIQbFxnPPA361bf3MlvbpG4D3VziWeLO7Kdgg+OWPY96zcJ4g0t0sLeGzhmeaRv8ALTGce22Pqaks31x1f5GtPNMdEMb4QBSDMExtsMLyGO9VtHOXKzW5cKeQZZQm2dwd+/Uc683uuC9h4hw1xMLpgFgwdUjciR+7gZq/7PwtLbTcSuZtTyM50/dCDqT7nA58hXe8ufz1msKRI4SW0yzLIMKWypx0AJGDywGO+NjuaYTobRpL63UAqQ19axnOCRnWv7wG5xswz1FJ4+POZngmtYQ0yameRdClgpJXYnPYGnPjvDEl96i1uq+Lq5vA2+/7y8/oe9c3PsaSWedGEUqyxhlYMCAQVOQQdwR7Eb17zsKWWa+SvZ7Af3cbB4f+N8kAfhYMPgimW4FFBjhSewJpSFEkV4pGfMcTjgb8K6Bj+R/OmzjKMB1BpSrBY7tj/p+JRTn8LBDn+Z/KlHP8cvo7i/uIZH8VRIzJIrBSce5+MYqm04g0vpZ/EPqRIx6dzzJI6+/vQ46rRcdukjRpmml9AMeWZwdiPrty5d6UXEnl5HgkiltjkM8b75PQ/wBd+uaxsZSW3x9A4Zd2AKXshzJHEsHis5IB+Dy7Z+m1e7lQrteWl9FApOJI1i1+IzfrLntv32rjcXtlA3pQgkLKhZXKsTsGUHIzsMGpe3d1bW6290VjDFmHhsHDMDhskHmDsRSWyfGkvTXd2YkPhSz2wjJGJlYsSOwQ75589qbcJvRd8XkgdyPMiRJBJj7uMADHU4rmEiufLC8mEy22NeVGMjOAccwM9eVN/smxbjDXRbXDbwFnfThVAHY9efxTndXrrq2aclz/AGVMSS72UkbHuU0MP6H86dUiAIi4VEdnSykkYdjIUA/qfyp7W0Az1pXKiRcSMc+1vex+VkPZtzGfrll+QKa+1Zb61W5gdXQuGXSy5wSOex6EHBB7ig9wr52yMV2qtdwK0TkjcNpI1D2YHP1pF9n+KWEfALa1kjMt7BE6+F5dmOV1EDOMVvtruQTIkzauIKpWJx6VvUHQ9mHMjmDkjY1snuPPWclrE5guW0ho3OlgMjVjvtneoOa4Xw/iFjJwm/ls42WR9Fxo1NI4kOrLrjbBx8Vr4FNbWltJa8R4fcG4E8z5a0ZhgnP3sdQKYW9pxi2QQxPGI0BK5cb7HAO3UkHPerRBxlBA63JkbSPGRpABkMNgcfq5yepokmOXjiuoZbLjF7YKguboeLIXBzFINIjKYyABXW3VtCkK8MtY1jFwSJNAxpjz6ifnl9a9JdSpaQQMBc3uhQ4U5GrG5J5YzS+/u1uTLbWzEq50Xc6NnJ/Yxnqe5/wgk8zRZ4ls4vuJSXaY8KRgI8fso8hT/ExY/AFNz1rNZQeDGWYKrsBlVGygbBR7AbVoqg0KNCgyXljHcRspRWDEFkbkxHI7bgjoRvWF3uoAI5vDuo12Vbs6ZF/DKBg/xAH3pyahGcgjOaBRHc6V9FtxeIf7TpOv0IY0JbnUp1WnEpQeYuZkgT65OcfSmD2Nq5y1vH/1qJYWsZytvGD300wwqBuLpPBXRHCecFnlUP45TgkeygfNMbOxWEKzhNSLpRUXSsY7KOlbAoAGAB8VO9BB75o7UBRHKqP/2Q==" style="width:100%;height:100%;object-fit:cover;border-radius:10px;"></div>
+    <div id="s-hours" class="stat-val color-green">0.0</div>
+    <div class="stat-lbl">ชั่วโมงทำงาน (ชม.)</div>
+    <div class="stat-sub" style="color:var(--text3)">รวมทุกรอบวันนี้</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon">⚡</div>
+    <div id="s-ot" class="stat-val color-orange">0.0</div>
+    <div class="stat-lbl">ชั่วโมงโอที (ชม.)</div>
+    <div class="stat-sub" style="color:var(--text3)">หลัง 16:30 น.</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon">🔄</div>
+    <div id="s-rounds" class="stat-val color-purple">0</div>
+    <div class="stat-lbl">รอบเข้า-ออก</div>
+    <div class="stat-sub" style="color:var(--text3)">วันนี้</div>
+  </div>
+</div>
 
-    <!-- Mood Widget -->
-    <div id="moodWidget" class="section-card" style="padding:14px;margin-bottom:12px;"></div>
-    <!-- Live Activity -->
-    <div id="liveActivityCard" style="display:none;background:linear-gradient(145deg,#0d1117,#1a1f2e);border-radius:22px;padding:18px 20px;margin-bottom:12px;color:#fff;box-shadow:0 8px 28px rgba(0,122,255,.18);">
-      <div style="display:flex;align-items:center;gap:7px;margin-bottom:12px;"><div style="width:7px;height:7px;border-radius:50%;background:#34c759;box-shadow:0 0 8px #34c759;"></div><span style="font-size:12px;font-weight:600;opacity:.7;">กำลังทำงานอยู่</span></div>
-      <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:12px;"><div id="_liveHrs" style="font-size:36px;font-weight:800;letter-spacing:-1.5px;">0:00</div><div style="font-size:13px;color:#34c759;font-weight:700;">/ 8 ชม.</div></div>
-      <div style="height:5px;background:rgba(255,255,255,.1);border-radius:3px;overflow:hidden;"><div id="_liveFill" style="height:100%;width:0%;background:linear-gradient(90deg,#34c759,#30d158);border-radius:3px;transition:width .6s;"></div></div>
-    </div>
-    <!-- Weekly Summary -->
-    <div class="section-card" id="weeklySummaryCard" style="margin-bottom:16px;"></div>
+<!-- Mood Widget -->
+<div id="moodWidget" class="section-card" style="padding:14px;margin-bottom:12px;"></div>
+<!-- Live Activity -->
+<div id="liveActivityCard" style="display:none;background:linear-gradient(145deg,#0d1117,#1a1f2e);border-radius:22px;padding:18px 20px;margin-bottom:12px;color:#fff;box-shadow:0 8px 28px rgba(0,122,255,.18);">
+  <div style="display:flex;align-items:center;gap:7px;margin-bottom:12px;"><div style="width:7px;height:7px;border-radius:50%;background:#34c759;box-shadow:0 0 8px #34c759;"></div><span style="font-size:12px;font-weight:600;opacity:.7;">กำลังทำงานอยู่</span></div>
+  <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:12px;"><div id="_liveHrs" style="font-size:36px;font-weight:800;letter-spacing:-1.5px;">0:00</div><div style="font-size:13px;color:#34c759;font-weight:700;">/ 8 ชม.</div></div>
+  <div style="height:5px;background:rgba(255,255,255,.1);border-radius:3px;overflow:hidden;"><div id="_liveFill" style="height:100%;width:0%;background:linear-gradient(90deg,#34c759,#30d158);border-radius:3px;transition:width .6s;"></div></div>
+</div>
+<!-- Weekly Summary -->
+<div class="section-card" id="weeklySummaryCard" style="margin-bottom:16px;"></div>
 
-    <!-- Daily Note -->
-    <div class="section-card" style="margin-bottom:16px;">
-      <div class="section-title" style="margin-bottom:10px;">📓 บันทึกประจำวัน</div>
-      <textarea id="dailyNoteInput" class="form-input" rows="2" placeholder="บันทึกสิ่งที่ทำวันนี้..." style="resize:none;" oninput="saveDailyNote(todayKey(),this.value)"></textarea>
-    </div>
+<!-- Daily Note -->
+<div class="section-card" style="margin-bottom:16px;">
+  <div class="section-title" style="margin-bottom:10px;">📓 บันทึกประจำวัน</div>
+  <textarea id="dailyNoteInput" class="form-input" rows="2" placeholder="บันทึกสิ่งที่ทำวันนี้..." style="resize:none;" oninput="saveDailyNote(todayKey(),this.value)"></textarea>
+</div>
 
-    <!-- Today Records -->
-    <div class="section-card">
-      <div class="section-header">
-        <div class="section-title">📝 รายการวันนี้</div>
-      </div>
-      <div id="todayList"></div>
-    </div>
+<!-- Today Records -->
+<div class="section-card">
+  <div class="section-header">
+    <div class="section-title">📝 รายการวันนี้</div>
+  </div>
+  <div id="todayList"></div>
+</div>
 
-    <!-- Manual Entry -->
-    <div class="section-card">
-      <div class="section-header">
-        <div class="section-title">✏️ บันทึกย้อนหลัง</div>
-      </div>
-      <div class="manual-grid">
-        <div class="form-group">
-          <label class="form-label">วันที่</label>
-          <input type="date" id="manDate" class="form-input"/>
-        </div>
-        <div class="form-group">
-          <label class="form-label">หมายเหตุ</label>
-          <input type="text" id="manNote" class="form-input" placeholder="ไม่บังคับ"/>
-        </div>
-        <div class="form-group">
-          <label class="form-label">เวลาเข้างาน</label>
-          <input type="time" id="manIn" class="form-input"/>
-        </div>
-        <div class="form-group">
-          <label class="form-label">เวลาออกงาน</label>
-          <input type="time" id="manOut" class="form-input"/>
-        </div>
-      </div>
-      <button class="btn-primary" onclick="addManual()">+ เพิ่มรายการ</button>
+<!-- Manual Entry -->
+<div class="section-card">
+  <div class="section-header">
+    <div class="section-title">✏️ บันทึกย้อนหลัง</div>
+  </div>
+  <div class="manual-grid">
+    <div class="form-group">
+      <label class="form-label">วันที่</label>
+      <input type="date" id="manDate" class="form-input"/>
     </div>
+    <div class="form-group">
+      <label class="form-label">หมายเหตุ</label>
+      <input type="text" id="manNote" class="form-input" placeholder="ไม่บังคับ"/>
+    </div>
+    <div class="form-group">
+      <label class="form-label">เวลาเข้างาน</label>
+      <input type="time" id="manIn" class="form-input"/>
+    </div>
+    <div class="form-group">
+      <label class="form-label">เวลาออกงาน</label>
+      <input type="time" id="manOut" class="form-input"/>
+    </div>
+  </div>
+  <button class="btn-primary" onclick="addManual()">+ เพิ่มรายการ</button>
+</div>
+```
+
   </div>
 
   <!-- CALENDAR PAGE -->
+
   <div id="page-calendar" class="page">
     <div class="cal-nav">
       <button class="cal-nav-btn" onclick="calMove(-1)">‹</button>
@@ -929,6 +941,7 @@ body.dark input[type=date]::-webkit-calendar-picker-indicator { filter: invert(1
   </div>
 
   <!-- STATS PAGE -->
+
   <div id="page-stats" class="page">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
       <div style="font-family:'Prompt',sans-serif;font-size:18px;font-weight:700;">📊 สถิติ</div>
@@ -953,6 +966,7 @@ body.dark input[type=date]::-webkit-calendar-picker-indicator { filter: invert(1
   </div>
 
   <!-- HISTORY PAGE -->
+
   <div id="page-history" class="page">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
       <div style="font-family:'Prompt',sans-serif;font-size:18px;font-weight:700;">📋 ประวัติ</div>
@@ -965,6 +979,7 @@ body.dark input[type=date]::-webkit-calendar-picker-indicator { filter: invert(1
   </div>
 
   <!-- TEAM PAGE -->
+
   <div id="page-team" class="page">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
       <div style="font-family:'Prompt',sans-serif;font-size:18px;font-weight:700;">👥 ทีมงาน</div>
@@ -973,44 +988,47 @@ body.dark input[type=date]::-webkit-calendar-picker-indicator { filter: invert(1
       </div>
     </div>
 
-    <!-- Add member -->
-    <div class="section-card" id="addMemberSection" style="display:none;">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-        <div class="section-title">➕ เพิ่มสมาชิก</div>
-        <button onclick="document.getElementById('bulkSection').style.display=document.getElementById('bulkSection').style.display==='none'?'block':'none'" style="font-size:12px;padding:5px 10px;background:var(--accent-light);border:1px solid var(--accent);border-radius:8px;color:var(--accent);cursor:pointer;font-family:'Sarabun',sans-serif;font-weight:700;">📋 เพิ่มหลายคน</button>
-      </div>
-      <div class="add-member-row">
-        <input type="email" id="memberEmail" class="form-input" placeholder="อีเมลสมาชิก"/>
-        <input type="text" id="memberName" class="form-input" placeholder="ชื่อ (ไม่บังคับ)"/>
-        <button class="btn-add" onclick="addMember()">เพิ่ม</button>
-      </div>
-    </div>
-
-    <!-- Bulk Add (Admin only) -->
-    <div class="section-card" id="bulkSection" style="display:none;margin-bottom:16px;">
-      <div class="section-title" style="margin-bottom:12px;">📋 เพิ่มหลายคนพร้อมกัน</div>
-      <div class="form-group" style="margin-bottom:10px;">
-        <label class="form-label">วางอีเมลทีละบรรทัด หรือคั่นด้วย , หรือ ;</label>
-        <textarea id="bulkEmails" class="form-input" rows="4" placeholder="email1@gmail.com&#10;email2@gmail.com&#10;email3@gmail.com" style="resize:vertical;"></textarea>
-      </div>
-      <div style="display:flex;gap:8px;">
-        <button class="btn-add" onclick="addBulkMembers()">✅ เพิ่มทั้งหมด</button>
-        <button onclick="document.getElementById('bulkSection').style.display='none'" style="padding:10px 16px;background:none;border:1px solid var(--border);border-radius:10px;cursor:pointer;font-family:'Sarabun',sans-serif;font-size:14px;">ยกเลิก</button>
-      </div>
-    </div>
-
-    <!-- Date picker -->
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
-      <span style="font-size:13px;color:var(--text2);">ดูวันที่:</span>
-      <input type="date" id="teamDate" class="form-input" style="width:auto;padding:8px 12px;" onchange="renderTeam()"/>
-    </div>
-
-    <div id="teamList"></div>
+```
+<!-- Add member -->
+<div class="section-card" id="addMemberSection" style="display:none;">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+    <div class="section-title">➕ เพิ่มสมาชิก</div>
+    <button onclick="document.getElementById('bulkSection').style.display=document.getElementById('bulkSection').style.display==='none'?'block':'none'" style="font-size:12px;padding:5px 10px;background:var(--accent-light);border:1px solid var(--accent);border-radius:8px;color:var(--accent);cursor:pointer;font-family:'Sarabun',sans-serif;font-weight:700;">📋 เพิ่มหลายคน</button>
+  </div>
+  <div class="add-member-row">
+    <input type="email" id="memberEmail" class="form-input" placeholder="อีเมลสมาชิก"/>
+    <input type="text" id="memberName" class="form-input" placeholder="ชื่อ (ไม่บังคับ)"/>
+    <button class="btn-add" onclick="addMember()">เพิ่ม</button>
   </div>
 </div>
 
+<!-- Bulk Add (Admin only) -->
+<div class="section-card" id="bulkSection" style="display:none;margin-bottom:16px;">
+  <div class="section-title" style="margin-bottom:12px;">📋 เพิ่มหลายคนพร้อมกัน</div>
+  <div class="form-group" style="margin-bottom:10px;">
+    <label class="form-label">วางอีเมลทีละบรรทัด หรือคั่นด้วย , หรือ ;</label>
+    <textarea id="bulkEmails" class="form-input" rows="4" placeholder="email1@gmail.com&#10;email2@gmail.com&#10;email3@gmail.com" style="resize:vertical;"></textarea>
+  </div>
+  <div style="display:flex;gap:8px;">
+    <button class="btn-add" onclick="addBulkMembers()">✅ เพิ่มทั้งหมด</button>
+    <button onclick="document.getElementById('bulkSection').style.display='none'" style="padding:10px 16px;background:none;border:1px solid var(--border);border-radius:10px;cursor:pointer;font-family:'Sarabun',sans-serif;font-size:14px;">ยกเลิก</button>
+  </div>
+</div>
+
+<!-- Date picker -->
+<div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
+  <span style="font-size:13px;color:var(--text2);">ดูวันที่:</span>
+  <input type="date" id="teamDate" class="form-input" style="width:auto;padding:8px 12px;" onchange="renderTeam()"/>
+</div>
+
+<div id="teamList"></div>
+```
+
+  </div>
+</div>
 
   <!-- TEAM SUMMARY PAGE -->
+
   <div id="page-teamsummary" class="page">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
       <div style="font-family:'Prompt',sans-serif;font-size:18px;font-weight:700;">📈 สรุปทีมประจำเดือน</div>
@@ -1020,166 +1038,178 @@ body.dark input[type=date]::-webkit-calendar-picker-indicator { filter: invert(1
       </div>
     </div>
 
-    <!-- Overall summary -->
-    <div class="section-card" id="tsOverall" style="margin-bottom:16px;"></div>
+```
+<!-- Overall summary -->
+<div class="section-card" id="tsOverall" style="margin-bottom:16px;"></div>
 
-    <!-- Per member table -->
-    <div class="section-card">
-      <div class="section-title" style="margin-bottom:16px;">👤 รายละเอียดแต่ละคน</div>
-      <div id="tsMemberList"></div>
-    </div>
+<!-- Per member table -->
+<div class="section-card">
+  <div class="section-title" style="margin-bottom:16px;">👤 รายละเอียดแต่ละคน</div>
+  <div id="tsMemberList"></div>
+</div>
+```
+
   </div>
 
-
   <!-- SALARY PAGE -->
+
   <div id="page-salary" class="page">
     <div style="font-family:'Prompt',sans-serif;font-size:18px;font-weight:700;margin-bottom:16px;">💰 คำนวณค่าแรง</div>
 
-    <!-- Month selector -->
-    <div class="section-card" style="margin-bottom:16px;">
-      <div class="section-title" style="margin-bottom:14px;">เลือกเดือนที่ต้องการคำนวณ</div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;">
-        <select id="salMonth" class="select-input" onchange="renderSalary()"></select>
-        <select id="salYear" class="select-input" onchange="renderSalary()"></select>
-      </div>
-      <div style="background:#fffbeb;border:1px solid #fcd34d;border-radius:12px;padding:12px 14px;margin-bottom:14px;font-size:13px;color:#92400e;">
-        ✂️ <strong>หักเวลาอัตโนมัติ:</strong> อา-พฤ หัก 2 ชม. (เดินทาง+พักเที่ยง) | ศุกร์ หัก 1 ชม. (เดินทาง) | เสาร์ ไม่หัก
-      </div>
-      <div class="form-group" style="margin-bottom:12px;">
-        <label class="form-label">เงินเดือนที่ได้รับเดือนนี้ (บาท)</label>
-        <input type="number" id="salaryInput" class="form-input" placeholder="เช่น 15000" 
-               oninput="saveSalaryInput()" style="font-size:18px;font-weight:700;"/>
-      </div>
-      <div style="display:flex;gap:10px;">
-        <button class="btn-primary" onclick="renderSalary()" style="flex:1;">💰 คำนวณ</button>
-        <button onclick="exportToCSV(parseInt(document.getElementById('salMonth').value),parseInt(document.getElementById('salYear').value))" style="padding:13px 16px;background:var(--green);color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Sarabun',sans-serif;">📥 CSV</button>
-        <button onclick="generatePDF(parseInt(document.getElementById('salMonth').value),parseInt(document.getElementById('salYear').value))" style="padding:13px 16px;background:#7c3aed;color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Sarabun',sans-serif;">📄 PDF</button>
-        <button onclick="shareReport(parseInt(document.getElementById('salMonth').value),parseInt(document.getElementById('salYear').value))" style="padding:13px 16px;background:#06b6d4;color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Sarabun',sans-serif;">📤 แชร์</button>
-      </div>
-    </div>
+```
+<!-- Month selector -->
+<div class="section-card" style="margin-bottom:16px;">
+  <div class="section-title" style="margin-bottom:14px;">เลือกเดือนที่ต้องการคำนวณ</div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;">
+    <select id="salMonth" class="select-input" onchange="renderSalary()"></select>
+    <select id="salYear" class="select-input" onchange="renderSalary()"></select>
+  </div>
+  <div style="background:#fffbeb;border:1px solid #fcd34d;border-radius:12px;padding:12px 14px;margin-bottom:14px;font-size:13px;color:#92400e;">
+    ✂️ <strong>หักเวลาอัตโนมัติ:</strong> อา-พฤ หัก 2 ชม. (เดินทาง+พักเที่ยง) | ศุกร์ หัก 1 ชม. (เดินทาง) | เสาร์ ไม่หัก
+  </div>
+  <div class="form-group" style="margin-bottom:12px;">
+    <label class="form-label">เงินเดือนที่ได้รับเดือนนี้ (บาท)</label>
+    <input type="number" id="salaryInput" class="form-input" placeholder="เช่น 15000" 
+           oninput="saveSalaryInput()" style="font-size:18px;font-weight:700;"/>
+  </div>
+  <div style="display:flex;gap:10px;">
+    <button class="btn-primary" onclick="renderSalary()" style="flex:1;">💰 คำนวณ</button>
+    <button onclick="exportToCSV(parseInt(document.getElementById('salMonth').value),parseInt(document.getElementById('salYear').value))" style="padding:13px 16px;background:var(--green);color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Sarabun',sans-serif;">📥 CSV</button>
+    <button onclick="generatePDF(parseInt(document.getElementById('salMonth').value),parseInt(document.getElementById('salYear').value))" style="padding:13px 16px;background:#7c3aed;color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Sarabun',sans-serif;">📄 PDF</button>
+    <button onclick="shareReport(parseInt(document.getElementById('salMonth').value),parseInt(document.getElementById('salYear').value))" style="padding:13px 16px;background:#06b6d4;color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Sarabun',sans-serif;">📤 แชร์</button>
+  </div>
+</div>
 
-    <!-- Result -->
-    <div id="salaryResult"></div>
-    <!-- Admin salary view -->
-    <div id="adminSalarySection" style="margin-top:16px;"></div>
+<!-- Result -->
+<div id="salaryResult"></div>
+<!-- Admin salary view -->
+<div id="adminSalarySection" style="margin-top:16px;"></div>
+```
+
   </div>
 
-
   <!-- SETTINGS PAGE -->
+
   <div id="page-settings" class="page">
     <div style="font-family:'Prompt',sans-serif;font-size:18px;font-weight:700;margin-bottom:16px;">⚙️ ตั้งค่า</div>
 
-    <!-- Work Times -->
-    <div class="section-card" style="margin-bottom:16px;">
-      <div class="section-title" style="margin-bottom:14px;">🕐 เวลาทำงาน</div>
-      <div class="manual-grid">
-        <div class="form-group">
-          <label class="form-label">เวลาเข้างาน (ถ้าสายกว่านี้ = สาย)</label>
-          <input type="time" id="settingWorkStart" class="form-input"/>
-        </div>
-        <div class="form-group">
-          <label class="form-label">เวลาเริ่มโอที</label>
-          <input type="time" id="settingOTStart" class="form-input"/>
-        </div>
-      </div>
-      <button class="btn-primary" onclick="saveWorkTimes(document.getElementById('settingWorkStart').value, document.getElementById('settingOTStart').value)">💾 บันทึก</button>
+```
+<!-- Work Times -->
+<div class="section-card" style="margin-bottom:16px;">
+  <div class="section-title" style="margin-bottom:14px;">🕐 เวลาทำงาน</div>
+  <div class="manual-grid">
+    <div class="form-group">
+      <label class="form-label">เวลาเข้างาน (ถ้าสายกว่านี้ = สาย)</label>
+      <input type="time" id="settingWorkStart" class="form-input"/>
     </div>
-
-    <!-- Admin Password -->
-    <div class="section-card" id="adminPasswordSection" style="display:none;margin-bottom:16px;">
-      <div class="section-title" style="margin-bottom:14px;">🔐 รหัส Admin</div>
-      <div class="form-group" style="margin-bottom:12px;">
-        <label class="form-label">ตั้งรหัสผ่าน Admin (6 ตัวขึ้นไป)</label>
-        <input type="password" id="adminPassword" class="form-input" placeholder="รหัสผ่านใหม่"/>
-      </div>
-      <button class="btn-primary" onclick="saveAdminPassword()">🔐 ตั้งรหัสผ่าน</button>
-    </div>
-
-    <!-- Profile -->
-    <div class="section-card" style="margin-bottom:16px;">
-      <div class="section-title" style="margin-bottom:14px;">👤 โปรไฟล์</div>
-      <div style="display:flex;align-items:center;gap:16px;margin-bottom:14px;">
-        <div id="settingsAvatar" style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#667eea,#764ba2);display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;color:#fff;overflow:hidden;cursor:pointer;" onclick="openProfileUpload()"></div>
-        <div>
-          <div style="font-weight:700;font-size:16px;" id="settingsName"></div>
-          <div style="color:var(--text2);font-size:13px;" id="settingsEmail"></div>
-          <button onclick="openProfileUpload()" style="margin-top:6px;font-size:12px;padding:5px 12px;background:var(--accent-light);border:1px solid var(--accent);border-radius:8px;color:var(--accent);cursor:pointer;font-family:'Sarabun',sans-serif;">📷 เปลี่ยนรูปโปรไฟล์</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Deduction Info -->
-    <div class="section-card">
-      <div class="section-title" style="margin-bottom:10px;">✂️ การหักเวลา</div>
-      <div style="font-size:13px;color:var(--text2);line-height:1.8;">
-        <div>📅 <strong>อา-พฤ:</strong> หัก 2 ชม. (เดินทาง 1 + พักเที่ยง 1)</div>
-        <div>📅 <strong>ศุกร์:</strong> หัก 1 ชม. (เดินทางอย่างเดียว)</div>
-        <div>📅 <strong>เสาร์:</strong> ไม่หัก</div>
-      </div>
+    <div class="form-group">
+      <label class="form-label">เวลาเริ่มโอที</label>
+      <input type="time" id="settingOTStart" class="form-input"/>
     </div>
   </div>
+  <button class="btn-primary" onclick="saveWorkTimes(document.getElementById('settingWorkStart').value, document.getElementById('settingOTStart').value)">💾 บันทึก</button>
+</div>
 
+<!-- Admin Password -->
+<div class="section-card" id="adminPasswordSection" style="display:none;margin-bottom:16px;">
+  <div class="section-title" style="margin-bottom:14px;">🔐 รหัส Admin</div>
+  <div class="form-group" style="margin-bottom:12px;">
+    <label class="form-label">ตั้งรหัสผ่าน Admin (6 ตัวขึ้นไป)</label>
+    <input type="password" id="adminPassword" class="form-input" placeholder="รหัสผ่านใหม่"/>
+  </div>
+  <button class="btn-primary" onclick="saveAdminPassword()">🔐 ตั้งรหัสผ่าน</button>
+</div>
+
+<!-- Profile -->
+<div class="section-card" style="margin-bottom:16px;">
+  <div class="section-title" style="margin-bottom:14px;">👤 โปรไฟล์</div>
+  <div style="display:flex;align-items:center;gap:16px;margin-bottom:14px;">
+    <div id="settingsAvatar" style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#667eea,#764ba2);display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;color:#fff;overflow:hidden;cursor:pointer;" onclick="openProfileUpload()"></div>
+    <div>
+      <div style="font-weight:700;font-size:16px;" id="settingsName"></div>
+      <div style="color:var(--text2);font-size:13px;" id="settingsEmail"></div>
+      <button onclick="openProfileUpload()" style="margin-top:6px;font-size:12px;padding:5px 12px;background:var(--accent-light);border:1px solid var(--accent);border-radius:8px;color:var(--accent);cursor:pointer;font-family:'Sarabun',sans-serif;">📷 เปลี่ยนรูปโปรไฟล์</button>
+    </div>
+  </div>
+</div>
+
+<!-- Deduction Info -->
+<div class="section-card">
+  <div class="section-title" style="margin-bottom:10px;">✂️ การหักเวลา</div>
+  <div style="font-size:13px;color:var(--text2);line-height:1.8;">
+    <div>📅 <strong>อา-พฤ:</strong> หัก 2 ชม. (เดินทาง 1 + พักเที่ยง 1)</div>
+    <div>📅 <strong>ศุกร์:</strong> หัก 1 ชม. (เดินทางอย่างเดียว)</div>
+    <div>📅 <strong>เสาร์:</strong> ไม่หัก</div>
+  </div>
+</div>
+```
+
+  </div>
 
   <!-- SETTINGS PAGE -->
+
   <div id="page-settings" class="page">
     <div style="font-family:'Prompt',sans-serif;font-size:18px;font-weight:700;margin-bottom:16px;">⚙️ ตั้งค่า</div>
 
-    <div class="section-card" style="margin-bottom:16px;">
-      <div class="section-title" style="margin-bottom:14px;">🕐 เวลาทำงาน</div>
-      <div class="manual-grid">
-        <div class="form-group">
-          <label class="form-label">เวลาเข้างาน (ถ้าสายกว่านี้ = สาย)</label>
-          <input type="time" id="settingWorkStart" class="form-input"/>
-        </div>
-        <div class="form-group">
-          <label class="form-label">เวลาเริ่มโอที</label>
-          <input type="time" id="settingOTStart" class="form-input"/>
-        </div>
-      </div>
-      <button class="btn-primary" onclick="saveWorkTimes(document.getElementById('settingWorkStart').value,document.getElementById('settingOTStart').value)">💾 บันทึก</button>
+```
+<div class="section-card" style="margin-bottom:16px;">
+  <div class="section-title" style="margin-bottom:14px;">🕐 เวลาทำงาน</div>
+  <div class="manual-grid">
+    <div class="form-group">
+      <label class="form-label">เวลาเข้างาน (ถ้าสายกว่านี้ = สาย)</label>
+      <input type="time" id="settingWorkStart" class="form-input"/>
     </div>
-
-    <div class="section-card" id="adminPwdCard" style="display:none;margin-bottom:16px;">
-      <div class="section-title" style="margin-bottom:14px;">🔐 รหัสผ่าน Admin</div>
-      <div class="form-group" style="margin-bottom:12px;">
-        <label class="form-label">ตั้งรหัสผ่านใหม่ (6 ตัวขึ้นไป)</label>
-        <input type="password" id="adminPassword" class="form-input" placeholder="รหัสผ่าน"/>
-      </div>
-      <button class="btn-primary" onclick="saveAdminPassword()">🔐 ตั้งรหัสผ่าน</button>
-    </div>
-
-    <div class="section-card" style="margin-bottom:16px;">
-      <div class="section-title" style="margin-bottom:10px;">👤 โปรไฟล์</div>
-      <div style="display:flex;align-items:center;gap:16px;">
-        <div id="settingsAvatar" onclick="openProfileUpload()" style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#667eea,#764ba2);display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;color:#fff;overflow:hidden;cursor:pointer;"></div>
-        <div>
-          <div style="font-weight:700;font-size:16px;" id="settingsName"></div>
-          <div style="color:var(--text2);font-size:13px;" id="settingsEmail"></div>
-          <button onclick="openProfileUpload()" style="margin-top:8px;font-size:12px;padding:5px 12px;background:var(--accent-light);border:1px solid var(--accent);border-radius:8px;color:var(--accent);cursor:pointer;font-family:'Sarabun',sans-serif;">📷 เปลี่ยนรูป</button>
-        </div>
-      </div>
-    </div>
-
-    <div class="section-card" style="margin-bottom:16px;">
-      <div class="section-title" style="margin-bottom:10px;">🔗 ลิงก์ด่วน</div>
-      <div style="display:flex;flex-direction:column;gap:8px;">
-        <button onclick="showPage('yearly')" style="padding:12px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;text-align:left;cursor:pointer;font-family:'Sarabun',sans-serif;font-size:14px;color:var(--text);">📆 สรุปรายปี</button>
-        <button onclick="showPage('editlogs')" style="padding:12px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;text-align:left;cursor:pointer;font-family:'Sarabun',sans-serif;font-size:14px;color:var(--text);" id="editLogsBtn" style="display:none;">📝 ประวัติการแก้ไข</button>
-        <button onclick="requestNotificationPermission().then(ok=>toast(ok?'✅ เปิดการแจ้งเตือนแล้ว':'❌ ไม่ได้รับอนุญาต','success'))" style="padding:12px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;text-align:left;cursor:pointer;font-family:'Sarabun',sans-serif;font-size:14px;color:var(--text);">🔔 เปิดการแจ้งเตือน</button>
-      </div>
-    </div>
-    <div class="section-card">
-      <div class="section-title" style="margin-bottom:10px;">✂️ การหักเวลาอัตโนมัติ</div>
-      <div style="font-size:13px;color:var(--text2);line-height:2;">
-        <div>📅 <strong>อา-พฤ:</strong> หัก 2 ชม. (เดินทาง + พักเที่ยง)</div>
-        <div>📅 <strong>ศุกร์:</strong> หัก 1 ชม. (เดินทาง)</div>
-        <div>📅 <strong>เสาร์:</strong> ไม่หัก</div>
-      </div>
+    <div class="form-group">
+      <label class="form-label">เวลาเริ่มโอที</label>
+      <input type="time" id="settingOTStart" class="form-input"/>
     </div>
   </div>
+  <button class="btn-primary" onclick="saveWorkTimes(document.getElementById('settingWorkStart').value,document.getElementById('settingOTStart').value)">💾 บันทึก</button>
+</div>
 
+<div class="section-card" id="adminPwdCard" style="display:none;margin-bottom:16px;">
+  <div class="section-title" style="margin-bottom:14px;">🔐 รหัสผ่าน Admin</div>
+  <div class="form-group" style="margin-bottom:12px;">
+    <label class="form-label">ตั้งรหัสผ่านใหม่ (6 ตัวขึ้นไป)</label>
+    <input type="password" id="adminPassword" class="form-input" placeholder="รหัสผ่าน"/>
+  </div>
+  <button class="btn-primary" onclick="saveAdminPassword()">🔐 ตั้งรหัสผ่าน</button>
+</div>
+
+<div class="section-card" style="margin-bottom:16px;">
+  <div class="section-title" style="margin-bottom:10px;">👤 โปรไฟล์</div>
+  <div style="display:flex;align-items:center;gap:16px;">
+    <div id="settingsAvatar" onclick="openProfileUpload()" style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#667eea,#764ba2);display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;color:#fff;overflow:hidden;cursor:pointer;"></div>
+    <div>
+      <div style="font-weight:700;font-size:16px;" id="settingsName"></div>
+      <div style="color:var(--text2);font-size:13px;" id="settingsEmail"></div>
+      <button onclick="openProfileUpload()" style="margin-top:8px;font-size:12px;padding:5px 12px;background:var(--accent-light);border:1px solid var(--accent);border-radius:8px;color:var(--accent);cursor:pointer;font-family:'Sarabun',sans-serif;">📷 เปลี่ยนรูป</button>
+    </div>
+  </div>
+</div>
+
+<div class="section-card" style="margin-bottom:16px;">
+  <div class="section-title" style="margin-bottom:10px;">🔗 ลิงก์ด่วน</div>
+  <div style="display:flex;flex-direction:column;gap:8px;">
+    <button onclick="showPage('yearly')" style="padding:12px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;text-align:left;cursor:pointer;font-family:'Sarabun',sans-serif;font-size:14px;color:var(--text);">📆 สรุปรายปี</button>
+    <button onclick="showPage('editlogs')" style="padding:12px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;text-align:left;cursor:pointer;font-family:'Sarabun',sans-serif;font-size:14px;color:var(--text);" id="editLogsBtn" style="display:none;">📝 ประวัติการแก้ไข</button>
+    <button onclick="requestNotificationPermission().then(ok=>toast(ok?'✅ เปิดการแจ้งเตือนแล้ว':'❌ ไม่ได้รับอนุญาต','success'))" style="padding:12px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;text-align:left;cursor:pointer;font-family:'Sarabun',sans-serif;font-size:14px;color:var(--text);">🔔 เปิดการแจ้งเตือน</button>
+  </div>
+</div>
+<div class="section-card">
+  <div class="section-title" style="margin-bottom:10px;">✂️ การหักเวลาอัตโนมัติ</div>
+  <div style="font-size:13px;color:var(--text2);line-height:2;">
+    <div>📅 <strong>อา-พฤ:</strong> หัก 2 ชม. (เดินทาง + พักเที่ยง)</div>
+    <div>📅 <strong>ศุกร์:</strong> หัก 1 ชม. (เดินทาง)</div>
+    <div>📅 <strong>เสาร์:</strong> ไม่หัก</div>
+  </div>
+</div>
+```
+
+  </div>
 
   <!-- ADMIN DASHBOARD -->
+
   <div id="page-dashboard-admin" class="page">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
       <div style="font-family:'Prompt',sans-serif;font-size:18px;font-weight:700;">📊 Dashboard</div>
@@ -1188,8 +1218,8 @@ body.dark input[type=date]::-webkit-calendar-picker-indicator { filter: invert(1
     <div id="dashboardContent"></div>
   </div>
 
-
   <!-- YEARLY SUMMARY PAGE -->
+
   <div id="page-yearly" class="page">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
       <div style="font-family:'Prompt',sans-serif;font-size:18px;font-weight:700;">📆 สรุปรายปี</div>
@@ -1198,8 +1228,8 @@ body.dark input[type=date]::-webkit-calendar-picker-indicator { filter: invert(1
     <div id="yearlyContent"></div>
   </div>
 
-
   <!-- EDIT LOGS PAGE -->
+
   <div id="page-editlogs" class="page">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
       <div style="font-family:'Prompt',sans-serif;font-size:18px;font-weight:700;">📝 ประวัติการแก้ไข</div>
@@ -1211,6 +1241,7 @@ body.dark input[type=date]::-webkit-calendar-picker-indicator { filter: invert(1
   </div>
 
   <!-- DAY DETAIL MODAL -->
+
 <div class="modal-overlay" id="dayModal">
   <div class="modal">
     <div class="modal-handle"></div>
@@ -1223,6 +1254,7 @@ body.dark input[type=date]::-webkit-calendar-picker-indicator { filter: invert(1
 </div>
 
 <!-- EDIT MODAL -->
+
 <div class="modal-overlay" id="editModal">
   <div class="modal">
     <div class="modal-handle"></div>
@@ -1261,6 +1293,7 @@ body.dark input[type=date]::-webkit-calendar-picker-indicator { filter: invert(1
 <div class="toast" id="toast"></div>
 
 <!-- FIREBASE -->
+
 <script>
 const ADMIN = "chitipat.kao@gmail.com";
 const FB_CONFIG = {
@@ -2835,6 +2868,7 @@ async function generatePDF(month, year) {
   body { font-family:'Sarabun',sans-serif; padding:32px; color:#1e293b; font-size:14px; }
   @media print { body { padding:16px; } }
 </style>
+
 </head>
 <body>
   <!-- Header -->
@@ -2850,6 +2884,7 @@ async function generatePDF(month, year) {
   </div>
 
   <!-- Summary -->
+
   <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:24px;">
     <div style="background:#eff6ff;border-radius:12px;padding:14px;text-align:center;">
       <div style="font-size:22px;font-weight:700;color:#2563eb;">${days}</div>
@@ -2874,6 +2909,7 @@ async function generatePDF(month, year) {
   </div>
 
   <!-- Table -->
+
   <table style="width:100%;border-collapse:collapse;">
     <thead>
       <tr style="background:#667eea;color:#fff;">
@@ -2896,7 +2932,8 @@ async function generatePDF(month, year) {
     </tfoot>
   </table>
 
-  ${salary>0?`
+${salary>0?`
+
   <div style="margin-top:20px;background:#eff6ff;border-radius:12px;padding:16px;display:flex;justify-content:space-between;align-items:center;">
     <div><span style="font-weight:700;">เงินเดือนเดือนนี้:</span> ฿${salary.toLocaleString('th-TH')}</div>
     <div><span style="font-weight:700;">ค่าแรง/ชม.:</span> <span style="color:#667eea;font-size:18px;font-weight:700;">฿${perHour.toFixed(2)}</span></div>
@@ -2907,471 +2944,454 @@ async function generatePDF(month, year) {
   </div>
 </body></html>`;
 
-  const win = window.open('', '_blank');
-  win.document.write(html);
-  win.document.close();
-  setTimeout(() => win.print(), 500);
+const win = window.open(’’, ‘_blank’);
+win.document.write(html);
+win.document.close();
+setTimeout(() => win.print(), 500);
 }
-
 
 // ===== WORK TIME SETTINGS =====
 function getWorkStartTime() {
-  return localStorage.getItem('wp_work_start_' + skey()) || '06:00';
+return localStorage.getItem(‘wp_work_start_’ + skey()) || ‘06:00’;
 }
 function getWorkOTStart() {
-  return localStorage.getItem('wp_ot_start_' + skey()) || '16:30';
+return localStorage.getItem(‘wp_ot_start_’ + skey()) || ‘16:30’;
 }
 function saveWorkTimes(start, ot) {
-  localStorage.setItem('wp_work_start_' + skey(), start);
-  localStorage.setItem('wp_ot_start_' + skey(), ot);
-  db.collection('users').doc(skey()).set({ workStart: start, otStart: ot }, { merge: true });
-  // Recalculate cache
-  _cache = null;
-  toast('✅ บันทึกการตั้งค่าแล้ว', 'success');
+localStorage.setItem(‘wp_work_start_’ + skey(), start);
+localStorage.setItem(‘wp_ot_start_’ + skey(), ot);
+db.collection(‘users’).doc(skey()).set({ workStart: start, otStart: ot }, { merge: true });
+// Recalculate cache
+_cache = null;
+toast(‘✅ บันทึกการตั้งค่าแล้ว’, ‘success’);
 }
 
 // Admin password
 function saveAdminPassword() {
-  const pwd = document.getElementById('adminPassword').value;
-  if (pwd.length < 6) { toast('รหัสต้องมีอย่างน้อย 6 ตัว','error'); return; }
-  localStorage.setItem('wp_admin_pwd', btoa(pwd));
-  toast('✅ ตั้งรหัสผ่าน Admin แล้ว','success');
-  document.getElementById('adminPassword').value = '';
+const pwd = document.getElementById(‘adminPassword’).value;
+if (pwd.length < 6) { toast(‘รหัสต้องมีอย่างน้อย 6 ตัว’,‘error’); return; }
+localStorage.setItem(‘wp_admin_pwd’, btoa(pwd));
+toast(‘✅ ตั้งรหัสผ่าน Admin แล้ว’,‘success’);
+document.getElementById(‘adminPassword’).value = ‘’;
 }
 
 function checkAdminPassword() {
-  const saved = localStorage.getItem('wp_admin_pwd');
-  if (!saved) return true; // no password set
-  const input = prompt('กรุณากรอกรหัสผ่าน Admin:');
-  if (!input) return false;
-  return btoa(input) === saved;
+const saved = localStorage.getItem(‘wp_admin_pwd’);
+if (!saved) return true; // no password set
+const input = prompt(‘กรุณากรอกรหัสผ่าน Admin:’);
+if (!input) return false;
+return btoa(input) === saved;
 }
-
 
 // ===== WORK TIME SETTINGS =====
 function getWorkStartTime() {
-  return localStorage.getItem('wp_work_start') || '06:00';
+return localStorage.getItem(‘wp_work_start’) || ‘06:00’;
 }
 function getWorkOTStart() {
-  return localStorage.getItem('wp_ot_start') || '16:30';
+return localStorage.getItem(‘wp_ot_start’) || ‘16:30’;
 }
 function saveWorkTimes(start, ot) {
-  if (!start || !ot) { toast('กรุณากรอกเวลา','error'); return; }
-  localStorage.setItem('wp_work_start', start);
-  localStorage.setItem('wp_ot_start', ot);
-  _cache = null;
-  toast('✅ บันทึกการตั้งค่าแล้ว', 'success');
-  renderHome();
+if (!start || !ot) { toast(‘กรุณากรอกเวลา’,‘error’); return; }
+localStorage.setItem(‘wp_work_start’, start);
+localStorage.setItem(‘wp_ot_start’, ot);
+_cache = null;
+toast(‘✅ บันทึกการตั้งค่าแล้ว’, ‘success’);
+renderHome();
 }
 
 function saveAdminPassword() {
-  const pwd = document.getElementById('adminPassword').value;
-  if (pwd.length < 6) { toast('รหัสต้องมีอย่างน้อย 6 ตัว','error'); return; }
-  localStorage.setItem('wp_admin_pwd', btoa(pwd));
-  toast('✅ ตั้งรหัสผ่าน Admin แล้ว','success');
-  document.getElementById('adminPassword').value = '';
+const pwd = document.getElementById(‘adminPassword’).value;
+if (pwd.length < 6) { toast(‘รหัสต้องมีอย่างน้อย 6 ตัว’,‘error’); return; }
+localStorage.setItem(‘wp_admin_pwd’, btoa(pwd));
+toast(‘✅ ตั้งรหัสผ่าน Admin แล้ว’,‘success’);
+document.getElementById(‘adminPassword’).value = ‘’;
 }
-
 
 // ===== PUSH NOTIFICATIONS =====
 async function requestNotificationPermission() {
-  if (!('Notification' in window)) return false;
-  if (Notification.permission === 'granted') return true;
-  const result = await Notification.requestPermission();
-  return result === 'granted';
+if (!(‘Notification’ in window)) return false;
+if (Notification.permission === ‘granted’) return true;
+const result = await Notification.requestPermission();
+return result === ‘granted’;
 }
 
 function sendNotification(title, body, icon) {
-  if (Notification.permission !== 'granted') return;
-  new Notification(title, { 
-    body, 
-    icon: icon || '/favicon.ico',
-    badge: '/favicon.ico'
-  });
+if (Notification.permission !== ‘granted’) return;
+new Notification(title, {
+body,
+icon: icon || ‘/favicon.ico’,
+badge: ‘/favicon.ico’
+});
 }
 
 async function setupDailyReminders() {
-  const granted = await requestNotificationPermission();
-  if (!granted) return;
-  
-  // Check every minute for reminders
-  setInterval(async () => {
-    const now = new Date();
-    const h = now.getHours();
-    const m = now.getMinutes();
-    const [wh, wm] = getWorkStartTime().split(':').map(Number);
-    
-    // Remind 15 min before work starts
-    const reminderH = wh === 0 ? 23 : wh;
-    const reminderM = wm - 15 < 0 ? 45 : wm - 15;
-    
-    const notifKey = `wp_notif_${todayKey()}_${h}_${m}`;
-    if (localStorage.getItem(notifKey)) return;
-    
-    // Work start reminder
-    if (h === wh && m === wm) {
-      localStorage.setItem(notifKey, '1');
-      sendNotification('⏰ ทีมงานลาล่า', `ถึงเวลาเข้างานแล้วครับ! (${getWorkStartTime()})`, null);
+const granted = await requestNotificationPermission();
+if (!granted) return;
+
+// Check every minute for reminders
+setInterval(async () => {
+const now = new Date();
+const h = now.getHours();
+const m = now.getMinutes();
+const [wh, wm] = getWorkStartTime().split(’:’).map(Number);
+
+```
+// Remind 15 min before work starts
+const reminderH = wh === 0 ? 23 : wh;
+const reminderM = wm - 15 < 0 ? 45 : wm - 15;
+
+const notifKey = `wp_notif_${todayKey()}_${h}_${m}`;
+if (localStorage.getItem(notifKey)) return;
+
+// Work start reminder
+if (h === wh && m === wm) {
+  localStorage.setItem(notifKey, '1');
+  sendNotification('⏰ ทีมงานลาล่า', `ถึงเวลาเข้างานแล้วครับ! (${getWorkStartTime()})`, null);
+}
+
+// Forgot checkout reminder (19:00+)
+if (h >= 19) {
+  const recs = await loadRecords();
+  const open = recs.find(r => r.date === todayKey() && !r.checkOut);
+  if (open) {
+    const key2 = `wp_checkout_notif_${todayKey()}_${h}`;
+    if (!localStorage.getItem(key2)) {
+      localStorage.setItem(key2, '1');
+      sendNotification('⚠️ อย่าลืมออกงาน!', `คุณเข้างาน ${open.checkIn} แต่ยังไม่ได้บันทึกออกงานครับ`, null);
     }
-    
-    // Forgot checkout reminder (19:00+)
-    if (h >= 19) {
-      const recs = await loadRecords();
-      const open = recs.find(r => r.date === todayKey() && !r.checkOut);
-      if (open) {
-        const key2 = `wp_checkout_notif_${todayKey()}_${h}`;
-        if (!localStorage.getItem(key2)) {
-          localStorage.setItem(key2, '1');
-          sendNotification('⚠️ อย่าลืมออกงาน!', `คุณเข้างาน ${open.checkIn} แต่ยังไม่ได้บันทึกออกงานครับ`, null);
-        }
-      }
-    }
-  }, 60000);
+  }
+}
+```
+
+}, 60000);
 }
 
 // ===== ADMIN DASHBOARD =====
 async function renderAdminDashboard() {
-  if (!isAdmin()) return;
-  const el = document.getElementById('dashboardContent');
-  el.innerHTML = '<div class="empty-state"><div class="spinner" style="margin:0 auto"></div></div>';
-  
-  const today = todayKey();
-  let members = [];
-  try {
-    const snap = await db.collection('users').get();
-    members = snap.docs.map(d => d.data()).filter(u => u.email && u.name);
-  } catch(e) { members = []; }
+if (!isAdmin()) return;
+const el = document.getElementById(‘dashboardContent’);
+el.innerHTML = ‘<div class="empty-state"><div class="spinner" style="margin:0 auto"></div></div>’;
 
-  const stats = { total: members.length, present: 0, late: 0, absent: 0, working: 0 };
-  const memberCards = [];
+const today = todayKey();
+let members = [];
+try {
+const snap = await db.collection(‘users’).get();
+members = snap.docs.map(d => d.data()).filter(u => u.email && u.name);
+} catch(e) { members = []; }
 
-  for (const member of members) {
-    try {
-      const snap = await db.collection('users').doc(skey(member.email)).get();
-      const recs = snap.exists ? (snap.data().records || []) : [];
-      const todayRecs = recs.filter(r => r.date === today);
-      const open = todayRecs.find(r => !r.checkOut);
-      const comp = todayRecs.filter(r => r.checkOut);
-      const totalH = comp.reduce((s,r) => s + calcNetHours(r.checkIn,r.checkOut,r.date), 0);
-      const hasLate = todayRecs.some(r => r.isLate);
-      
-      if (todayRecs.length > 0) {
-        stats.present++;
-        if (hasLate) stats.late++;
-        if (open) stats.working++;
-      } else {
-        stats.absent++;
-      }
-      
-      memberCards.push({ member, name: member.name, todayRecs, open, totalH, hasLate });
-    } catch(e) {}
+const stats = { total: members.length, present: 0, late: 0, absent: 0, working: 0 };
+const memberCards = [];
+
+for (const member of members) {
+try {
+const snap = await db.collection(‘users’).doc(skey(member.email)).get();
+const recs = snap.exists ? (snap.data().records || []) : [];
+const todayRecs = recs.filter(r => r.date === today);
+const open = todayRecs.find(r => !r.checkOut);
+const comp = todayRecs.filter(r => r.checkOut);
+const totalH = comp.reduce((s,r) => s + calcNetHours(r.checkIn,r.checkOut,r.date), 0);
+const hasLate = todayRecs.some(r => r.isLate);
+
+```
+  if (todayRecs.length > 0) {
+    stats.present++;
+    if (hasLate) stats.late++;
+    if (open) stats.working++;
+  } else {
+    stats.absent++;
   }
-
-  const mons = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
-  const now = new Date();
   
-  el.innerHTML = `
-    <!-- Today Overview -->
-    <div class="section-card" style="margin-bottom:16px;">
-      <div class="section-title" style="margin-bottom:14px;">วันนี้ — ${now.getDate()} ${mons[now.getMonth()]} ${now.getFullYear()+543}</div>
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;">
-        <div class="sum-card"><div class="sum-val color-blue">${stats.total}</div><div class="sum-lbl">ทั้งหมด</div></div>
-        <div class="sum-card"><div class="sum-val color-green">${stats.present}</div><div class="sum-lbl">มาแล้ว</div></div>
-        <div class="sum-card"><div class="sum-val" style="color:#a855f7">${stats.working}</div><div class="sum-lbl">กำลังทำงาน</div></div>
-        <div class="sum-card"><div class="sum-val color-red">${stats.late}</div><div class="sum-lbl">มาสาย</div></div>
-      </div>
-    </div>
+  memberCards.push({ member, name: member.name, todayRecs, open, totalH, hasLate });
+} catch(e) {}
+```
 
-    <!-- Absent Alert -->
-    ${stats.absent > 0 ? `
-    <div class="section-card" style="margin-bottom:16px;border-left:3px solid var(--orange);">
-      <div style="color:var(--orange);font-weight:700;margin-bottom:8px;">⚠️ ยังไม่ได้ลงเวลา ${stats.absent} คน</div>
-      <div style="font-size:13px;color:var(--text2);">
-        ${memberCards.filter(m => m.todayRecs.length === 0).map(m => m.name).join(', ')}
-      </div>
-    </div>` : `
-    <div class="section-card" style="margin-bottom:16px;border-left:3px solid var(--green);">
-      <div style="color:var(--green);font-weight:700;">✅ ทุกคนมาครบแล้ววันนี้!</div>
-    </div>`}
+}
 
-    <!-- Member Status List -->
-    <div class="section-card">
-      <div class="section-title" style="margin-bottom:14px;">สถานะแต่ละคน</div>
-      ${memberCards.map(m => {
-        const firstIn = m.todayRecs.length > 0 ? m.todayRecs[0].checkIn : '-';
-        let status, statusColor;
-        if (m.open) { status = '🟢 กำลังทำงาน'; statusColor = 'var(--green)'; }
-        else if (m.todayRecs.length > 0 && m.hasLate) { status = '⚠️ มาสาย'; statusColor = 'var(--red)'; }
-        else if (m.todayRecs.length > 0) { status = '✅ มาแล้ว'; statusColor = 'var(--green)'; }
-        else { status = '❌ ยังไม่มา'; statusColor = 'var(--text3)'; }
-        
-        return `<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);">
-          <div>
-            <div style="font-weight:700;font-size:14px;">${m.name}</div>
-            <div style="font-size:12px;color:var(--text2);">เข้า: ${firstIn} | ${m.totalH.toFixed(1)} ชม.</div>
-          </div>
-          <span style="font-size:13px;font-weight:600;color:${statusColor};">${status}</span>
-        </div>`;
-      }).join('')}
+const mons = [‘ม.ค.’,‘ก.พ.’,‘มี.ค.’,‘เม.ย.’,‘พ.ค.’,‘มิ.ย.’,‘ก.ค.’,‘ส.ค.’,‘ก.ย.’,‘ต.ค.’,‘พ.ย.’,‘ธ.ค.’];
+const now = new Date();
+
+el.innerHTML = `
+<!-- Today Overview -->
+<div class="section-card" style="margin-bottom:16px;">
+<div class="section-title" style="margin-bottom:14px;">วันนี้ — ${now.getDate()} ${mons[now.getMonth()]} ${now.getFullYear()+543}</div>
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;">
+<div class="sum-card"><div class="sum-val color-blue">${stats.total}</div><div class="sum-lbl">ทั้งหมด</div></div>
+<div class="sum-card"><div class="sum-val color-green">${stats.present}</div><div class="sum-lbl">มาแล้ว</div></div>
+<div class="sum-card"><div class="sum-val" style="color:#a855f7">${stats.working}</div><div class="sum-lbl">กำลังทำงาน</div></div>
+<div class="sum-card"><div class="sum-val color-red">${stats.late}</div><div class="sum-lbl">มาสาย</div></div>
+</div>
+</div>
+
+```
+<!-- Absent Alert -->
+${stats.absent > 0 ? `
+<div class="section-card" style="margin-bottom:16px;border-left:3px solid var(--orange);">
+  <div style="color:var(--orange);font-weight:700;margin-bottom:8px;">⚠️ ยังไม่ได้ลงเวลา ${stats.absent} คน</div>
+  <div style="font-size:13px;color:var(--text2);">
+    ${memberCards.filter(m => m.todayRecs.length === 0).map(m => m.name).join(', ')}
+  </div>
+</div>` : `
+<div class="section-card" style="margin-bottom:16px;border-left:3px solid var(--green);">
+  <div style="color:var(--green);font-weight:700;">✅ ทุกคนมาครบแล้ววันนี้!</div>
+</div>`}
+
+<!-- Member Status List -->
+<div class="section-card">
+  <div class="section-title" style="margin-bottom:14px;">สถานะแต่ละคน</div>
+  ${memberCards.map(m => {
+    const firstIn = m.todayRecs.length > 0 ? m.todayRecs[0].checkIn : '-';
+    let status, statusColor;
+    if (m.open) { status = '🟢 กำลังทำงาน'; statusColor = 'var(--green)'; }
+    else if (m.todayRecs.length > 0 && m.hasLate) { status = '⚠️ มาสาย'; statusColor = 'var(--red)'; }
+    else if (m.todayRecs.length > 0) { status = '✅ มาแล้ว'; statusColor = 'var(--green)'; }
+    else { status = '❌ ยังไม่มา'; statusColor = 'var(--text3)'; }
+    
+    return `<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);">
+      <div>
+        <div style="font-weight:700;font-size:14px;">${m.name}</div>
+        <div style="font-size:12px;color:var(--text2);">เข้า: ${firstIn} | ${m.totalH.toFixed(1)} ชม.</div>
+      </div>
+      <span style="font-size:13px;font-weight:600;color:${statusColor};">${status}</span>
     </div>`;
+  }).join('')}
+</div>`;
+```
+
 }
 
 // ===== EDIT HISTORY LOG =====
 function logEdit(action, targetEmail, detail) {
-  if (!isAdmin()) return;
-  const logs = JSON.parse(localStorage.getItem('wp_edit_logs') || '[]');
-  logs.unshift({
-    time: new Date().toISOString(),
-    admin: currentUser.email,
-    action,
-    targetEmail,
-    detail
-  });
-  // Keep only last 100 logs
-  localStorage.setItem('wp_edit_logs', JSON.stringify(logs.slice(0, 100)));
+if (!isAdmin()) return;
+const logs = JSON.parse(localStorage.getItem(‘wp_edit_logs’) || ‘[]’);
+logs.unshift({
+time: new Date().toISOString(),
+admin: currentUser.email,
+action,
+targetEmail,
+detail
+});
+// Keep only last 100 logs
+localStorage.setItem(‘wp_edit_logs’, JSON.stringify(logs.slice(0, 100)));
 }
 
 function renderEditLogs() {
-  const logs = JSON.parse(localStorage.getItem('wp_edit_logs') || '[]');
-  const mons = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
-  const el = document.getElementById('editLogsContent');
-  if (!el) return;
-  
-  if (logs.length === 0) {
-    el.innerHTML = '<div class="empty-state"><div class="empty-icon">📋</div><div class="empty-text">ยังไม่มีประวัติการแก้ไข</div></div>';
-    return;
-  }
-  
-  el.innerHTML = logs.map(log => {
-    const d = new Date(log.time);
-    const dateStr = `${d.getDate()} ${mons[d.getMonth()]} ${d.getFullYear()+543} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
-    return `<div style="padding:12px 0;border-bottom:1px solid var(--border);">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
-        <span style="font-weight:700;font-size:14px;">${log.action}</span>
-        <span style="font-size:11px;color:var(--text3);">${dateStr}</span>
-      </div>
-      <div style="font-size:12px;color:var(--text2);">👤 ${log.targetEmail}</div>
-      <div style="font-size:12px;color:var(--text3);">${log.detail}</div>
-    </div>`;
-  }).join('');
+const logs = JSON.parse(localStorage.getItem(‘wp_edit_logs’) || ‘[]’);
+const mons = [‘ม.ค.’,‘ก.พ.’,‘มี.ค.’,‘เม.ย.’,‘พ.ค.’,‘มิ.ย.’,‘ก.ค.’,‘ส.ค.’,‘ก.ย.’,‘ต.ค.’,‘พ.ย.’,‘ธ.ค.’];
+const el = document.getElementById(‘editLogsContent’);
+if (!el) return;
+
+if (logs.length === 0) {
+el.innerHTML = ‘<div class="empty-state"><div class="empty-icon">📋</div><div class="empty-text">ยังไม่มีประวัติการแก้ไข</div></div>’;
+return;
+}
+
+el.innerHTML = logs.map(log => {
+const d = new Date(log.time);
+const dateStr = `${d.getDate()} ${mons[d.getMonth()]} ${d.getFullYear()+543} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+return `<div style="padding:12px 0;border-bottom:1px solid var(--border);"> <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;"> <span style="font-weight:700;font-size:14px;">${log.action}</span> <span style="font-size:11px;color:var(--text3);">${dateStr}</span> </div> <div style="font-size:12px;color:var(--text2);">👤 ${log.targetEmail}</div> <div style="font-size:12px;color:var(--text3);">${log.detail}</div> </div>`;
+}).join(’’);
 }
 
 // ===== YEARLY SUMMARY =====
 async function renderYearlySummary() {
-  const year = parseInt(document.getElementById('yearlyYear').value);
-  const el = document.getElementById('yearlyContent');
-  el.innerHTML = '<div class="empty-state"><div class="spinner" style="margin:0 auto"></div></div>';
-  
-  const recs = await loadRecords();
-  const yearRecs = recs.filter(r => r.date.startsWith(year.toString()));
-  const mons = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
-  
-  const monthData = Array.from({length:12}, (_, i) => {
-    const mr = yearRecs.filter(r => parseInt(r.date.split('-')[1]) === i+1);
-    const comp = mr.filter(r => r.checkOut);
-    const byDate = {};
-    mr.forEach(r => { if(!byDate[r.date]) byDate[r.date]=[]; byDate[r.date].push(r); });
-    const days = Object.keys(byDate).length;
-    const totalH = comp.reduce((s,r) => s + calcNetHours(r.checkIn,r.checkOut,r.date), 0);
-    const totalOT = comp.reduce((s,r) => s + (r.otMin||0), 0);
-    const lateCount = Object.values(byDate).filter(rs => rs.some(r => r.isLate)).length;
-    return { month: mons[i], days, totalH, totalOT, lateCount };
-  });
+const year = parseInt(document.getElementById(‘yearlyYear’).value);
+const el = document.getElementById(‘yearlyContent’);
+el.innerHTML = ‘<div class="empty-state"><div class="spinner" style="margin:0 auto"></div></div>’;
 
-  const totalDays = monthData.reduce((s,m) => s+m.days, 0);
-  const totalH = monthData.reduce((s,m) => s+m.totalH, 0);
-  const totalOT = monthData.reduce((s,m) => s+m.totalOT, 0);
-  const totalLate = monthData.reduce((s,m) => s+m.lateCount, 0);
+const recs = await loadRecords();
+const yearRecs = recs.filter(r => r.date.startsWith(year.toString()));
+const mons = [‘ม.ค.’,‘ก.พ.’,‘มี.ค.’,‘เม.ย.’,‘พ.ค.’,‘มิ.ย.’,‘ก.ค.’,‘ส.ค.’,‘ก.ย.’,‘ต.ค.’,‘พ.ย.’,‘ธ.ค.’];
 
-  el.innerHTML = `
-    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:16px;">
-      <div class="sum-card"><div class="sum-val color-blue">${totalDays}</div><div class="sum-lbl">วันที่มาทั้งปี</div></div>
-      <div class="sum-card"><div class="sum-val color-green">${totalH.toFixed(0)}</div><div class="sum-lbl">ชม.ทำงานรวม</div></div>
-      <div class="sum-card"><div class="sum-val color-orange">${(totalOT/60).toFixed(0)}</div><div class="sum-lbl">ชม.โอทีรวม</div></div>
-      <div class="sum-card"><div class="sum-val color-red">${totalLate}</div><div class="sum-lbl">ครั้งสายทั้งปี</div></div>
-    </div>
-    <div class="section-card">
-      <table class="ts-table">
-        <thead><tr>
-          <th>เดือน</th><th>วันที่มา</th><th>ชม.ทำงาน</th><th>ชม.โอที</th><th>ครั้งสาย</th>
-        </tr></thead>
-        <tbody>
-          ${monthData.map((m,i) => `<tr onclick="switchToMonth(${i})" style="cursor:pointer;">
-            <td style="font-weight:700;">${m.month}</td>
-            <td style="color:var(--accent);">${m.days}</td>
-            <td style="color:var(--green);font-weight:600;">${m.totalH.toFixed(1)}</td>
-            <td style="color:var(--orange);">${(m.totalOT/60).toFixed(1)}</td>
-            <td>${m.lateCount > 0 ? '<span class="badge badge-late">'+m.lateCount+'</span>' : '<span class="badge badge-ontime">0</span>'}</td>
-          </tr>`).join('')}
-        </tbody>
-      </table>
-    </div>`;
+const monthData = Array.from({length:12}, (_, i) => {
+const mr = yearRecs.filter(r => parseInt(r.date.split(’-’)[1]) === i+1);
+const comp = mr.filter(r => r.checkOut);
+const byDate = {};
+mr.forEach(r => { if(!byDate[r.date]) byDate[r.date]=[]; byDate[r.date].push(r); });
+const days = Object.keys(byDate).length;
+const totalH = comp.reduce((s,r) => s + calcNetHours(r.checkIn,r.checkOut,r.date), 0);
+const totalOT = comp.reduce((s,r) => s + (r.otMin||0), 0);
+const lateCount = Object.values(byDate).filter(rs => rs.some(r => r.isLate)).length;
+return { month: mons[i], days, totalH, totalOT, lateCount };
+});
+
+const totalDays = monthData.reduce((s,m) => s+m.days, 0);
+const totalH = monthData.reduce((s,m) => s+m.totalH, 0);
+const totalOT = monthData.reduce((s,m) => s+m.totalOT, 0);
+const totalLate = monthData.reduce((s,m) => s+m.lateCount, 0);
+
+el.innerHTML = `<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:16px;"> <div class="sum-card"><div class="sum-val color-blue">${totalDays}</div><div class="sum-lbl">วันที่มาทั้งปี</div></div> <div class="sum-card"><div class="sum-val color-green">${totalH.toFixed(0)}</div><div class="sum-lbl">ชม.ทำงานรวม</div></div> <div class="sum-card"><div class="sum-val color-orange">${(totalOT/60).toFixed(0)}</div><div class="sum-lbl">ชม.โอทีรวม</div></div> <div class="sum-card"><div class="sum-val color-red">${totalLate}</div><div class="sum-lbl">ครั้งสายทั้งปี</div></div> </div> <div class="section-card"> <table class="ts-table"> <thead><tr> <th>เดือน</th><th>วันที่มา</th><th>ชม.ทำงาน</th><th>ชม.โอที</th><th>ครั้งสาย</th> </tr></thead> <tbody> ${monthData.map((m,i) =>`<tr onclick="switchToMonth(${i})" style="cursor:pointer;">
+<td style="font-weight:700;">${m.month}</td>
+<td style="color:var(--accent);">${m.days}</td>
+<td style="color:var(--green);font-weight:600;">${m.totalH.toFixed(1)}</td>
+<td style="color:var(--orange);">${(m.totalOT/60).toFixed(1)}</td>
+<td>${m.lateCount > 0 ? ‘<span class="badge badge-late">’+m.lateCount+’</span>’ : ‘<span class="badge badge-ontime">0</span>’}</td>
+</tr>`).join('')} </tbody> </table> </div>`;
 }
 
 function switchToMonth(monthIdx) {
-  document.getElementById('statMonth').value = monthIdx;
-  document.getElementById('histMonth').value = monthIdx;
-  showPage('stats');
+document.getElementById(‘statMonth’).value = monthIdx;
+document.getElementById(‘histMonth’).value = monthIdx;
+showPage(‘stats’);
 }
 
 // ===== SHARE PDF VIA LINE =====
 function sharePDFViaLine(month, year) {
-  const mons = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
-  const text = `รายงานเวลาทำงาน ${currentUser.name} เดือน${mons[month]} ${year+543}%0Aดูรายละเอียดที่: https://chitipat-workpulse.netlify.app`;
-  window.open(`https://line.me/R/msg/text/?${text}`, '_blank');
+const mons = [‘ม.ค.’,‘ก.พ.’,‘มี.ค.’,‘เม.ย.’,‘พ.ค.’,‘มิ.ย.’,‘ก.ค.’,‘ส.ค.’,‘ก.ย.’,‘ต.ค.’,‘พ.ย.’,‘ธ.ค.’];
+const text = `รายงานเวลาทำงาน ${currentUser.name} เดือน${mons[month]} ${year+543}%0Aดูรายละเอียดที่: https://chitipat-workpulse.netlify.app`;
+window.open(`https://line.me/R/msg/text/?${text}`, ‘_blank’);
 }
 
 async function shareReport(month, year) {
-  const mons = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
-  const recs = await loadRecords();
-  const mr = recs.filter(r => { const [y,m] = r.date.split('-').map(Number); return y===year&&m===month+1; });
-  const totalH = mr.filter(r=>r.checkOut).reduce((s,r)=>s+calcNetHours(r.checkIn,r.checkOut,r.date),0);
-  const totalOT = mr.filter(r=>r.checkOut).reduce((s,r)=>s+(r.otMin||0),0);
-  const days = new Set(mr.map(r=>r.date)).size;
-  
-  const text = `📊 รายงานเวลาทำงาน\n👤 ${currentUser.name}\n📅 ${mons[month]} ${year+543}\n⏱ ${days} วัน | ${totalH.toFixed(1)} ชม. | OT ${(totalOT/60).toFixed(1)} ชม.\n🔗 https://chitipat-workpulse.netlify.app`;
-  
-  if (navigator.share) {
-    try {
-      await navigator.share({ title: 'รายงานเวลาทำงาน', text });
-      return;
-    } catch(e) {}
-  }
-  // Fallback: copy to clipboard
-  navigator.clipboard.writeText(text).then(() => toast('✅ คัดลอกข้อความแล้ว กด Paste ใน Line ได้เลย','success'));
+const mons = [‘ม.ค.’,‘ก.พ.’,‘มี.ค.’,‘เม.ย.’,‘พ.ค.’,‘มิ.ย.’,‘ก.ค.’,‘ส.ค.’,‘ก.ย.’,‘ต.ค.’,‘พ.ย.’,‘ธ.ค.’];
+const recs = await loadRecords();
+const mr = recs.filter(r => { const [y,m] = r.date.split(’-’).map(Number); return y===year&&m===month+1; });
+const totalH = mr.filter(r=>r.checkOut).reduce((s,r)=>s+calcNetHours(r.checkIn,r.checkOut,r.date),0);
+const totalOT = mr.filter(r=>r.checkOut).reduce((s,r)=>s+(r.otMin||0),0);
+const days = new Set(mr.map(r=>r.date)).size;
+
+const text = `📊 รายงานเวลาทำงาน\n👤 ${currentUser.name}\n📅 ${mons[month]} ${year+543}\n⏱ ${days} วัน | ${totalH.toFixed(1)} ชม. | OT ${(totalOT/60).toFixed(1)} ชม.\n🔗 https://chitipat-workpulse.netlify.app`;
+
+if (navigator.share) {
+try {
+await navigator.share({ title: ‘รายงานเวลาทำงาน’, text });
+return;
+} catch(e) {}
+}
+// Fallback: copy to clipboard
+navigator.clipboard.writeText(text).then(() => toast(‘✅ คัดลอกข้อความแล้ว กด Paste ใน Line ได้เลย’,‘success’));
 }
 
 // ===== NAVIGATION =====
 function showPage(name) {
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('.desktop-tab').forEach(t=>t.classList.remove('active'));
-  document.querySelectorAll('.mobile-nav-btn').forEach(b=>b.classList.remove('active'));
-  document.getElementById('page-'+name).classList.add('active');
-  const map = {home:0,calendar:1,stats:2,history:3,team:4,teamsummary:5,salary:6,settings:7};
-  const idx = map[name];
-  document.querySelectorAll('.desktop-tab')[idx]?.classList.add('active');
-  document.querySelectorAll('.mobile-nav-btn')[idx]?.classList.add('active');
-  if (name==='stats') renderStats();
-  if (name==='calendar') renderCalendar();
-  if (name==='history') renderHistory();
-  if (name==='team') { 
-    document.getElementById('teamDate').value = todayKey(); 
-    renderTeam();
-    if (isAdmin()) document.getElementById('bulkSection'); // already handled by button
-  }
-  if (name==='teamsummary') renderTeamSummary();
-  if (name==='dashboard-admin') renderAdminDashboard();
-  if (name==='yearly') {
-    const yearSel = document.getElementById('yearlyYear');
-    const now = new Date();
-    if (!yearSel.options.length) {
-      [now.getFullYear()-1, now.getFullYear()].forEach(y => {
-        const opt = document.createElement('option');
-        opt.value = y; opt.textContent = y+543;
-        if (y === now.getFullYear()) opt.selected = true;
-        yearSel.appendChild(opt);
-      });
-    }
-    renderYearlySummary();
-  }
-  if (name==='editlogs') renderEditLogs();
-  if (name==='settings') {
-    document.getElementById('settingWorkStart').value = getWorkStartTime();
-    document.getElementById('settingOTStart').value = getWorkOTStart();
-    document.getElementById('settingsName').textContent = currentUser.name;
-    document.getElementById('settingsEmail').textContent = currentUser.email;
-    const photo = getProfilePhoto(currentUser.email);
-    const av = document.getElementById('settingsAvatar');
-    if (photo) av.innerHTML = `<img src="${photo}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
-    else av.textContent = currentUser.name.charAt(0).toUpperCase();
-    if (isAdmin()) document.getElementById('adminPasswordSection').style.display = 'block';
-  }
-  if (name==='dashboard-admin') renderAdminDashboard();
-  if (name==='yearly') {
-    const yearSel = document.getElementById('yearlyYear');
-    const now = new Date();
-    if (!yearSel.options.length) {
-      [now.getFullYear()-1, now.getFullYear()].forEach(y => {
-        const opt = document.createElement('option');
-        opt.value = y; opt.textContent = y+543;
-        if (y === now.getFullYear()) opt.selected = true;
-        yearSel.appendChild(opt);
-      });
-    }
-    renderYearlySummary();
-  }
-  if (name==='editlogs') renderEditLogs();
-  if (name==='settings') {
-    document.getElementById('settingWorkStart').value = getWorkStartTime();
-    document.getElementById('settingOTStart').value = getWorkOTStart();
-    document.getElementById('settingsName').textContent = currentUser.name;
-    document.getElementById('settingsEmail').textContent = currentUser.email;
-    if (isAdmin()) document.getElementById('adminPwdCard').style.display = 'block';
-    const photo = getProfilePhoto(currentUser.email);
-    const av = document.getElementById('settingsAvatar');
-    if (photo) av.innerHTML = '<img src="'+photo+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">';
-    else av.textContent = currentUser.name.charAt(0).toUpperCase();
-  }
-  if (name==='salary') {
-    const m = document.getElementById('salMonth').value;
-    const y = document.getElementById('salYear').value;
-    const saved = loadSalaryInput(m, y);
-    if (saved) document.getElementById('salaryInput').value = saved;
-    renderSalary();
-    if (isAdmin()) renderAdminSalary();
-  }
+document.querySelectorAll(’.page’).forEach(p=>p.classList.remove(‘active’));
+document.querySelectorAll(’.desktop-tab’).forEach(t=>t.classList.remove(‘active’));
+document.querySelectorAll(’.mobile-nav-btn’).forEach(b=>b.classList.remove(‘active’));
+document.getElementById(‘page-’+name).classList.add(‘active’);
+const map = {home:0,calendar:1,stats:2,history:3,team:4,teamsummary:5,salary:6,settings:7};
+const idx = map[name];
+document.querySelectorAll(’.desktop-tab’)[idx]?.classList.add(‘active’);
+document.querySelectorAll(’.mobile-nav-btn’)[idx]?.classList.add(‘active’);
+if (name===‘stats’) renderStats();
+if (name===‘calendar’) renderCalendar();
+if (name===‘history’) renderHistory();
+if (name===‘team’) {
+document.getElementById(‘teamDate’).value = todayKey();
+renderTeam();
+if (isAdmin()) document.getElementById(‘bulkSection’); // already handled by button
+}
+if (name===‘teamsummary’) renderTeamSummary();
+if (name===‘dashboard-admin’) renderAdminDashboard();
+if (name===‘yearly’) {
+const yearSel = document.getElementById(‘yearlyYear’);
+const now = new Date();
+if (!yearSel.options.length) {
+[now.getFullYear()-1, now.getFullYear()].forEach(y => {
+const opt = document.createElement(‘option’);
+opt.value = y; opt.textContent = y+543;
+if (y === now.getFullYear()) opt.selected = true;
+yearSel.appendChild(opt);
+});
+}
+renderYearlySummary();
+}
+if (name===‘editlogs’) renderEditLogs();
+if (name===‘settings’) {
+document.getElementById(‘settingWorkStart’).value = getWorkStartTime();
+document.getElementById(‘settingOTStart’).value = getWorkOTStart();
+document.getElementById(‘settingsName’).textContent = currentUser.name;
+document.getElementById(‘settingsEmail’).textContent = currentUser.email;
+const photo = getProfilePhoto(currentUser.email);
+const av = document.getElementById(‘settingsAvatar’);
+if (photo) av.innerHTML = `<img src="${photo}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+else av.textContent = currentUser.name.charAt(0).toUpperCase();
+if (isAdmin()) document.getElementById(‘adminPasswordSection’).style.display = ‘block’;
+}
+if (name===‘dashboard-admin’) renderAdminDashboard();
+if (name===‘yearly’) {
+const yearSel = document.getElementById(‘yearlyYear’);
+const now = new Date();
+if (!yearSel.options.length) {
+[now.getFullYear()-1, now.getFullYear()].forEach(y => {
+const opt = document.createElement(‘option’);
+opt.value = y; opt.textContent = y+543;
+if (y === now.getFullYear()) opt.selected = true;
+yearSel.appendChild(opt);
+});
+}
+renderYearlySummary();
+}
+if (name===‘editlogs’) renderEditLogs();
+if (name===‘settings’) {
+document.getElementById(‘settingWorkStart’).value = getWorkStartTime();
+document.getElementById(‘settingOTStart’).value = getWorkOTStart();
+document.getElementById(‘settingsName’).textContent = currentUser.name;
+document.getElementById(‘settingsEmail’).textContent = currentUser.email;
+if (isAdmin()) document.getElementById(‘adminPwdCard’).style.display = ‘block’;
+const photo = getProfilePhoto(currentUser.email);
+const av = document.getElementById(‘settingsAvatar’);
+if (photo) av.innerHTML = ‘<img src="'+photo+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">’;
+else av.textContent = currentUser.name.charAt(0).toUpperCase();
+}
+if (name===‘salary’) {
+const m = document.getElementById(‘salMonth’).value;
+const y = document.getElementById(‘salYear’).value;
+const saved = loadSalaryInput(m, y);
+if (saved) document.getElementById(‘salaryInput’).value = saved;
+renderSalary();
+if (isAdmin()) renderAdminSalary();
+}
 }
 
-function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove(‘open’); }
 
 // ===== SELECTORS =====
 function populateSelectors() {
-  const mons=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
-  const now = new Date();
-  ['statMonth','histMonth','tsMonth','salMonth'].forEach(id=>{
-    const s=document.getElementById(id); s.innerHTML='';
-    mons.forEach((m,i)=>s.innerHTML+=`<option value="${i}"${i===now.getMonth()?' selected':''}>${m}</option>`);
-  });
-  ['statYear','histYear','tsYear','salYear'].forEach(id=>{
-    const s=document.getElementById(id); s.innerHTML='';
-    [now.getFullYear()-1,now.getFullYear()].forEach(y=>s.innerHTML+=`<option value="${y}"${y===now.getFullYear()?' selected':''}>${y}</option>`);
-  });
+const mons=[‘ม.ค.’,‘ก.พ.’,‘มี.ค.’,‘เม.ย.’,‘พ.ค.’,‘มิ.ย.’,‘ก.ค.’,‘ส.ค.’,‘ก.ย.’,‘ต.ค.’,‘พ.ย.’,‘ธ.ค.’];
+const now = new Date();
+[‘statMonth’,‘histMonth’,‘tsMonth’,‘salMonth’].forEach(id=>{
+const s=document.getElementById(id); s.innerHTML=’’;
+mons.forEach((m,i)=>s.innerHTML+=`<option value="${i}"${i===now.getMonth()?' selected':''}>${m}</option>`);
+});
+[‘statYear’,‘histYear’,‘tsYear’,‘salYear’].forEach(id=>{
+const s=document.getElementById(id); s.innerHTML=’’;
+[now.getFullYear()-1,now.getFullYear()].forEach(y=>s.innerHTML+=`<option value="${y}"${y===now.getFullYear()?' selected':''}>${y}</option>`);
+});
 }
 
 // ===== TOAST =====
-function toast(msg, type='success') {
-  const icons = {success:'✅',error:'❌',warning:'⚠️'};
-  const t = document.getElementById('toast');
-  t.textContent = `${icons[type]||''} ${msg}`;
-  t.className = `toast ${type} show`;
-  setTimeout(()=>t.classList.remove('show'), 3000);
+function toast(msg, type=‘success’) {
+const icons = {success:‘✅’,error:‘❌’,warning:‘⚠️’};
+const t = document.getElementById(‘toast’);
+t.textContent = `${icons[type]||''} ${msg}`;
+t.className = `toast ${type} show`;
+setTimeout(()=>t.classList.remove(‘show’), 3000);
 }
 
 // ===== BOOT =====
-document.addEventListener('DOMContentLoaded', () => {
-  if (!initFirebase()) {
-    alert('เชื่อมต่อ Firebase ไม่ได้ กรุณาลองใหม่');
-    return;
-  }
-  const saved = localStorage.getItem('wp_session');
-  if (saved) {
-    try {
-      currentUser = JSON.parse(saved);
-      startApp();
-    } catch(e) {
-      document.getElementById('loginScreen').style.display = 'flex';
-    }
-  } else {
-    document.getElementById('loginScreen').style.display = 'flex';
-  }
+document.addEventListener(‘DOMContentLoaded’, () => {
+if (!initFirebase()) {
+return;
+}
+const saved = localStorage.getItem(‘wp_session’);
+if (saved) {
+try {
+currentUser = JSON.parse(saved);
+startApp();
+} catch(e) {
+document.getElementById(‘loginScreen’).style.display = ‘flex’;
+}
+} else {
+document.getElementById(‘loginScreen’).style.display = ‘flex’;
+}
 });
 </script>
-    </div>
+</div>
 
   </div>
 </div>
 
 <!-- MOBILE NAV -->
+
 <div class="mobile-nav">
   <div class="mobile-nav-inner">
     <button class="mobile-nav-btn active" onclick="showPage('home')"><span class="icon">🏠</span><span>หน้าหลัก</span></button>
@@ -3386,8 +3406,8 @@ document.addEventListener('DOMContentLoaded', () => {
   </div>
 </div>
 
-
 <!-- PWA INSTALL BANNER -->
+
 <div id="installBanner" style="display:none;position:fixed;bottom:80px;left:16px;right:16px;background:#fff;border-radius:16px;padding:16px;box-shadow:0 8px 32px rgba(0,0,0,0.15);border:1px solid #e2e8f0;z-index:300;animation:slideUp .3s ease;">
   <div style="display:flex;align-items:center;gap:12px;">
     <div style="width:44px;height:44px;background:linear-gradient(135deg,#667eea,#764ba2);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">⏱</div>
@@ -3401,8 +3421,6 @@ document.addEventListener('DOMContentLoaded', () => {
 </div>
 
 <!-- PWA Script -->
-
-
 
 <script>
 
@@ -4998,6 +5016,7 @@ async function generatePDF(month, year) {
   body { font-family:'Sarabun',sans-serif; padding:32px; color:#1e293b; font-size:14px; }
   @media print { body { padding:16px; } }
 </style>
+
 </head>
 <body>
   <!-- Header -->
@@ -5013,6 +5032,7 @@ async function generatePDF(month, year) {
   </div>
 
   <!-- Summary -->
+
   <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:24px;">
     <div style="background:#eff6ff;border-radius:12px;padding:14px;text-align:center;">
       <div style="font-size:22px;font-weight:700;color:#2563eb;">${days}</div>
@@ -5037,6 +5057,7 @@ async function generatePDF(month, year) {
   </div>
 
   <!-- Table -->
+
   <table style="width:100%;border-collapse:collapse;">
     <thead>
       <tr style="background:#667eea;color:#fff;">
@@ -5059,7 +5080,8 @@ async function generatePDF(month, year) {
     </tfoot>
   </table>
 
-  ${salary>0?`
+${salary>0?`
+
   <div style="margin-top:20px;background:#eff6ff;border-radius:12px;padding:16px;display:flex;justify-content:space-between;align-items:center;">
     <div><span style="font-weight:700;">เงินเดือนเดือนนี้:</span> ฿${salary.toLocaleString('th-TH')}</div>
     <div><span style="font-weight:700;">ค่าแรง/ชม.:</span> <span style="color:#667eea;font-size:18px;font-weight:700;">฿${perHour.toFixed(2)}</span></div>
@@ -5070,662 +5092,645 @@ async function generatePDF(month, year) {
   </div>
 </body></html>`;
 
-  const win = window.open('', '_blank');
-  win.document.write(html);
-  win.document.close();
-  setTimeout(() => win.print(), 500);
+const win = window.open(’’, ‘_blank’);
+win.document.write(html);
+win.document.close();
+setTimeout(() => win.print(), 500);
 }
-
 
 // ===== WORK TIME SETTINGS =====
 function getWorkStartTime() {
-  return localStorage.getItem('wp_work_start_' + skey()) || '06:00';
+return localStorage.getItem(‘wp_work_start_’ + skey()) || ‘06:00’;
 }
 function getWorkOTStart() {
-  return localStorage.getItem('wp_ot_start_' + skey()) || '16:30';
+return localStorage.getItem(‘wp_ot_start_’ + skey()) || ‘16:30’;
 }
 function saveWorkTimes(start, ot) {
-  localStorage.setItem('wp_work_start_' + skey(), start);
-  localStorage.setItem('wp_ot_start_' + skey(), ot);
-  db.collection('users').doc(skey()).set({ workStart: start, otStart: ot }, { merge: true });
-  // Recalculate cache
-  _cache = null;
-  toast('✅ บันทึกการตั้งค่าแล้ว', 'success');
+localStorage.setItem(‘wp_work_start_’ + skey(), start);
+localStorage.setItem(‘wp_ot_start_’ + skey(), ot);
+db.collection(‘users’).doc(skey()).set({ workStart: start, otStart: ot }, { merge: true });
+// Recalculate cache
+_cache = null;
+toast(‘✅ บันทึกการตั้งค่าแล้ว’, ‘success’);
 }
 
 // Admin password
 function saveAdminPassword() {
-  const pwd = document.getElementById('adminPassword').value;
-  if (pwd.length < 6) { toast('รหัสต้องมีอย่างน้อย 6 ตัว','error'); return; }
-  localStorage.setItem('wp_admin_pwd', btoa(pwd));
-  toast('✅ ตั้งรหัสผ่าน Admin แล้ว','success');
-  document.getElementById('adminPassword').value = '';
+const pwd = document.getElementById(‘adminPassword’).value;
+if (pwd.length < 6) { toast(‘รหัสต้องมีอย่างน้อย 6 ตัว’,‘error’); return; }
+localStorage.setItem(‘wp_admin_pwd’, btoa(pwd));
+toast(‘✅ ตั้งรหัสผ่าน Admin แล้ว’,‘success’);
+document.getElementById(‘adminPassword’).value = ‘’;
 }
 
 function checkAdminPassword() {
-  const saved = localStorage.getItem('wp_admin_pwd');
-  if (!saved) return true; // no password set
-  const input = prompt('กรุณากรอกรหัสผ่าน Admin:');
-  if (!input) return false;
-  return btoa(input) === saved;
+const saved = localStorage.getItem(‘wp_admin_pwd’);
+if (!saved) return true; // no password set
+const input = prompt(‘กรุณากรอกรหัสผ่าน Admin:’);
+if (!input) return false;
+return btoa(input) === saved;
 }
-
 
 // ===== WORK TIME SETTINGS =====
 function getWorkStartTime() {
-  return localStorage.getItem('wp_work_start') || '06:00';
+return localStorage.getItem(‘wp_work_start’) || ‘06:00’;
 }
 function getWorkOTStart() {
-  return localStorage.getItem('wp_ot_start') || '16:30';
+return localStorage.getItem(‘wp_ot_start’) || ‘16:30’;
 }
 function saveWorkTimes(start, ot) {
-  if (!start || !ot) { toast('กรุณากรอกเวลา','error'); return; }
-  localStorage.setItem('wp_work_start', start);
-  localStorage.setItem('wp_ot_start', ot);
-  _cache = null;
-  toast('✅ บันทึกการตั้งค่าแล้ว', 'success');
-  renderHome();
+if (!start || !ot) { toast(‘กรุณากรอกเวลา’,‘error’); return; }
+localStorage.setItem(‘wp_work_start’, start);
+localStorage.setItem(‘wp_ot_start’, ot);
+_cache = null;
+toast(‘✅ บันทึกการตั้งค่าแล้ว’, ‘success’);
+renderHome();
 }
 
 function saveAdminPassword() {
-  const pwd = document.getElementById('adminPassword').value;
-  if (pwd.length < 6) { toast('รหัสต้องมีอย่างน้อย 6 ตัว','error'); return; }
-  localStorage.setItem('wp_admin_pwd', btoa(pwd));
-  toast('✅ ตั้งรหัสผ่าน Admin แล้ว','success');
-  document.getElementById('adminPassword').value = '';
+const pwd = document.getElementById(‘adminPassword’).value;
+if (pwd.length < 6) { toast(‘รหัสต้องมีอย่างน้อย 6 ตัว’,‘error’); return; }
+localStorage.setItem(‘wp_admin_pwd’, btoa(pwd));
+toast(‘✅ ตั้งรหัสผ่าน Admin แล้ว’,‘success’);
+document.getElementById(‘adminPassword’).value = ‘’;
 }
-
 
 // ===== PUSH NOTIFICATIONS =====
 async function requestNotificationPermission() {
-  if (!('Notification' in window)) return false;
-  if (Notification.permission === 'granted') return true;
-  const result = await Notification.requestPermission();
-  return result === 'granted';
+if (!(‘Notification’ in window)) return false;
+if (Notification.permission === ‘granted’) return true;
+const result = await Notification.requestPermission();
+return result === ‘granted’;
 }
 
 function sendNotification(title, body, icon) {
-  if (Notification.permission !== 'granted') return;
-  new Notification(title, { 
-    body, 
-    icon: icon || '/favicon.ico',
-    badge: '/favicon.ico'
-  });
+if (Notification.permission !== ‘granted’) return;
+new Notification(title, {
+body,
+icon: icon || ‘/favicon.ico’,
+badge: ‘/favicon.ico’
+});
 }
 
 async function setupDailyReminders() {
-  const granted = await requestNotificationPermission();
-  if (!granted) return;
-  
-  // Check every minute for reminders
-  setInterval(async () => {
-    const now = new Date();
-    const h = now.getHours();
-    const m = now.getMinutes();
-    const [wh, wm] = getWorkStartTime().split(':').map(Number);
-    
-    // Remind 15 min before work starts
-    const reminderH = wh === 0 ? 23 : wh;
-    const reminderM = wm - 15 < 0 ? 45 : wm - 15;
-    
-    const notifKey = `wp_notif_${todayKey()}_${h}_${m}`;
-    if (localStorage.getItem(notifKey)) return;
-    
-    // Work start reminder
-    if (h === wh && m === wm) {
-      localStorage.setItem(notifKey, '1');
-      sendNotification('⏰ ทีมงานลาล่า', `ถึงเวลาเข้างานแล้วครับ! (${getWorkStartTime()})`, null);
+const granted = await requestNotificationPermission();
+if (!granted) return;
+
+// Check every minute for reminders
+setInterval(async () => {
+const now = new Date();
+const h = now.getHours();
+const m = now.getMinutes();
+const [wh, wm] = getWorkStartTime().split(’:’).map(Number);
+
+```
+// Remind 15 min before work starts
+const reminderH = wh === 0 ? 23 : wh;
+const reminderM = wm - 15 < 0 ? 45 : wm - 15;
+
+const notifKey = `wp_notif_${todayKey()}_${h}_${m}`;
+if (localStorage.getItem(notifKey)) return;
+
+// Work start reminder
+if (h === wh && m === wm) {
+  localStorage.setItem(notifKey, '1');
+  sendNotification('⏰ ทีมงานลาล่า', `ถึงเวลาเข้างานแล้วครับ! (${getWorkStartTime()})`, null);
+}
+
+// Forgot checkout reminder (19:00+)
+if (h >= 19) {
+  const recs = await loadRecords();
+  const open = recs.find(r => r.date === todayKey() && !r.checkOut);
+  if (open) {
+    const key2 = `wp_checkout_notif_${todayKey()}_${h}`;
+    if (!localStorage.getItem(key2)) {
+      localStorage.setItem(key2, '1');
+      sendNotification('⚠️ อย่าลืมออกงาน!', `คุณเข้างาน ${open.checkIn} แต่ยังไม่ได้บันทึกออกงานครับ`, null);
     }
-    
-    // Forgot checkout reminder (19:00+)
-    if (h >= 19) {
-      const recs = await loadRecords();
-      const open = recs.find(r => r.date === todayKey() && !r.checkOut);
-      if (open) {
-        const key2 = `wp_checkout_notif_${todayKey()}_${h}`;
-        if (!localStorage.getItem(key2)) {
-          localStorage.setItem(key2, '1');
-          sendNotification('⚠️ อย่าลืมออกงาน!', `คุณเข้างาน ${open.checkIn} แต่ยังไม่ได้บันทึกออกงานครับ`, null);
-        }
-      }
-    }
-  }, 60000);
+  }
+}
+```
+
+}, 60000);
 }
 
 // ===== ADMIN DASHBOARD =====
 async function renderAdminDashboard() {
-  if (!isAdmin()) return;
-  const el = document.getElementById('dashboardContent');
-  el.innerHTML = '<div class="empty-state"><div class="spinner" style="margin:0 auto"></div></div>';
-  
-  const today = todayKey();
-  let members = [];
-  try {
-    const snap = await db.collection('users').get();
-    members = snap.docs.map(d => d.data()).filter(u => u.email && u.name);
-  } catch(e) { members = []; }
+if (!isAdmin()) return;
+const el = document.getElementById(‘dashboardContent’);
+el.innerHTML = ‘<div class="empty-state"><div class="spinner" style="margin:0 auto"></div></div>’;
 
-  const stats = { total: members.length, present: 0, late: 0, absent: 0, working: 0 };
-  const memberCards = [];
+const today = todayKey();
+let members = [];
+try {
+const snap = await db.collection(‘users’).get();
+members = snap.docs.map(d => d.data()).filter(u => u.email && u.name);
+} catch(e) { members = []; }
 
-  for (const member of members) {
-    try {
-      const snap = await db.collection('users').doc(skey(member.email)).get();
-      const recs = snap.exists ? (snap.data().records || []) : [];
-      const todayRecs = recs.filter(r => r.date === today);
-      const open = todayRecs.find(r => !r.checkOut);
-      const comp = todayRecs.filter(r => r.checkOut);
-      const totalH = comp.reduce((s,r) => s + calcNetHours(r.checkIn,r.checkOut,r.date), 0);
-      const hasLate = todayRecs.some(r => r.isLate);
-      
-      if (todayRecs.length > 0) {
-        stats.present++;
-        if (hasLate) stats.late++;
-        if (open) stats.working++;
-      } else {
-        stats.absent++;
-      }
-      
-      memberCards.push({ member, name: member.name, todayRecs, open, totalH, hasLate });
-    } catch(e) {}
+const stats = { total: members.length, present: 0, late: 0, absent: 0, working: 0 };
+const memberCards = [];
+
+for (const member of members) {
+try {
+const snap = await db.collection(‘users’).doc(skey(member.email)).get();
+const recs = snap.exists ? (snap.data().records || []) : [];
+const todayRecs = recs.filter(r => r.date === today);
+const open = todayRecs.find(r => !r.checkOut);
+const comp = todayRecs.filter(r => r.checkOut);
+const totalH = comp.reduce((s,r) => s + calcNetHours(r.checkIn,r.checkOut,r.date), 0);
+const hasLate = todayRecs.some(r => r.isLate);
+
+```
+  if (todayRecs.length > 0) {
+    stats.present++;
+    if (hasLate) stats.late++;
+    if (open) stats.working++;
+  } else {
+    stats.absent++;
   }
-
-  const mons = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
-  const now = new Date();
   
-  el.innerHTML = `
-    <!-- Today Overview -->
-    <div class="section-card" style="margin-bottom:16px;">
-      <div class="section-title" style="margin-bottom:14px;">วันนี้ — ${now.getDate()} ${mons[now.getMonth()]} ${now.getFullYear()+543}</div>
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;">
-        <div class="sum-card"><div class="sum-val color-blue">${stats.total}</div><div class="sum-lbl">ทั้งหมด</div></div>
-        <div class="sum-card"><div class="sum-val color-green">${stats.present}</div><div class="sum-lbl">มาแล้ว</div></div>
-        <div class="sum-card"><div class="sum-val" style="color:#a855f7">${stats.working}</div><div class="sum-lbl">กำลังทำงาน</div></div>
-        <div class="sum-card"><div class="sum-val color-red">${stats.late}</div><div class="sum-lbl">มาสาย</div></div>
-      </div>
-    </div>
+  memberCards.push({ member, name: member.name, todayRecs, open, totalH, hasLate });
+} catch(e) {}
+```
 
-    <!-- Absent Alert -->
-    ${stats.absent > 0 ? `
-    <div class="section-card" style="margin-bottom:16px;border-left:3px solid var(--orange);">
-      <div style="color:var(--orange);font-weight:700;margin-bottom:8px;">⚠️ ยังไม่ได้ลงเวลา ${stats.absent} คน</div>
-      <div style="font-size:13px;color:var(--text2);">
-        ${memberCards.filter(m => m.todayRecs.length === 0).map(m => m.name).join(', ')}
-      </div>
-    </div>` : `
-    <div class="section-card" style="margin-bottom:16px;border-left:3px solid var(--green);">
-      <div style="color:var(--green);font-weight:700;">✅ ทุกคนมาครบแล้ววันนี้!</div>
-    </div>`}
+}
 
-    <!-- Member Status List -->
-    <div class="section-card">
-      <div class="section-title" style="margin-bottom:14px;">สถานะแต่ละคน</div>
-      ${memberCards.map(m => {
-        const firstIn = m.todayRecs.length > 0 ? m.todayRecs[0].checkIn : '-';
-        let status, statusColor;
-        if (m.open) { status = '🟢 กำลังทำงาน'; statusColor = 'var(--green)'; }
-        else if (m.todayRecs.length > 0 && m.hasLate) { status = '⚠️ มาสาย'; statusColor = 'var(--red)'; }
-        else if (m.todayRecs.length > 0) { status = '✅ มาแล้ว'; statusColor = 'var(--green)'; }
-        else { status = '❌ ยังไม่มา'; statusColor = 'var(--text3)'; }
-        
-        return `<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);">
-          <div>
-            <div style="font-weight:700;font-size:14px;">${m.name}</div>
-            <div style="font-size:12px;color:var(--text2);">เข้า: ${firstIn} | ${m.totalH.toFixed(1)} ชม.</div>
-          </div>
-          <span style="font-size:13px;font-weight:600;color:${statusColor};">${status}</span>
-        </div>`;
-      }).join('')}
+const mons = [‘ม.ค.’,‘ก.พ.’,‘มี.ค.’,‘เม.ย.’,‘พ.ค.’,‘มิ.ย.’,‘ก.ค.’,‘ส.ค.’,‘ก.ย.’,‘ต.ค.’,‘พ.ย.’,‘ธ.ค.’];
+const now = new Date();
+
+el.innerHTML = `
+<!-- Today Overview -->
+<div class="section-card" style="margin-bottom:16px;">
+<div class="section-title" style="margin-bottom:14px;">วันนี้ — ${now.getDate()} ${mons[now.getMonth()]} ${now.getFullYear()+543}</div>
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;">
+<div class="sum-card"><div class="sum-val color-blue">${stats.total}</div><div class="sum-lbl">ทั้งหมด</div></div>
+<div class="sum-card"><div class="sum-val color-green">${stats.present}</div><div class="sum-lbl">มาแล้ว</div></div>
+<div class="sum-card"><div class="sum-val" style="color:#a855f7">${stats.working}</div><div class="sum-lbl">กำลังทำงาน</div></div>
+<div class="sum-card"><div class="sum-val color-red">${stats.late}</div><div class="sum-lbl">มาสาย</div></div>
+</div>
+</div>
+
+```
+<!-- Absent Alert -->
+${stats.absent > 0 ? `
+<div class="section-card" style="margin-bottom:16px;border-left:3px solid var(--orange);">
+  <div style="color:var(--orange);font-weight:700;margin-bottom:8px;">⚠️ ยังไม่ได้ลงเวลา ${stats.absent} คน</div>
+  <div style="font-size:13px;color:var(--text2);">
+    ${memberCards.filter(m => m.todayRecs.length === 0).map(m => m.name).join(', ')}
+  </div>
+</div>` : `
+<div class="section-card" style="margin-bottom:16px;border-left:3px solid var(--green);">
+  <div style="color:var(--green);font-weight:700;">✅ ทุกคนมาครบแล้ววันนี้!</div>
+</div>`}
+
+<!-- Member Status List -->
+<div class="section-card">
+  <div class="section-title" style="margin-bottom:14px;">สถานะแต่ละคน</div>
+  ${memberCards.map(m => {
+    const firstIn = m.todayRecs.length > 0 ? m.todayRecs[0].checkIn : '-';
+    let status, statusColor;
+    if (m.open) { status = '🟢 กำลังทำงาน'; statusColor = 'var(--green)'; }
+    else if (m.todayRecs.length > 0 && m.hasLate) { status = '⚠️ มาสาย'; statusColor = 'var(--red)'; }
+    else if (m.todayRecs.length > 0) { status = '✅ มาแล้ว'; statusColor = 'var(--green)'; }
+    else { status = '❌ ยังไม่มา'; statusColor = 'var(--text3)'; }
+    
+    return `<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);">
+      <div>
+        <div style="font-weight:700;font-size:14px;">${m.name}</div>
+        <div style="font-size:12px;color:var(--text2);">เข้า: ${firstIn} | ${m.totalH.toFixed(1)} ชม.</div>
+      </div>
+      <span style="font-size:13px;font-weight:600;color:${statusColor};">${status}</span>
     </div>`;
+  }).join('')}
+</div>`;
+```
+
 }
 
 // ===== EDIT HISTORY LOG =====
 function logEdit(action, targetEmail, detail) {
-  if (!isAdmin()) return;
-  const logs = JSON.parse(localStorage.getItem('wp_edit_logs') || '[]');
-  logs.unshift({
-    time: new Date().toISOString(),
-    admin: currentUser.email,
-    action,
-    targetEmail,
-    detail
-  });
-  // Keep only last 100 logs
-  localStorage.setItem('wp_edit_logs', JSON.stringify(logs.slice(0, 100)));
+if (!isAdmin()) return;
+const logs = JSON.parse(localStorage.getItem(‘wp_edit_logs’) || ‘[]’);
+logs.unshift({
+time: new Date().toISOString(),
+admin: currentUser.email,
+action,
+targetEmail,
+detail
+});
+// Keep only last 100 logs
+localStorage.setItem(‘wp_edit_logs’, JSON.stringify(logs.slice(0, 100)));
 }
 
 function renderEditLogs() {
-  const logs = JSON.parse(localStorage.getItem('wp_edit_logs') || '[]');
-  const mons = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
-  const el = document.getElementById('editLogsContent');
-  if (!el) return;
-  
-  if (logs.length === 0) {
-    el.innerHTML = '<div class="empty-state"><div class="empty-icon">📋</div><div class="empty-text">ยังไม่มีประวัติการแก้ไข</div></div>';
-    return;
-  }
-  
-  el.innerHTML = logs.map(log => {
-    const d = new Date(log.time);
-    const dateStr = `${d.getDate()} ${mons[d.getMonth()]} ${d.getFullYear()+543} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
-    return `<div style="padding:12px 0;border-bottom:1px solid var(--border);">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
-        <span style="font-weight:700;font-size:14px;">${log.action}</span>
-        <span style="font-size:11px;color:var(--text3);">${dateStr}</span>
-      </div>
-      <div style="font-size:12px;color:var(--text2);">👤 ${log.targetEmail}</div>
-      <div style="font-size:12px;color:var(--text3);">${log.detail}</div>
-    </div>`;
-  }).join('');
+const logs = JSON.parse(localStorage.getItem(‘wp_edit_logs’) || ‘[]’);
+const mons = [‘ม.ค.’,‘ก.พ.’,‘มี.ค.’,‘เม.ย.’,‘พ.ค.’,‘มิ.ย.’,‘ก.ค.’,‘ส.ค.’,‘ก.ย.’,‘ต.ค.’,‘พ.ย.’,‘ธ.ค.’];
+const el = document.getElementById(‘editLogsContent’);
+if (!el) return;
+
+if (logs.length === 0) {
+el.innerHTML = ‘<div class="empty-state"><div class="empty-icon">📋</div><div class="empty-text">ยังไม่มีประวัติการแก้ไข</div></div>’;
+return;
+}
+
+el.innerHTML = logs.map(log => {
+const d = new Date(log.time);
+const dateStr = `${d.getDate()} ${mons[d.getMonth()]} ${d.getFullYear()+543} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+return `<div style="padding:12px 0;border-bottom:1px solid var(--border);"> <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;"> <span style="font-weight:700;font-size:14px;">${log.action}</span> <span style="font-size:11px;color:var(--text3);">${dateStr}</span> </div> <div style="font-size:12px;color:var(--text2);">👤 ${log.targetEmail}</div> <div style="font-size:12px;color:var(--text3);">${log.detail}</div> </div>`;
+}).join(’’);
 }
 
 // ===== YEARLY SUMMARY =====
 async function renderYearlySummary() {
-  const year = parseInt(document.getElementById('yearlyYear').value);
-  const el = document.getElementById('yearlyContent');
-  el.innerHTML = '<div class="empty-state"><div class="spinner" style="margin:0 auto"></div></div>';
-  
-  const recs = await loadRecords();
-  const yearRecs = recs.filter(r => r.date.startsWith(year.toString()));
-  const mons = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
-  
-  const monthData = Array.from({length:12}, (_, i) => {
-    const mr = yearRecs.filter(r => parseInt(r.date.split('-')[1]) === i+1);
-    const comp = mr.filter(r => r.checkOut);
-    const byDate = {};
-    mr.forEach(r => { if(!byDate[r.date]) byDate[r.date]=[]; byDate[r.date].push(r); });
-    const days = Object.keys(byDate).length;
-    const totalH = comp.reduce((s,r) => s + calcNetHours(r.checkIn,r.checkOut,r.date), 0);
-    const totalOT = comp.reduce((s,r) => s + (r.otMin||0), 0);
-    const lateCount = Object.values(byDate).filter(rs => rs.some(r => r.isLate)).length;
-    return { month: mons[i], days, totalH, totalOT, lateCount };
-  });
+const year = parseInt(document.getElementById(‘yearlyYear’).value);
+const el = document.getElementById(‘yearlyContent’);
+el.innerHTML = ‘<div class="empty-state"><div class="spinner" style="margin:0 auto"></div></div>’;
 
-  const totalDays = monthData.reduce((s,m) => s+m.days, 0);
-  const totalH = monthData.reduce((s,m) => s+m.totalH, 0);
-  const totalOT = monthData.reduce((s,m) => s+m.totalOT, 0);
-  const totalLate = monthData.reduce((s,m) => s+m.lateCount, 0);
+const recs = await loadRecords();
+const yearRecs = recs.filter(r => r.date.startsWith(year.toString()));
+const mons = [‘ม.ค.’,‘ก.พ.’,‘มี.ค.’,‘เม.ย.’,‘พ.ค.’,‘มิ.ย.’,‘ก.ค.’,‘ส.ค.’,‘ก.ย.’,‘ต.ค.’,‘พ.ย.’,‘ธ.ค.’];
 
-  el.innerHTML = `
-    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:16px;">
-      <div class="sum-card"><div class="sum-val color-blue">${totalDays}</div><div class="sum-lbl">วันที่มาทั้งปี</div></div>
-      <div class="sum-card"><div class="sum-val color-green">${totalH.toFixed(0)}</div><div class="sum-lbl">ชม.ทำงานรวม</div></div>
-      <div class="sum-card"><div class="sum-val color-orange">${(totalOT/60).toFixed(0)}</div><div class="sum-lbl">ชม.โอทีรวม</div></div>
-      <div class="sum-card"><div class="sum-val color-red">${totalLate}</div><div class="sum-lbl">ครั้งสายทั้งปี</div></div>
-    </div>
-    <div class="section-card">
-      <table class="ts-table">
-        <thead><tr>
-          <th>เดือน</th><th>วันที่มา</th><th>ชม.ทำงาน</th><th>ชม.โอที</th><th>ครั้งสาย</th>
-        </tr></thead>
-        <tbody>
-          ${monthData.map((m,i) => `<tr onclick="switchToMonth(${i})" style="cursor:pointer;">
-            <td style="font-weight:700;">${m.month}</td>
-            <td style="color:var(--accent);">${m.days}</td>
-            <td style="color:var(--green);font-weight:600;">${m.totalH.toFixed(1)}</td>
-            <td style="color:var(--orange);">${(m.totalOT/60).toFixed(1)}</td>
-            <td>${m.lateCount > 0 ? '<span class="badge badge-late">'+m.lateCount+'</span>' : '<span class="badge badge-ontime">0</span>'}</td>
-          </tr>`).join('')}
-        </tbody>
-      </table>
-    </div>`;
+const monthData = Array.from({length:12}, (_, i) => {
+const mr = yearRecs.filter(r => parseInt(r.date.split(’-’)[1]) === i+1);
+const comp = mr.filter(r => r.checkOut);
+const byDate = {};
+mr.forEach(r => { if(!byDate[r.date]) byDate[r.date]=[]; byDate[r.date].push(r); });
+const days = Object.keys(byDate).length;
+const totalH = comp.reduce((s,r) => s + calcNetHours(r.checkIn,r.checkOut,r.date), 0);
+const totalOT = comp.reduce((s,r) => s + (r.otMin||0), 0);
+const lateCount = Object.values(byDate).filter(rs => rs.some(r => r.isLate)).length;
+return { month: mons[i], days, totalH, totalOT, lateCount };
+});
+
+const totalDays = monthData.reduce((s,m) => s+m.days, 0);
+const totalH = monthData.reduce((s,m) => s+m.totalH, 0);
+const totalOT = monthData.reduce((s,m) => s+m.totalOT, 0);
+const totalLate = monthData.reduce((s,m) => s+m.lateCount, 0);
+
+el.innerHTML = `<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:16px;"> <div class="sum-card"><div class="sum-val color-blue">${totalDays}</div><div class="sum-lbl">วันที่มาทั้งปี</div></div> <div class="sum-card"><div class="sum-val color-green">${totalH.toFixed(0)}</div><div class="sum-lbl">ชม.ทำงานรวม</div></div> <div class="sum-card"><div class="sum-val color-orange">${(totalOT/60).toFixed(0)}</div><div class="sum-lbl">ชม.โอทีรวม</div></div> <div class="sum-card"><div class="sum-val color-red">${totalLate}</div><div class="sum-lbl">ครั้งสายทั้งปี</div></div> </div> <div class="section-card"> <table class="ts-table"> <thead><tr> <th>เดือน</th><th>วันที่มา</th><th>ชม.ทำงาน</th><th>ชม.โอที</th><th>ครั้งสาย</th> </tr></thead> <tbody> ${monthData.map((m,i) =>`<tr onclick="switchToMonth(${i})" style="cursor:pointer;">
+<td style="font-weight:700;">${m.month}</td>
+<td style="color:var(--accent);">${m.days}</td>
+<td style="color:var(--green);font-weight:600;">${m.totalH.toFixed(1)}</td>
+<td style="color:var(--orange);">${(m.totalOT/60).toFixed(1)}</td>
+<td>${m.lateCount > 0 ? ‘<span class="badge badge-late">’+m.lateCount+’</span>’ : ‘<span class="badge badge-ontime">0</span>’}</td>
+</tr>`).join('')} </tbody> </table> </div>`;
 }
 
 function switchToMonth(monthIdx) {
-  document.getElementById('statMonth').value = monthIdx;
-  document.getElementById('histMonth').value = monthIdx;
-  showPage('stats');
+document.getElementById(‘statMonth’).value = monthIdx;
+document.getElementById(‘histMonth’).value = monthIdx;
+showPage(‘stats’);
 }
 
 // ===== SHARE PDF VIA LINE =====
 function sharePDFViaLine(month, year) {
-  const mons = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
-  const text = `รายงานเวลาทำงาน ${currentUser.name} เดือน${mons[month]} ${year+543}%0Aดูรายละเอียดที่: https://chitipat-workpulse.netlify.app`;
-  window.open(`https://line.me/R/msg/text/?${text}`, '_blank');
+const mons = [‘ม.ค.’,‘ก.พ.’,‘มี.ค.’,‘เม.ย.’,‘พ.ค.’,‘มิ.ย.’,‘ก.ค.’,‘ส.ค.’,‘ก.ย.’,‘ต.ค.’,‘พ.ย.’,‘ธ.ค.’];
+const text = `รายงานเวลาทำงาน ${currentUser.name} เดือน${mons[month]} ${year+543}%0Aดูรายละเอียดที่: https://chitipat-workpulse.netlify.app`;
+window.open(`https://line.me/R/msg/text/?${text}`, ‘_blank’);
 }
 
 async function shareReport(month, year) {
-  const mons = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
-  const recs = await loadRecords();
-  const mr = recs.filter(r => { const [y,m] = r.date.split('-').map(Number); return y===year&&m===month+1; });
-  const totalH = mr.filter(r=>r.checkOut).reduce((s,r)=>s+calcNetHours(r.checkIn,r.checkOut,r.date),0);
-  const totalOT = mr.filter(r=>r.checkOut).reduce((s,r)=>s+(r.otMin||0),0);
-  const days = new Set(mr.map(r=>r.date)).size;
-  
-  const text = `📊 รายงานเวลาทำงาน\n👤 ${currentUser.name}\n📅 ${mons[month]} ${year+543}\n⏱ ${days} วัน | ${totalH.toFixed(1)} ชม. | OT ${(totalOT/60).toFixed(1)} ชม.\n🔗 https://chitipat-workpulse.netlify.app`;
-  
-  if (navigator.share) {
-    try {
-      await navigator.share({ title: 'รายงานเวลาทำงาน', text });
-      return;
-    } catch(e) {}
-  }
-  // Fallback: copy to clipboard
-  navigator.clipboard.writeText(text).then(() => toast('✅ คัดลอกข้อความแล้ว กด Paste ใน Line ได้เลย','success'));
+const mons = [‘ม.ค.’,‘ก.พ.’,‘มี.ค.’,‘เม.ย.’,‘พ.ค.’,‘มิ.ย.’,‘ก.ค.’,‘ส.ค.’,‘ก.ย.’,‘ต.ค.’,‘พ.ย.’,‘ธ.ค.’];
+const recs = await loadRecords();
+const mr = recs.filter(r => { const [y,m] = r.date.split(’-’).map(Number); return y===year&&m===month+1; });
+const totalH = mr.filter(r=>r.checkOut).reduce((s,r)=>s+calcNetHours(r.checkIn,r.checkOut,r.date),0);
+const totalOT = mr.filter(r=>r.checkOut).reduce((s,r)=>s+(r.otMin||0),0);
+const days = new Set(mr.map(r=>r.date)).size;
+
+const text = `📊 รายงานเวลาทำงาน\n👤 ${currentUser.name}\n📅 ${mons[month]} ${year+543}\n⏱ ${days} วัน | ${totalH.toFixed(1)} ชม. | OT ${(totalOT/60).toFixed(1)} ชม.\n🔗 https://chitipat-workpulse.netlify.app`;
+
+if (navigator.share) {
+try {
+await navigator.share({ title: ‘รายงานเวลาทำงาน’, text });
+return;
+} catch(e) {}
+}
+// Fallback: copy to clipboard
+navigator.clipboard.writeText(text).then(() => toast(‘✅ คัดลอกข้อความแล้ว กด Paste ใน Line ได้เลย’,‘success’));
 }
 
 // ===== NAVIGATION =====
 function showPage(name) {
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('.desktop-tab').forEach(t=>t.classList.remove('active'));
-  document.querySelectorAll('.mobile-nav-btn').forEach(b=>b.classList.remove('active'));
-  document.getElementById('page-'+name).classList.add('active');
-  const map = {home:0,calendar:1,stats:2,history:3,team:4,teamsummary:5,salary:6,settings:7};
-  const idx = map[name];
-  document.querySelectorAll('.desktop-tab')[idx]?.classList.add('active');
-  document.querySelectorAll('.mobile-nav-btn')[idx]?.classList.add('active');
-  if (name==='stats') renderStats();
-  if (name==='calendar') renderCalendar();
-  if (name==='history') renderHistory();
-  if (name==='team') { 
-    document.getElementById('teamDate').value = todayKey(); 
-    renderTeam();
-    if (isAdmin()) document.getElementById('bulkSection'); // already handled by button
-  }
-  if (name==='teamsummary') renderTeamSummary();
-  if (name==='dashboard-admin') renderAdminDashboard();
-  if (name==='yearly') {
-    const yearSel = document.getElementById('yearlyYear');
-    const now = new Date();
-    if (!yearSel.options.length) {
-      [now.getFullYear()-1, now.getFullYear()].forEach(y => {
-        const opt = document.createElement('option');
-        opt.value = y; opt.textContent = y+543;
-        if (y === now.getFullYear()) opt.selected = true;
-        yearSel.appendChild(opt);
-      });
-    }
-    renderYearlySummary();
-  }
-  if (name==='editlogs') renderEditLogs();
-  if (name==='settings') {
-    document.getElementById('settingWorkStart').value = getWorkStartTime();
-    document.getElementById('settingOTStart').value = getWorkOTStart();
-    document.getElementById('settingsName').textContent = currentUser.name;
-    document.getElementById('settingsEmail').textContent = currentUser.email;
-    const photo = getProfilePhoto(currentUser.email);
-    const av = document.getElementById('settingsAvatar');
-    if (photo) av.innerHTML = `<img src="${photo}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
-    else av.textContent = currentUser.name.charAt(0).toUpperCase();
-    if (isAdmin()) document.getElementById('adminPasswordSection').style.display = 'block';
-  }
-  if (name==='dashboard-admin') renderAdminDashboard();
-  if (name==='yearly') {
-    const yearSel = document.getElementById('yearlyYear');
-    const now = new Date();
-    if (!yearSel.options.length) {
-      [now.getFullYear()-1, now.getFullYear()].forEach(y => {
-        const opt = document.createElement('option');
-        opt.value = y; opt.textContent = y+543;
-        if (y === now.getFullYear()) opt.selected = true;
-        yearSel.appendChild(opt);
-      });
-    }
-    renderYearlySummary();
-  }
-  if (name==='editlogs') renderEditLogs();
-  if (name==='settings') {
-    document.getElementById('settingWorkStart').value = getWorkStartTime();
-    document.getElementById('settingOTStart').value = getWorkOTStart();
-    document.getElementById('settingsName').textContent = currentUser.name;
-    document.getElementById('settingsEmail').textContent = currentUser.email;
-    if (isAdmin()) document.getElementById('adminPwdCard').style.display = 'block';
-    const photo = getProfilePhoto(currentUser.email);
-    const av = document.getElementById('settingsAvatar');
-    if (photo) av.innerHTML = '<img src="'+photo+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">';
-    else av.textContent = currentUser.name.charAt(0).toUpperCase();
-  }
-  if (name==='salary') {
-    const m = document.getElementById('salMonth').value;
-    const y = document.getElementById('salYear').value;
-    const saved = loadSalaryInput(m, y);
-    if (saved) document.getElementById('salaryInput').value = saved;
-    renderSalary();
-    if (isAdmin()) renderAdminSalary();
-  }
+document.querySelectorAll(’.page’).forEach(p=>p.classList.remove(‘active’));
+document.querySelectorAll(’.desktop-tab’).forEach(t=>t.classList.remove(‘active’));
+document.querySelectorAll(’.mobile-nav-btn’).forEach(b=>b.classList.remove(‘active’));
+document.getElementById(‘page-’+name).classList.add(‘active’);
+const map = {home:0,calendar:1,stats:2,history:3,team:4,teamsummary:5,salary:6,settings:7};
+const idx = map[name];
+document.querySelectorAll(’.desktop-tab’)[idx]?.classList.add(‘active’);
+document.querySelectorAll(’.mobile-nav-btn’)[idx]?.classList.add(‘active’);
+if (name===‘stats’) renderStats();
+if (name===‘calendar’) renderCalendar();
+if (name===‘history’) renderHistory();
+if (name===‘team’) {
+document.getElementById(‘teamDate’).value = todayKey();
+renderTeam();
+if (isAdmin()) document.getElementById(‘bulkSection’); // already handled by button
+}
+if (name===‘teamsummary’) renderTeamSummary();
+if (name===‘dashboard-admin’) renderAdminDashboard();
+if (name===‘yearly’) {
+const yearSel = document.getElementById(‘yearlyYear’);
+const now = new Date();
+if (!yearSel.options.length) {
+[now.getFullYear()-1, now.getFullYear()].forEach(y => {
+const opt = document.createElement(‘option’);
+opt.value = y; opt.textContent = y+543;
+if (y === now.getFullYear()) opt.selected = true;
+yearSel.appendChild(opt);
+});
+}
+renderYearlySummary();
+}
+if (name===‘editlogs’) renderEditLogs();
+if (name===‘settings’) {
+document.getElementById(‘settingWorkStart’).value = getWorkStartTime();
+document.getElementById(‘settingOTStart’).value = getWorkOTStart();
+document.getElementById(‘settingsName’).textContent = currentUser.name;
+document.getElementById(‘settingsEmail’).textContent = currentUser.email;
+const photo = getProfilePhoto(currentUser.email);
+const av = document.getElementById(‘settingsAvatar’);
+if (photo) av.innerHTML = `<img src="${photo}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+else av.textContent = currentUser.name.charAt(0).toUpperCase();
+if (isAdmin()) document.getElementById(‘adminPasswordSection’).style.display = ‘block’;
+}
+if (name===‘dashboard-admin’) renderAdminDashboard();
+if (name===‘yearly’) {
+const yearSel = document.getElementById(‘yearlyYear’);
+const now = new Date();
+if (!yearSel.options.length) {
+[now.getFullYear()-1, now.getFullYear()].forEach(y => {
+const opt = document.createElement(‘option’);
+opt.value = y; opt.textContent = y+543;
+if (y === now.getFullYear()) opt.selected = true;
+yearSel.appendChild(opt);
+});
+}
+renderYearlySummary();
+}
+if (name===‘editlogs’) renderEditLogs();
+if (name===‘settings’) {
+document.getElementById(‘settingWorkStart’).value = getWorkStartTime();
+document.getElementById(‘settingOTStart’).value = getWorkOTStart();
+document.getElementById(‘settingsName’).textContent = currentUser.name;
+document.getElementById(‘settingsEmail’).textContent = currentUser.email;
+if (isAdmin()) document.getElementById(‘adminPwdCard’).style.display = ‘block’;
+const photo = getProfilePhoto(currentUser.email);
+const av = document.getElementById(‘settingsAvatar’);
+if (photo) av.innerHTML = ‘<img src="'+photo+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">’;
+else av.textContent = currentUser.name.charAt(0).toUpperCase();
+}
+if (name===‘salary’) {
+const m = document.getElementById(‘salMonth’).value;
+const y = document.getElementById(‘salYear’).value;
+const saved = loadSalaryInput(m, y);
+if (saved) document.getElementById(‘salaryInput’).value = saved;
+renderSalary();
+if (isAdmin()) renderAdminSalary();
+}
 }
 
-function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove(‘open’); }
 
 // ===== SELECTORS =====
 function populateSelectors() {
-  const mons=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
-  const now = new Date();
-  ['statMonth','histMonth','tsMonth','salMonth'].forEach(id=>{
-    const s=document.getElementById(id); s.innerHTML='';
-    mons.forEach((m,i)=>s.innerHTML+=`<option value="${i}"${i===now.getMonth()?' selected':''}>${m}</option>`);
-  });
-  ['statYear','histYear','tsYear','salYear'].forEach(id=>{
-    const s=document.getElementById(id); s.innerHTML='';
-    [now.getFullYear()-1,now.getFullYear()].forEach(y=>s.innerHTML+=`<option value="${y}"${y===now.getFullYear()?' selected':''}>${y}</option>`);
-  });
+const mons=[‘ม.ค.’,‘ก.พ.’,‘มี.ค.’,‘เม.ย.’,‘พ.ค.’,‘มิ.ย.’,‘ก.ค.’,‘ส.ค.’,‘ก.ย.’,‘ต.ค.’,‘พ.ย.’,‘ธ.ค.’];
+const now = new Date();
+[‘statMonth’,‘histMonth’,‘tsMonth’,‘salMonth’].forEach(id=>{
+const s=document.getElementById(id); s.innerHTML=’’;
+mons.forEach((m,i)=>s.innerHTML+=`<option value="${i}"${i===now.getMonth()?' selected':''}>${m}</option>`);
+});
+[‘statYear’,‘histYear’,‘tsYear’,‘salYear’].forEach(id=>{
+const s=document.getElementById(id); s.innerHTML=’’;
+[now.getFullYear()-1,now.getFullYear()].forEach(y=>s.innerHTML+=`<option value="${y}"${y===now.getFullYear()?' selected':''}>${y}</option>`);
+});
 }
 
 // ===== TOAST =====
-function toast(msg, type='success') {
-  const icons = {success:'✅',error:'❌',warning:'⚠️'};
-  const t = document.getElementById('toast');
-  t.textContent = `${icons[type]||''} ${msg}`;
-  t.className = `toast ${type} show`;
-  setTimeout(()=>t.classList.remove('show'), 3000);
+function toast(msg, type=‘success’) {
+const icons = {success:‘✅’,error:‘❌’,warning:‘⚠️’};
+const t = document.getElementById(‘toast’);
+t.textContent = `${icons[type]||''} ${msg}`;
+t.className = `toast ${type} show`;
+setTimeout(()=>t.classList.remove(‘show’), 3000);
 }
 
-
 // ===== HAPTIC =====
-function haptic(t){try{if('vibrate' in navigator){const p={light:[8],medium:[15],success:[8,40,8],error:[40,20,40]};navigator.vibrate(p[t]||[8]);}}catch(e){}}
+function haptic(t){try{if(‘vibrate’ in navigator){const p={light:[8],medium:[15],success:[8,40,8],error:[40,20,40]};navigator.vibrate(p[t]||[8]);}}catch(e){}}
 
 // ===== CONFETTI =====
 function launchConfetti(){
-  const C=['#007aff','#34c759','#ff9500','#af52de','#ff3b30','#ffd60a'];
-  const cv=document.createElement('canvas');
-  cv.style.cssText='position:fixed;inset:0;z-index:9999;pointer-events:none;width:100%;height:100%;';
-  document.body.appendChild(cv);
-  const ctx=cv.getContext('2d');
-  cv.width=innerWidth;cv.height=innerHeight;
-  const p=Array.from({length:90},()=>({x:Math.random()*cv.width,y:-20,c:C[Math.random()*C.length|0],vx:(Math.random()-.5)*5,vy:2+Math.random()*4,w:5+Math.random()*8,h:4+Math.random()*5,a:Math.random()*Math.PI*2,s:(Math.random()-.5)*.15,o:1}));
-  let f=0;
-  (function draw(){ctx.clearRect(0,0,cv.width,cv.height);p.forEach(q=>{q.x+=q.vx;q.y+=q.vy;q.vy+=.07;q.a+=q.s;q.o=Math.max(0,1-f/150);ctx.save();ctx.globalAlpha=q.o;ctx.translate(q.x,q.y);ctx.rotate(q.a);ctx.fillStyle=q.c;ctx.fillRect(-q.w/2,-q.h/2,q.w,q.h);ctx.restore();});f++;if(f<170)requestAnimationFrame(draw);else cv.remove();})();
+const C=[’#007aff’,’#34c759’,’#ff9500’,’#af52de’,’#ff3b30’,’#ffd60a’];
+const cv=document.createElement(‘canvas’);
+cv.style.cssText=‘position:fixed;inset:0;z-index:9999;pointer-events:none;width:100%;height:100%;’;
+document.body.appendChild(cv);
+const ctx=cv.getContext(‘2d’);
+cv.width=innerWidth;cv.height=innerHeight;
+const p=Array.from({length:90},()=>({x:Math.random()*cv.width,y:-20,c:C[Math.random()*C.length|0],vx:(Math.random()-.5)*5,vy:2+Math.random()*4,w:5+Math.random()*8,h:4+Math.random()*5,a:Math.random()*Math.PI*2,s:(Math.random()-.5)*.15,o:1}));
+let f=0;
+(function draw(){ctx.clearRect(0,0,cv.width,cv.height);p.forEach(q=>{q.x+=q.vx;q.y+=q.vy;q.vy+=.07;q.a+=q.s;q.o=Math.max(0,1-f/150);ctx.save();ctx.globalAlpha=q.o;ctx.translate(q.x,q.y);ctx.rotate(q.a);ctx.fillStyle=q.c;ctx.fillRect(-q.w/2,-q.h/2,q.w,q.h);ctx.restore();});f++;if(f<170)requestAnimationFrame(draw);else cv.remove();})();
 }
 
 // ===== PARTICLES (checkout) =====
 function launchParticles(){
-  const E=['⭐','✨','🌟','💫','🎊'];
-  const cv=document.createElement('canvas');
-  cv.style.cssText='position:fixed;inset:0;z-index:9999;pointer-events:none;width:100%;height:100%;';
-  document.body.appendChild(cv);
-  const ctx=cv.getContext('2d');cv.width=innerWidth;cv.height=innerHeight;
-  const p=Array.from({length:20},()=>({x:cv.width/2+(Math.random()-.5)*60,y:cv.height*.45,e:E[Math.random()*E.length|0],vx:(Math.random()-.5)*9,vy:-5-Math.random()*6,g:.22,s:16+Math.random()*12,o:1,r:Math.random()*Math.PI*2,rs:(Math.random()-.5)*.18}));
-  let f=0;
-  (function draw(){ctx.clearRect(0,0,cv.width,cv.height);p.forEach(q=>{q.x+=q.vx;q.y+=q.vy;q.vy+=q.g;q.r+=q.rs;q.o=Math.max(0,1-f/75);ctx.save();ctx.globalAlpha=q.o;ctx.translate(q.x,q.y);ctx.rotate(q.r);ctx.font=q.s+'px serif';ctx.fillText(q.e,-q.s/2,q.s/2);ctx.restore();});f++;if(f<85)requestAnimationFrame(draw);else cv.remove();})();
+const E=[‘⭐’,‘✨’,‘🌟’,‘💫’,‘🎊’];
+const cv=document.createElement(‘canvas’);
+cv.style.cssText=‘position:fixed;inset:0;z-index:9999;pointer-events:none;width:100%;height:100%;’;
+document.body.appendChild(cv);
+const ctx=cv.getContext(‘2d’);cv.width=innerWidth;cv.height=innerHeight;
+const p=Array.from({length:20},()=>({x:cv.width/2+(Math.random()-.5)*60,y:cv.height*.45,e:E[Math.random()*E.length|0],vx:(Math.random()-.5)*9,vy:-5-Math.random()*6,g:.22,s:16+Math.random()*12,o:1,r:Math.random()*Math.PI*2,rs:(Math.random()-.5)*.18}));
+let f=0;
+(function draw(){ctx.clearRect(0,0,cv.width,cv.height);p.forEach(q=>{q.x+=q.vx;q.y+=q.vy;q.vy+=q.g;q.r+=q.rs;q.o=Math.max(0,1-f/75);ctx.save();ctx.globalAlpha=q.o;ctx.translate(q.x,q.y);ctx.rotate(q.r);ctx.font=q.s+‘px serif’;ctx.fillText(q.e,-q.s/2,q.s/2);ctx.restore();});f++;if(f<85)requestAnimationFrame(draw);else cv.remove();})();
 }
 
 // ===== ANIMATED COUNTER =====
 function animCount(el,target,dur,dec){
-  if(!el)return;
-  const s=parseFloat(el.textContent)||0,t0=performance.now();
-  (function step(now){
-    const p=Math.min((now-t0)/dur,1),e=1-Math.pow(1-p,3),v=s+(target-s)*e;
-    el.textContent=dec>0?v.toFixed(dec):Math.round(v)+'';
-    if(p<1)requestAnimationFrame(step);else el.textContent=dec>0?target.toFixed(dec):target+'';
-  })(t0);
+if(!el)return;
+const s=parseFloat(el.textContent)||0,t0=performance.now();
+(function step(now){
+const p=Math.min((now-t0)/dur,1),e=1-Math.pow(1-p,3),v=s+(target-s)*e;
+el.textContent=dec>0?v.toFixed(dec):Math.round(v)+’’;
+if(p<1)requestAnimationFrame(step);else el.textContent=dec>0?target.toFixed(dec):target+’’;
+})(t0);
 }
 
 // ===== MOOD =====
-const MOODS=[{e:'😄',l:'สดใส',c:'#34c759'},{e:'😊',l:'ดี',c:'#007aff'},{e:'😐',l:'ปกติ',c:'#ff9500'},{e:'😴',l:'ง่วง',c:'#af52de'},{e:'😤',l:'เครียด',c:'#ff3b30'}];
-window._pickMood=function(i){
-  const m=MOODS[i];
-  localStorage.setItem('wp_mood_'+todayKey()+'_'+skey(),JSON.stringify({...m,time:new Date().toISOString()}));
-  renderMoodWidget();
-  haptic('success');
-  toast(m.e+' บันทึกอารมณ์แล้ว','success');
+const MOODS=[{e:‘😄’,l:‘สดใส’,c:’#34c759’},{e:‘😊’,l:‘ดี’,c:’#007aff’},{e:‘😐’,l:‘ปกติ’,c:’#ff9500’},{e:‘😴’,l:‘ง่วง’,c:’#af52de’},{e:‘😤’,l:‘เครียด’,c:’#ff3b30’}];
+window.*pickMood=function(i){
+const m=MOODS[i];
+localStorage.setItem(’wp_mood*’+todayKey()+’*’+skey(),JSON.stringify({…m,time:new Date().toISOString()}));
+renderMoodWidget();
+haptic(‘success’);
+toast(m.e+’ บันทึกอารมณ์แล้ว’,‘success’);
 };
-function clearMood(){localStorage.removeItem('wp_mood_'+todayKey()+'_'+skey());renderMoodWidget();}
+function clearMood(){localStorage.removeItem(’wp_mood*’+todayKey()+’*’+skey());renderMoodWidget();}
 function renderMoodWidget(){
-  const el=document.getElementById('moodWidget');if(!el)return;
-  let saved=null;try{saved=JSON.parse(localStorage.getItem('wp_mood_'+todayKey()+'_'+skey())||'null');}catch(e){}
-  if(saved){
-    el.innerHTML='<div style="display:flex;align-items:center;gap:10px;"><span style="font-size:26px;">'+saved.e+'</span><div style="flex:1"><div style="font-size:11px;color:#8e8e93;font-weight:600;">อารมณ์วันนี้</div><div style="font-size:14px;font-weight:700;color:'+saved.c+'">'+saved.l+'</div></div><button onclick="clearMood()" style="padding:5px 12px;background:#f2f2f7;border:none;border-radius:8px;font-size:12px;cursor:pointer;">เปลี่ยน</button></div>';
-  } else {
-    var b='';MOODS.forEach(function(m,i){b+='<button onclick="window._pickMood('+i+')" style="flex:1;padding:8px 2px;background:#f2f2f7;border:1.5px solid #e5e5ea;border-radius:14px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;"><span style="font-size:20px;">'+m.e+'</span><span style="font-size:9px;font-weight:600;color:#8e8e93;">'+m.l+'</span></button>';});
-    el.innerHTML='<div style="font-size:12px;font-weight:700;color:#3c3c43;margin-bottom:8px;">😊 วันนี้เป็นยังไงบ้าง?</div><div style="display:flex;gap:4px;">'+b+'</div>';
-  }
+const el=document.getElementById(‘moodWidget’);if(!el)return;
+let saved=null;try{saved=JSON.parse(localStorage.getItem(’wp_mood*’+todayKey()+’_’+skey())||‘null’);}catch(e){}
+if(saved){
+el.innerHTML=’<div style="display:flex;align-items:center;gap:10px;"><span style="font-size:26px;">’+saved.e+’</span><div style="flex:1"><div style="font-size:11px;color:#8e8e93;font-weight:600;">อารมณ์วันนี้</div><div style="font-size:14px;font-weight:700;color:'+saved.c+'">’+saved.l+’</div></div><button onclick="clearMood()" style="padding:5px 12px;background:#f2f2f7;border:none;border-radius:8px;font-size:12px;cursor:pointer;">เปลี่ยน</button></div>’;
+} else {
+var b=’’;MOODS.forEach(function(m,i){b+=’<button onclick="window._pickMood('+i+')" style="flex:1;padding:8px 2px;background:#f2f2f7;border:1.5px solid #e5e5ea;border-radius:14px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;"><span style="font-size:20px;">’+m.e+’</span><span style="font-size:9px;font-weight:600;color:#8e8e93;">’+m.l+’</span></button>’;});
+el.innerHTML=’<div style="font-size:12px;font-weight:700;color:#3c3c43;margin-bottom:8px;">😊 วันนี้เป็นยังไงบ้าง?</div><div style="display:flex;gap:4px;">’+b+’</div>’;
+}
 }
 
 // ===== PULL TO REFRESH =====
 function setupPullToRefresh(){
-  var sy=0,pulling=false,bar=document.createElement('div');
-  bar.innerHTML='<span id="_ptrTxt" style="color:#fff;font-size:12px;font-weight:600;opacity:0;transition:opacity .2s;">↓ ดึงเพื่อรีเฟรช</span>';
-  bar.style.cssText='position:fixed;top:0;left:0;right:0;height:0;background:linear-gradient(135deg,#007aff,#5856d6);z-index:9998;display:flex;align-items:flex-end;justify-content:center;padding-bottom:6px;overflow:hidden;transition:height .15s;';
-  document.body.prepend(bar);
-  document.addEventListener('touchstart',function(e){if(scrollY===0){sy=e.touches[0].clientY;pulling=true;}},{passive:true});
-  document.addEventListener('touchmove',function(e){if(!pulling)return;var dy=e.touches[0].clientY-sy;if(dy>0&&dy<120){bar.style.height=(dy*.45)+'px';var t=document.getElementById('_ptrTxt');if(t){t.style.opacity=Math.min(dy/75,1);t.textContent=dy>75?'↑ ปล่อยเพื่อรีเฟรช':'↓ ดึงเพื่อรีเฟรช';}}},{passive:true});
-  document.addEventListener('touchend',function(e){if(!pulling)return;var dy=e.changedTouches[0].clientY-sy;bar.style.height='0';var t=document.getElementById('_ptrTxt');if(t)t.style.opacity='0';if(dy>75){haptic('success');_cache=null;toast('🔄 รีเฟรชแล้ว','success');renderHome();}pulling=false;},{passive:true});
+var sy=0,pulling=false,bar=document.createElement(‘div’);
+bar.innerHTML=’<span id="_ptrTxt" style="color:#fff;font-size:12px;font-weight:600;opacity:0;transition:opacity .2s;">↓ ดึงเพื่อรีเฟรช</span>’;
+bar.style.cssText=‘position:fixed;top:0;left:0;right:0;height:0;background:linear-gradient(135deg,#007aff,#5856d6);z-index:9998;display:flex;align-items:flex-end;justify-content:center;padding-bottom:6px;overflow:hidden;transition:height .15s;’;
+document.body.prepend(bar);
+document.addEventListener(‘touchstart’,function(e){if(scrollY===0){sy=e.touches[0].clientY;pulling=true;}},{passive:true});
+document.addEventListener(‘touchmove’,function(e){if(!pulling)return;var dy=e.touches[0].clientY-sy;if(dy>0&&dy<120){bar.style.height=(dy*.45)+‘px’;var t=document.getElementById(’_ptrTxt’);if(t){t.style.opacity=Math.min(dy/75,1);t.textContent=dy>75?‘↑ ปล่อยเพื่อรีเฟรช’:‘↓ ดึงเพื่อรีเฟรช’;}}},{passive:true});
+document.addEventListener(‘touchend’,function(e){if(!pulling)return;var dy=e.changedTouches[0].clientY-sy;bar.style.height=‘0’;var t=document.getElementById(’_ptrTxt’);if(t)t.style.opacity=‘0’;if(dy>75){haptic(‘success’);_cache=null;toast(‘🔄 รีเฟรชแล้ว’,‘success’);renderHome();}pulling=false;},{passive:true});
 }
 
 // ===== MONTHLY RECAP =====
 async function showMonthlyRecap(){
-  const now=new Date(),mo=now.getMonth(),yr=now.getFullYear();
-  const MN=['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
-  const recs=await loadRecords();
-  const mr=recs.filter(r=>{const d=new Date(r.date);return d.getMonth()===mo&&d.getFullYear()===yr&&r.checkOut;});
-  if(!mr.length){toast('ยังไม่มีข้อมูลเดือนนี้','warning');return;}
-  const tH=mr.reduce((s,r)=>s+calcHours(r.checkIn,r.checkOut),0);
-  const tOT=mr.reduce((s,r)=>s+(r.otMin||0)/60,0);
-  const lC=mr.filter(r=>r.isLate).length;
-  const pct=Math.round(((mr.length-lC)/mr.length)*100);
-  const sc=Math.max(0,Math.min(100,100-lC*5+Math.min(20,tOT*2|0)));
-  const gd=sc>=90?'🌟 ยอดเยี่ยม':sc>=75?'👍 ดีมาก':sc>=60?'😊 ดี':'💪 พัฒนาได้';
-  const ov=document.createElement('div');
-  ov.style.cssText='position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.75);backdrop-filter:blur(10px);display:flex;align-items:center;justify-content:center;padding:20px;';
-  ov.innerHTML='<div style="width:100%;max-width:360px;border-radius:28px;overflow:hidden;box-shadow:0 32px 80px rgba(0,0,0,.5);">'
-    +'<div style="background:linear-gradient(160deg,#1a1a2e,#16213e,#0f3460);padding:28px 22px 22px;text-align:center;">'
-    +'<div style="font-size:10px;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:3px;margin-bottom:6px;">สรุปประจำเดือน</div>'
-    +'<div style="font-size:22px;font-weight:800;color:#fff;margin-bottom:14px;">'+MN[mo]+' '+(yr+543)+'</div>'
-    +'<div style="font-size:52px;margin-bottom:8px;">'+(sc>=90?'🏆':sc>=75?'⭐':sc>=60?'✅':'💪')+'</div>'
-    +'<div style="font-size:20px;font-weight:800;color:#fff;">'+gd+'</div>'
-    +'<div style="background:rgba(255,255,255,.1);border-radius:20px;padding:4px 14px;display:inline-block;margin-top:6px;font-size:12px;color:rgba(255,255,255,.7);">คะแนน '+sc+'/100</div>'
-    +'</div>'
-    +'<div style="background:#f2f2f7;padding:16px;display:grid;grid-template-columns:1fr 1fr;gap:10px;">'
-    +'<div style="background:#fff;border-radius:16px;padding:14px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.06);"><div style="font-size:28px;font-weight:800;color:#007aff;">'+tH.toFixed(0)+'</div><div style="font-size:10px;color:#8e8e93;font-weight:600;margin-top:2px;">ชม.ทำงาน</div></div>'
-    +'<div style="background:#fff;border-radius:16px;padding:14px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.06);"><div style="font-size:28px;font-weight:800;color:#34c759;">'+pct+'%</div><div style="font-size:10px;color:#8e8e93;font-weight:600;margin-top:2px;">ตรงเวลา</div></div>'
-    +'<div style="background:#fff;border-radius:16px;padding:14px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.06);"><div style="font-size:28px;font-weight:800;color:#ff9500;">'+tOT.toFixed(1)+'</div><div style="font-size:10px;color:#8e8e93;font-weight:600;margin-top:2px;">ชม. OT</div></div>'
-    +'<div style="background:#fff;border-radius:16px;padding:14px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.06);"><div style="font-size:28px;font-weight:800;color:#ff3b30;">'+lC+'</div><div style="font-size:10px;color:#8e8e93;font-weight:600;margin-top:2px;">วันที่สาย</div></div>'
-    +'</div>'
-    +'<div style="background:#f2f2f7;padding:0 16px 16px;">'
-    +'<div style="background:linear-gradient(135deg,#007aff,#5856d6);border-radius:16px;padding:14px;text-align:center;color:#fff;margin-bottom:10px;">'
-    +'<div style="font-size:11px;opacity:.8;margin-bottom:3px;">เฉลี่ยต่อวัน</div>'
-    +'<div style="font-size:30px;font-weight:800;">'+(tH/mr.length).toFixed(1)+' <span style="font-size:14px;opacity:.7;">ชม.</span></div>'
-    +'</div>'
-    +'<button onclick="this.closest(\'div[style*=fixed]\').remove()" style="width:100%;padding:14px;background:#1c1c1e;color:#fff;border:none;border-radius:14px;font-size:15px;font-weight:700;cursor:pointer;">ปิด</button>'
-    +'</div></div>';
-  ov.onclick=function(e){if(e.target===ov)ov.remove();};
-  document.body.appendChild(ov);
+const now=new Date(),mo=now.getMonth(),yr=now.getFullYear();
+const MN=[‘มกราคม’,‘กุมภาพันธ์’,‘มีนาคม’,‘เมษายน’,‘พฤษภาคม’,‘มิถุนายน’,‘กรกฎาคม’,‘สิงหาคม’,‘กันยายน’,‘ตุลาคม’,‘พฤศจิกายน’,‘ธันวาคม’];
+const recs=await loadRecords();
+const mr=recs.filter(r=>{const d=new Date(r.date);return d.getMonth()===mo&&d.getFullYear()===yr&&r.checkOut;});
+if(!mr.length){toast(‘ยังไม่มีข้อมูลเดือนนี้’,‘warning’);return;}
+const tH=mr.reduce((s,r)=>s+calcHours(r.checkIn,r.checkOut),0);
+const tOT=mr.reduce((s,r)=>s+(r.otMin||0)/60,0);
+const lC=mr.filter(r=>r.isLate).length;
+const pct=Math.round(((mr.length-lC)/mr.length)*100);
+const sc=Math.max(0,Math.min(100,100-lC*5+Math.min(20,tOT*2|0)));
+const gd=sc>=90?‘🌟 ยอดเยี่ยม’:sc>=75?‘👍 ดีมาก’:sc>=60?‘😊 ดี’:‘💪 พัฒนาได้’;
+const ov=document.createElement(‘div’);
+ov.style.cssText=‘position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.75);backdrop-filter:blur(10px);display:flex;align-items:center;justify-content:center;padding:20px;’;
+ov.innerHTML=’<div style="width:100%;max-width:360px;border-radius:28px;overflow:hidden;box-shadow:0 32px 80px rgba(0,0,0,.5);">’
++’<div style="background:linear-gradient(160deg,#1a1a2e,#16213e,#0f3460);padding:28px 22px 22px;text-align:center;">’
++’<div style="font-size:10px;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:3px;margin-bottom:6px;">สรุปประจำเดือน</div>’
++’<div style="font-size:22px;font-weight:800;color:#fff;margin-bottom:14px;">’+MN[mo]+’ ‘+(yr+543)+’</div>’
++’<div style="font-size:52px;margin-bottom:8px;">’+(sc>=90?‘🏆’:sc>=75?‘⭐’:sc>=60?‘✅’:‘💪’)+’</div>’
++’<div style="font-size:20px;font-weight:800;color:#fff;">’+gd+’</div>’
++’<div style="background:rgba(255,255,255,.1);border-radius:20px;padding:4px 14px;display:inline-block;margin-top:6px;font-size:12px;color:rgba(255,255,255,.7);">คะแนน ‘+sc+’/100</div>’
++’</div>’
++’<div style="background:#f2f2f7;padding:16px;display:grid;grid-template-columns:1fr 1fr;gap:10px;">’
++’<div style="background:#fff;border-radius:16px;padding:14px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.06);"><div style="font-size:28px;font-weight:800;color:#007aff;">’+tH.toFixed(0)+’</div><div style="font-size:10px;color:#8e8e93;font-weight:600;margin-top:2px;">ชม.ทำงาน</div></div>’
++’<div style="background:#fff;border-radius:16px;padding:14px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.06);"><div style="font-size:28px;font-weight:800;color:#34c759;">’+pct+’%</div><div style="font-size:10px;color:#8e8e93;font-weight:600;margin-top:2px;">ตรงเวลา</div></div>’
++’<div style="background:#fff;border-radius:16px;padding:14px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.06);"><div style="font-size:28px;font-weight:800;color:#ff9500;">’+tOT.toFixed(1)+’</div><div style="font-size:10px;color:#8e8e93;font-weight:600;margin-top:2px;">ชม. OT</div></div>’
++’<div style="background:#fff;border-radius:16px;padding:14px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.06);"><div style="font-size:28px;font-weight:800;color:#ff3b30;">’+lC+’</div><div style="font-size:10px;color:#8e8e93;font-weight:600;margin-top:2px;">วันที่สาย</div></div>’
++’</div>’
++’<div style="background:#f2f2f7;padding:0 16px 16px;">’
++’<div style="background:linear-gradient(135deg,#007aff,#5856d6);border-radius:16px;padding:14px;text-align:center;color:#fff;margin-bottom:10px;">’
++’<div style="font-size:11px;opacity:.8;margin-bottom:3px;">เฉลี่ยต่อวัน</div>’
++’<div style="font-size:30px;font-weight:800;">’+(tH/mr.length).toFixed(1)+’ <span style="font-size:14px;opacity:.7;">ชม.</span></div>’
++’</div>’
++’<button onclick="this.closest(\'div[style*=fixed]\').remove()" style="width:100%;padding:14px;background:#1c1c1e;color:#fff;border:none;border-radius:14px;font-size:15px;font-weight:700;cursor:pointer;">ปิด</button>’
++’</div></div>’;
+ov.onclick=function(e){if(e.target===ov)ov.remove();};
+document.body.appendChild(ov);
 }
 
 // ===== ACHIEVEMENTS =====
 const ACHS=[
-  {id:'first',icon:'🎯',name:'เริ่มต้นดี!',desc:'สแกนเข้างานครั้งแรก',check:function(r){return r.length>=1;}},
-  {id:'ot5',icon:'⭐',name:'ตรงเวลา 5 วัน',desc:'มาตรงเวลา 5 วัน',check:function(r){return r.filter(function(x){return !x.isLate;}).length>=5;}},
-  {id:'ot30',icon:'🏅',name:'ขยันตรงเวลา',desc:'มาตรงเวลา 30 วัน',check:function(r){return r.filter(function(x){return !x.isLate;}).length>=30;}},
-  {id:'ot100',icon:'💪',name:'OT Hero',desc:'โอทีรวม 50 ชม.',check:function(r){return r.reduce(function(s,x){return s+(x.otMin||0);},0)>=3000;}},
-  {id:'d100',icon:'🏆',name:'100 วัน',desc:'บันทึกครบ 100 วัน',check:function(r){return r.length>=100;}}
+{id:‘first’,icon:‘🎯’,name:‘เริ่มต้นดี!’,desc:‘สแกนเข้างานครั้งแรก’,check:function(r){return r.length>=1;}},
+{id:‘ot5’,icon:‘⭐’,name:‘ตรงเวลา 5 วัน’,desc:‘มาตรงเวลา 5 วัน’,check:function(r){return r.filter(function(x){return !x.isLate;}).length>=5;}},
+{id:‘ot30’,icon:‘🏅’,name:‘ขยันตรงเวลา’,desc:‘มาตรงเวลา 30 วัน’,check:function(r){return r.filter(function(x){return !x.isLate;}).length>=30;}},
+{id:‘ot100’,icon:‘💪’,name:‘OT Hero’,desc:‘โอทีรวม 50 ชม.’,check:function(r){return r.reduce(function(s,x){return s+(x.otMin||0);},0)>=3000;}},
+{id:‘d100’,icon:‘🏆’,name:‘100 วัน’,desc:‘บันทึกครบ 100 วัน’,check:function(r){return r.length>=100;}}
 ];
 function checkAchievements(recs){
-  ACHS.forEach(function(a){
-    var k='wp_ach_'+a.id;
-    if(!localStorage.getItem(k)&&a.check(recs)){
-      localStorage.setItem(k,'1');
-      var el=document.createElement('div');
-      el.style.cssText='position:fixed;top:70px;left:50%;transform:translateX(-50%) translateY(-130px);background:linear-gradient(135deg,#1c1c1e,#2c2c2e);color:#fff;border-radius:22px;padding:14px 18px;z-index:9999;display:flex;align-items:center;gap:12px;box-shadow:0 16px 48px rgba(0,0,0,.4);min-width:260px;max-width:88vw;border:1px solid rgba(255,255,255,.1);transition:transform .45s cubic-bezier(.34,1.56,.64,1);';
-      el.innerHTML='<div style="font-size:34px;">'+a.icon+'</div><div><div style="font-size:10px;color:#ffd60a;font-weight:700;text-transform:uppercase;letter-spacing:.8px;">🏆 ปลดล็อค!</div><div style="font-size:14px;font-weight:700;margin-top:2px;">'+a.name+'</div><div style="font-size:11px;color:#8e8e93;margin-top:1px;">'+a.desc+'</div></div>';
-      document.body.appendChild(el);
-      haptic('success');
-      setTimeout(function(){el.style.transform='translateX(-50%) translateY(0)';},80);
-      setTimeout(function(){el.style.transform='translateX(-50%) translateY(-130px)';setTimeout(function(){el.remove();},450);},4000);
-    }
-  });
+ACHS.forEach(function(a){
+var k=‘wp_ach_’+a.id;
+if(!localStorage.getItem(k)&&a.check(recs)){
+localStorage.setItem(k,‘1’);
+var el=document.createElement(‘div’);
+el.style.cssText=‘position:fixed;top:70px;left:50%;transform:translateX(-50%) translateY(-130px);background:linear-gradient(135deg,#1c1c1e,#2c2c2e);color:#fff;border-radius:22px;padding:14px 18px;z-index:9999;display:flex;align-items:center;gap:12px;box-shadow:0 16px 48px rgba(0,0,0,.4);min-width:260px;max-width:88vw;border:1px solid rgba(255,255,255,.1);transition:transform .45s cubic-bezier(.34,1.56,.64,1);’;
+el.innerHTML=’<div style="font-size:34px;">’+a.icon+’</div><div><div style="font-size:10px;color:#ffd60a;font-weight:700;text-transform:uppercase;letter-spacing:.8px;">🏆 ปลดล็อค!</div><div style="font-size:14px;font-weight:700;margin-top:2px;">’+a.name+’</div><div style="font-size:11px;color:#8e8e93;margin-top:1px;">’+a.desc+’</div></div>’;
+document.body.appendChild(el);
+haptic(‘success’);
+setTimeout(function(){el.style.transform=‘translateX(-50%) translateY(0)’;},80);
+setTimeout(function(){el.style.transform=‘translateX(-50%) translateY(-130px)’;setTimeout(function(){el.remove();},450);},4000);
+}
+});
 }
 
 // ===== LIVE ACTIVITY =====
 function updateLiveActivity(recs){
-  var card=document.getElementById('liveActivityCard');if(!card)return;
-  var open=(recs||[]).find(function(r){return r.date===todayKey()&&!r.checkOut;});
-  if(open){
-    card.style.display='block';
-    clearInterval(window._liveT);
-    window._liveT=setInterval(function(){
-      var now=new Date(),parts=open.checkIn.split(':').map(Number);
-      var el=now.getHours()*60+now.getMinutes()-parts[0]*60-parts[1];
-      var h=Math.floor(el/60),mn=el%60;
-      var hw=document.getElementById('_liveHrs');if(hw)hw.textContent=h+':'+('0'+mn).slice(-2);
-      var fp=document.getElementById('_liveFill');if(fp)fp.style.width=Math.min(100,el/480*100)+'%';
-    },30000);
-    var now2=new Date(),parts2=open.checkIn.split(':').map(Number);
-    var el2=now2.getHours()*60+now2.getMinutes()-parts2[0]*60-parts2[1];
-    var h2=Math.floor(el2/60),mn2=el2%60;
-    var hw2=document.getElementById('_liveHrs');if(hw2)hw2.textContent=h2+':'+('0'+mn2).slice(-2);
-    var fp2=document.getElementById('_liveFill');if(fp2)fp2.style.width=Math.min(100,el2/480*100)+'%';
-  } else {
-    card.style.display='none';
-    clearInterval(window._liveT);
-  }
+var card=document.getElementById(‘liveActivityCard’);if(!card)return;
+var open=(recs||[]).find(function(r){return r.date===todayKey()&&!r.checkOut;});
+if(open){
+card.style.display=‘block’;
+clearInterval(window._liveT);
+window._liveT=setInterval(function(){
+var now=new Date(),parts=open.checkIn.split(’:’).map(Number);
+var el=now.getHours()*60+now.getMinutes()-parts[0]*60-parts[1];
+var h=Math.floor(el/60),mn=el%60;
+var hw=document.getElementById(’_liveHrs’);if(hw)hw.textContent=h+’:’+(‘0’+mn).slice(-2);
+var fp=document.getElementById(’_liveFill’);if(fp)fp.style.width=Math.min(100,el/480*100)+’%’;
+},30000);
+var now2=new Date(),parts2=open.checkIn.split(’:’).map(Number);
+var el2=now2.getHours()*60+now2.getMinutes()-parts2[0]*60-parts2[1];
+var h2=Math.floor(el2/60),mn2=el2%60;
+var hw2=document.getElementById(’_liveHrs’);if(hw2)hw2.textContent=h2+’:’+(‘0’+mn2).slice(-2);
+var fp2=document.getElementById(’_liveFill’);if(fp2)fp2.style.width=Math.min(100,el2/480*100)+’%’;
+} else {
+card.style.display=‘none’;
+clearInterval(window._liveT);
+}
 }
 
 // ===== EXPORT EXCEL =====
 async function exportToExcel(month,year){
-  const recs=await loadRecords();
-  const mr=recs.filter(function(r){var d=new Date(r.date);return d.getMonth()===month&&d.getFullYear()===year;}).sort(function(a,b){return a.date.localeCompare(b.date);});
-  const MN=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
-  let csv='\uFEFF';
-  csv+='วันที่,เข้างาน,ออกงาน,ชม.สุทธิ,OT(ชม.),สถานะ\n';
-  mr.forEach(function(r){
-    var net=r.checkOut?calcNetHours(r.checkIn,r.checkOut,r.date).toFixed(2):'';
-    var ot=((r.otMin||0)/60).toFixed(2);
-    csv+='"'+r.date+'","'+(r.checkIn||'')+'","'+(r.checkOut||'')+'","'+net+'","'+ot+'","'+(r.isLate?'สาย':'ตรงเวลา')+'"\n';
-  });
-  var blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
-  var url=URL.createObjectURL(blob);
-  var a=document.createElement('a');a.href=url;a.download='เวลาทำงาน_'+MN[month]+'_'+year+'.csv';
-  a.click();URL.revokeObjectURL(url);
-  toast('📊 Export สำเร็จ','success');
+const recs=await loadRecords();
+const mr=recs.filter(function(r){var d=new Date(r.date);return d.getMonth()===month&&d.getFullYear()===year;}).sort(function(a,b){return a.date.localeCompare(b.date);});
+const MN=[‘ม.ค.’,‘ก.พ.’,‘มี.ค.’,‘เม.ย.’,‘พ.ค.’,‘มิ.ย.’,‘ก.ค.’,‘ส.ค.’,‘ก.ย.’,‘ต.ค.’,‘พ.ย.’,‘ธ.ค.’];
+let csv=’\uFEFF’;
+csv+=‘วันที่,เข้างาน,ออกงาน,ชม.สุทธิ,OT(ชม.),สถานะ\n’;
+mr.forEach(function(r){
+var net=r.checkOut?calcNetHours(r.checkIn,r.checkOut,r.date).toFixed(2):’’;
+var ot=((r.otMin||0)/60).toFixed(2);
+csv+=’”’+r.date+’”,”’+(r.checkIn||’’)+’”,”’+(r.checkOut||’’)+’”,”’+net+’”,”’+ot+’”,”’+(r.isLate?‘สาย’:‘ตรงเวลา’)+’”\n’;
+});
+var blob=new Blob([csv],{type:‘text/csv;charset=utf-8’});
+var url=URL.createObjectURL(blob);
+var a=document.createElement(‘a’);a.href=url;a.download=‘เวลาทำงาน_’+MN[month]+’_’+year+’.csv’;
+a.click();URL.revokeObjectURL(url);
+toast(‘📊 Export สำเร็จ’,‘success’);
 }
 
 // ===== SMART REMINDER =====
 async function setupSmartReminder(){
-  if(!('Notification' in window)||Notification.permission!=='granted')return;
-  setInterval(async function(){
-    var now=new Date(),tk=todayKey();
-    var recs=await loadRecords();
-    var recent=recs.filter(function(r){return r.checkIn;}).slice(-7);
-    if(recent.length<3)return;
-    var avg=recent.reduce(function(s,r){var p=r.checkIn.split(':').map(Number);return s+p[0]*60+p[1];},0)/recent.length;
-    var nowMin=now.getHours()*60+now.getMinutes();
-    if(Math.abs(nowMin-avg-30)<1){
-      var has=recs.find(function(r){return r.date===tk;});
-      if(!has){var k='wp_sr_'+tk;if(!localStorage.getItem(k)){localStorage.setItem(k,'1');new Notification('🔔 อย่าลืมสแกนเข้างาน!',{body:'ปกติคุณเข้างาน '+('0'+Math.floor(avg/60)).slice(-2)+':'+('0'+Math.round(avg%60)).slice(-2)+' น.'});}}
-    }
-  },60000);
+if(!(‘Notification’ in window)||Notification.permission!==‘granted’)return;
+setInterval(async function(){
+var now=new Date(),tk=todayKey();
+var recs=await loadRecords();
+var recent=recs.filter(function(r){return r.checkIn;}).slice(-7);
+if(recent.length<3)return;
+var avg=recent.reduce(function(s,r){var p=r.checkIn.split(’:’).map(Number);return s+p[0]*60+p[1];},0)/recent.length;
+var nowMin=now.getHours()*60+now.getMinutes();
+if(Math.abs(nowMin-avg-30)<1){
+var has=recs.find(function(r){return r.date===tk;});
+if(!has){var k=‘wp_sr_’+tk;if(!localStorage.getItem(k)){localStorage.setItem(k,‘1’);new Notification(‘🔔 อย่าลืมสแกนเข้างาน!’,{body:‘ปกติคุณเข้างาน ‘+(‘0’+Math.floor(avg/60)).slice(-2)+’:’+(‘0’+Math.round(avg%60)).slice(-2)+’ น.’});}}
+}
+},60000);
 }
 
 // ===== BOOT =====
-window.addEventListener('load', () => {
-  let retries = 0;
-  function tryBoot() {
-    if (initFirebase()) {
-      const saved = localStorage.getItem('wp_session');
-      if (saved) {
-        try { currentUser = JSON.parse(saved); startApp(); }
-        catch(e) { document.getElementById('loginScreen').style.display = 'flex'; }
-      } else {
-        document.getElementById('loginScreen').style.display = 'flex';
-      }
-    } else if (retries++ < 10) {
-      setTimeout(tryBoot, 500);
-    } else {
-      document.getElementById('loginScreen').style.display = 'flex';
-    }
-  }
-  tryBoot();
+window.addEventListener(‘load’, () => {
+let retries = 0;
+function tryBoot() {
+if (initFirebase()) {
+const saved = localStorage.getItem(‘wp_session’);
+if (saved) {
+try { currentUser = JSON.parse(saved); startApp(); }
+catch(e) { document.getElementById(‘loginScreen’).style.display = ‘flex’; }
+} else {
+document.getElementById(‘loginScreen’).style.display = ‘flex’;
+}
+} else if (retries++ < 15) {
+setTimeout(tryBoot, 800);
+} else {
+// Firebase failed - show login anyway, doLogin will retry
+document.getElementById(‘loginScreen’).style.display = ‘flex’;
+}
+}
+tryBoot();
 });
 
 </script>
@@ -5780,5 +5785,6 @@ window.addEventListener('appinstalled', () => {
   console.log('PWA installed!');
 });
 </script>
+
 </body>
 </html>
