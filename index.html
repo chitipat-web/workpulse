@@ -1354,7 +1354,18 @@ function doLogin() {
   if (!email || !email.includes('@')) { alert('กรุณากรอกอีเมลให้ถูกต้อง'); return; }
   currentUser = { name, email };
   localStorage.setItem('wp_session', JSON.stringify(currentUser));
-  startApp();
+  // Retry Firebase init if not ready
+  let retries = 0;
+  function tryStart() {
+    if (db) { startApp(); return; }
+    if (!initFirebase()) {
+      if (retries++ < 10) { setTimeout(tryStart, 500); }
+      else { alert('เชื่อมต่อ Firebase ไม่ได้ กรุณารีโหลดหน้า'); }
+      return;
+    }
+    startApp();
+  }
+  tryStart();
 }
 
 function doLogout() {
