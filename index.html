@@ -2,19 +2,14 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8">
-<meta name="theme-color" content="#667eea">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="color-scheme" content="light only">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="ทีมงานลาล่า">
-<meta name="mobile-web-app-capable" content="yes">
-<link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='url(%23g)'/><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='%23667eea'/><stop offset='1' stop-color='%23764ba2'/></linearGradient></defs><text y='.9em' font-size='70' x='15'>👥</text></svg>">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#f2f2f7">
 <title>ทีมงานลาล่า</title>
-<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=Prompt:wght@400;500;600;700&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<link rel="manifest" href="manifest.json">
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root {
   --bg: #f0f4f8;
@@ -46,7 +41,7 @@ body { font-family:'Sarabun',sans-serif; background:var(--bg); color:var(--text)
 /* ===== LOGIN ===== */
 #loginScreen {
   min-height:100vh;
-  display:flex;
+  display:none;
   align-items:center;
   justify-content:center;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -373,10 +368,10 @@ body { font-family:'Sarabun',sans-serif; background:var(--bg); color:var(--text)
   font-size:11px; font-weight:600;
 }
 
-.badge-late { background:var(--red-light); color:var(--red); }
-.badge-ontime { background:var(--green-light); color:var(--green); }
-.badge-ot { background:var(--orange-light); color:var(--orange); }
-.badge-working { background:var(--accent-light); color:var(--accent); }
+.badge-late { background:linear-gradient(135deg,#ff3b30,#ff6961); color:#fff; box-shadow:0 2px 8px rgba(255,59,48,.25); }
+.badge-ontime { background:linear-gradient(135deg,#34c759,#30d158); color:#fff; box-shadow:0 2px 8px rgba(52,199,89,.25); }
+.badge-ot { background:linear-gradient(135deg,#ff9500,#ffb340); color:#fff; }
+.badge-working { background:linear-gradient(135deg,#007aff,#5856d6); color:#fff; }
 
 .record-actions { display:flex; gap:6px; }
 
@@ -752,6 +747,10 @@ body.dark input[type=date]::-webkit-calendar-picker-indicator { filter: invert(1
   .mobile-nav { display:block; }
   .nav-right .user-name { display:none; }
 }
+
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.5;}}
+.section-card { transition: box-shadow .2s; }
+.stat-card:active { transform: scale(.97); transition: transform .1s; }
 </style>
 </head>
 <body>
@@ -763,8 +762,8 @@ body.dark input[type=date]::-webkit-calendar-picker-indicator { filter: invert(1
 </div>
 
 <!-- LOGIN -->
-<div id="loginScreen">
-  <div class="login-card">
+<div id="loginScreen" style="display:none;">
+<div class="login-card">
     <div class="login-logo"style="width:80px;height:80px;border-radius:20px;overflow:hidden;padding:0;background:none;box-shadow:0 8px 24px rgba(102,126,234,0.3);"><img src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAA0JCgsKCA0LCgsODg0PEyAVExISEyccHhcgLikxMC4pLSwzOko+MzZGNywtQFdBRkxOUlNSMj5aYVpQYEpRUk//2wBDAQ4ODhMREyYVFSZPNS01T09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0//wAARCABQAFADASIAAhEBAxEB/8QAGwAAAgMBAQEAAAAAAAAAAAAAAQUAAwQGAgf/xAA5EAACAQMCBAUBBAcJAAAAAAABAgMABBESIQUxQVETFCJhcYEGMnKRJFJTYoKhsSUzQkNEY3OS0f/EABcBAQEBAQAAAAAAAAAAAAAAAAABAwL/xAAbEQEBAQEBAQEBAAAAAAAAAAAAARECITESQf/aAAwDAQACEQMRAD8A7rNDrUNTrWboamapubqG0h8W4kCJkDOMknoABuT7CsUtzePu5j4bDp1Bp08SUjIGdI9K8+RJNEMiQdsioCPalMwhikkSbiPFZmjTWxjkWNcYBJGkDkCD/wC1QJ4gszRcUv0MZbQjsJtWO4YHHXry3ppp9U3pat1e28YkuYluYDzmtgdS99UeTy3zpJ5cq3QTRzxLLE6ujjKspyGHsaCygc7URgVDyoB13qq6uI7W2knmJCRjJwMk9gB1JOAB3NXdsUtuJEk4iDMf0bh8XmpfdzkIPoAzfJFBFt7tI2v5I0k4lpzDA3qW3T9Ve7dz1O3KsepFuY7h5WeYJ6dZL7kYIQbFxnPPA361bf3MlvbpG4D3VziWeLO7Kdgg+OWPY96zcJ4g0t0sLeGzhmeaRv8ALTGce22Pqaks31x1f5GtPNMdEMb4QBSDMExtsMLyGO9VtHOXKzW5cKeQZZQm2dwd+/Uc683uuC9h4hw1xMLpgFgwdUjciR+7gZq/7PwtLbTcSuZtTyM50/dCDqT7nA58hXe8ufz1msKRI4SW0yzLIMKWypx0AJGDywGO+NjuaYTobRpL63UAqQ19axnOCRnWv7wG5xswz1FJ4+POZngmtYQ0yameRdClgpJXYnPYGnPjvDEl96i1uq+Lq5vA2+/7y8/oe9c3PsaSWedGEUqyxhlYMCAQVOQQdwR7Eb17zsKWWa+SvZ7Af3cbB4f+N8kAfhYMPgimW4FFBjhSewJpSFEkV4pGfMcTjgb8K6Bj+R/OmzjKMB1BpSrBY7tj/p+JRTn8LBDn+Z/KlHP8cvo7i/uIZH8VRIzJIrBSce5+MYqm04g0vpZ/EPqRIx6dzzJI6+/vQ46rRcdukjRpmml9AMeWZwdiPrty5d6UXEnl5HgkiltjkM8b75PQ/wBd+uaxsZSW3x9A4Zd2AKXshzJHEsHis5IB+Dy7Z+m1e7lQrteWl9FApOJI1i1+IzfrLntv32rjcXtlA3pQgkLKhZXKsTsGUHIzsMGpe3d1bW6290VjDFmHhsHDMDhskHmDsRSWyfGkvTXd2YkPhSz2wjJGJlYsSOwQ75589qbcJvRd8XkgdyPMiRJBJj7uMADHU4rmEiufLC8mEy22NeVGMjOAccwM9eVN/smxbjDXRbXDbwFnfThVAHY9efxTndXrrq2aclz/AGVMSS72UkbHuU0MP6H86dUiAIi4VEdnSykkYdjIUA/qfyp7W0Az1pXKiRcSMc+1vex+VkPZtzGfrll+QKa+1Zb61W5gdXQuGXSy5wSOex6EHBB7ig9wr52yMV2qtdwK0TkjcNpI1D2YHP1pF9n+KWEfALa1kjMt7BE6+F5dmOV1EDOMVvtruQTIkzauIKpWJx6VvUHQ9mHMjmDkjY1snuPPWclrE5guW0ho3OlgMjVjvtneoOa4Xw/iFjJwm/ls42WR9Fxo1NI4kOrLrjbBx8Vr4FNbWltJa8R4fcG4E8z5a0ZhgnP3sdQKYW9pxi2QQxPGI0BK5cb7HAO3UkHPerRBxlBA63JkbSPGRpABkMNgcfq5yepokmOXjiuoZbLjF7YKguboeLIXBzFINIjKYyABXW3VtCkK8MtY1jFwSJNAxpjz6ifnl9a9JdSpaQQMBc3uhQ4U5GrG5J5YzS+/u1uTLbWzEq50Xc6NnJ/Yxnqe5/wgk8zRZ4ls4vuJSXaY8KRgI8fso8hT/ExY/AFNz1rNZQeDGWYKrsBlVGygbBR7AbVoqg0KNCgyXljHcRspRWDEFkbkxHI7bgjoRvWF3uoAI5vDuo12Vbs6ZF/DKBg/xAH3pyahGcgjOaBRHc6V9FtxeIf7TpOv0IY0JbnUp1WnEpQeYuZkgT65OcfSmD2Nq5y1vH/1qJYWsZytvGD300wwqBuLpPBXRHCecFnlUP45TgkeygfNMbOxWEKzhNSLpRUXSsY7KOlbAoAGAB8VO9BB75o7UBRHKqP/2Q==" style="width:100%;height:100%;object-fit:cover;border-radius:20px;"></div>
     <h1>ทีมงานลาล่า</h1>
     <div class="subtitle">ระบบบันทึกเวลาเข้า-ออกงาน</div>
@@ -779,6 +778,7 @@ body.dark input[type=date]::-webkit-calendar-picker-indicator { filter: invert(1
     <button class="btn-login" onclick="doLogin()">เข้าสู่ระบบ</button>
     <div class="login-note">ใช้อีเมลเดิมทุกครั้งเพื่อดูข้อมูลของตัวเอง<br>ข้อมูลเชื่อมต่อ Cloud — ไม่หายแม้เปลี่ยนเครื่อง</div>
   </div>
+</div>
 </div>
 
 <!-- APP -->
@@ -815,7 +815,8 @@ body.dark input[type=date]::-webkit-calendar-picker-indicator { filter: invert(1
     </div>
   </nav>
 
-  <!-- HOME PAGE -->
+    <div id="content">
+<!-- HOME PAGE -->
   <div id="page-home" class="page active">
     <!-- Clock Hero -->
     <div class="clock-hero">
@@ -855,6 +856,14 @@ body.dark input[type=date]::-webkit-calendar-picker-indicator { filter: invert(1
       </div>
     </div>
 
+    <!-- Mood Widget -->
+    <div id="moodWidget" class="section-card" style="padding:14px;margin-bottom:12px;"></div>
+    <!-- Live Activity -->
+    <div id="liveActivityCard" style="display:none;background:linear-gradient(145deg,#0d1117,#1a1f2e);border-radius:22px;padding:18px 20px;margin-bottom:12px;color:#fff;box-shadow:0 8px 28px rgba(0,122,255,.18);">
+      <div style="display:flex;align-items:center;gap:7px;margin-bottom:12px;"><div style="width:7px;height:7px;border-radius:50%;background:#34c759;box-shadow:0 0 8px #34c759;"></div><span style="font-size:12px;font-weight:600;opacity:.7;">กำลังทำงานอยู่</span></div>
+      <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:12px;"><div id="_liveHrs" style="font-size:36px;font-weight:800;letter-spacing:-1.5px;">0:00</div><div style="font-size:13px;color:#34c759;font-weight:700;">/ 8 ชม.</div></div>
+      <div style="height:5px;background:rgba(255,255,255,.1);border-radius:3px;overflow:hidden;"><div id="_liveFill" style="height:100%;width:0%;background:linear-gradient(90deg,#34c759,#30d158);border-radius:3px;transition:width .6s;"></div></div>
+    </div>
     <!-- Weekly Summary -->
     <div class="section-card" id="weeklySummaryCard" style="margin-bottom:16px;"></div>
 
@@ -928,6 +937,8 @@ body.dark input[type=date]::-webkit-calendar-picker-indicator { filter: invert(1
         <select id="statYear" class="select-input" onchange="renderStats()"></select>
         <button onclick="exportToCSV(parseInt(document.getElementById('statMonth').value),parseInt(document.getElementById('statYear').value))" style="padding:9px 14px;background:var(--green);color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Sarabun',sans-serif;white-space:nowrap;">📥 CSV</button>
         <button onclick="generatePDF(parseInt(document.getElementById('statMonth').value),parseInt(document.getElementById('statYear').value))" style="padding:9px 14px;background:#7c3aed;color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Sarabun',sans-serif;white-space:nowrap;">📄 PDF</button>
+        <button onclick="exportToExcel(parseInt(document.getElementById('statMonth').value),parseInt(document.getElementById('statYear').value))" style="padding:9px 10px;background:#1d6f42;color:#fff;border:none;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Sarabun',sans-serif;">📊 Excel</button>
+        <button onclick="showMonthlyRecap()" style="padding:9px 10px;background:#1c1c1e;color:#fff;border:none;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Sarabun',sans-serif;">🎬 Recap</button>
       </div>
     </div>
     <div class="month-summary" id="monthSummary"></div>
@@ -1536,6 +1547,7 @@ async function saveEdit() {
 
 // ===== RENDER HOME =====
 async function renderHome() {
+  try { renderMoodWidget(); } catch(e){}
   // Load daily note
   const noteEl = document.getElementById('dailyNoteInput');
   if (noteEl) noteEl.value = getDailyNote(todayKey());
@@ -1597,6 +1609,7 @@ async function renderHome() {
       </div>
     </div>`;
   }).join('');
+  try { updateLiveActivity(todayRecs); checkAchievements(recs); } catch(e){}
 }
 
 // ===== CALENDAR =====
@@ -3353,6 +3366,10 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 </script>
+    </div>
+
+  </div>
+</div>
 
 <!-- MOBILE NAV -->
 <div class="mobile-nav">
@@ -3364,8 +3381,6 @@ document.addEventListener('DOMContentLoaded', () => {
     <button class="mobile-nav-btn" onclick="showPage('team')"><span class="icon">👥</span><span>ทีม</span></button>
     <button class="mobile-nav-btn" onclick="showPage('teamsummary')" id="mobileTabTeamSummary" style="display:none;"><span class="icon">📈</span><span>สรุปทีม</span></button>
     <button class="mobile-nav-btn" onclick="showPage('salary')"><span class="icon">💰</span><span>ค่าแรง</span></button>
-    <button class="mobile-nav-btn" onclick="showPage('settings')"><span class="icon">⚙️</span><span>ตั้งค่า</span></button>
-    <button class="mobile-nav-btn" id="mobileTabDashAdmin" style="display:none;" onclick="showPage('dashboard-admin')"><span class="icon">📊</span><span>Dashboard</span></button>
     <button class="mobile-nav-btn" onclick="showPage('settings')"><span class="icon">⚙️</span><span>ตั้งค่า</span></button>
     <button class="mobile-nav-btn" id="mobileTabDashAdmin" style="display:none;" onclick="showPage('dashboard-admin')"><span class="icon">📊</span><span>Dashboard</span></button>
   </div>
@@ -3386,6 +3401,2335 @@ document.addEventListener('DOMContentLoaded', () => {
 </div>
 
 <!-- PWA Script -->
+
+
+
+<script>
+
+const ADMIN = "chitipat.kao@gmail.com";
+const FB_CONFIG = {
+  apiKey:"AIzaSyCh7phsliIRMPScGcoS4eGBDkohSOrKdIg",
+  authDomain:"workpulse-1c177.firebaseapp.com",
+  projectId:"workpulse-1c177",
+  storageBucket:"workpulse-1c177.firebasestorage.app",
+  messagingSenderId:"763680675092",
+  appId:"1:763680675092:web:1ba1fff65f9133b38a5e01"
+};
+
+let db, currentUser = null, _cache = null;
+let calYear, calMonth;
+let chartH, chartOT_chart;
+let teamListeners = {};
+
+function initFirebase() {
+  try {
+    if (!firebase.apps.length) firebase.initializeApp(FB_CONFIG);
+    db = firebase.firestore();
+    return true;
+  } catch(e) {
+    console.error('Firebase init error:', e);
+    return false;
+  }
+}
+
+function isAdmin() { return currentUser && currentUser.email === ADMIN; }
+
+// ===== STORAGE =====
+function skey(email) { return (email||currentUser.email).replace(/[^a-zA-Z0-9]/g,'_'); }
+
+async function loadRecords(email) {
+  const key = skey(email);
+  if (!email || email === currentUser.email) {
+    if (_cache !== null) return [..._cache];
+  }
+  try {
+    const snap = await db.collection('users').doc(key).get();
+    const recs = snap.exists ? (snap.data().records || []) : [];
+    if (!email || email === currentUser.email) _cache = recs;
+    return [...recs];
+  } catch(e) {
+    console.error('Load error:', e);
+    return [];
+  }
+}
+
+async function saveRecords(records, email) {
+  const key = skey(email);
+  if (!email || email === currentUser.email) _cache = [...records];
+  try {
+    await db.collection('users').doc(key).set({ records, updatedAt: new Date().toISOString() }, { merge: true });
+  } catch(e) { console.error('Save error:', e); toast('บันทึกไม่สำเร็จ','error'); }
+}
+
+// ===== AUTH =====
+function doLogin() {
+  const name = document.getElementById('loginName').value.trim();
+  const email = document.getElementById('loginEmail').value.trim().toLowerCase();
+  if (!name) { alert('กรุณากรอกชื่อ'); return; }
+  if (!email || !email.includes('@')) { alert('กรุณากรอกอีเมลให้ถูกต้อง'); return; }
+  currentUser = { name, email };
+  localStorage.setItem('wp_session', JSON.stringify(currentUser));
+  startApp();
+}
+
+function doLogout() {
+  localStorage.removeItem('wp_session');
+  currentUser = null; _cache = null;
+  // Detach listeners
+  Object.values(teamListeners).forEach(fn => fn && fn());
+  teamListeners = {};
+  document.getElementById('loginScreen').style.display = 'flex';
+  document.getElementById('app').style.display = 'none';
+}
+
+// ===== INIT =====
+async function startApp() {
+  document.getElementById('loadingOverlay').classList.add('show');
+  document.getElementById('loginScreen').style.display = 'none';
+
+  // Save user info + register in members list
+  setTimeout(async () => {
+    try {
+      // Save user profile
+      await db.collection('users').doc(skey()).set(
+        { name: currentUser.name, email: currentUser.email, updatedAt: new Date().toISOString() },
+        { merge: true }
+      );
+      // Auto-register in members collection
+      await db.collection('members').doc(skey()).set(
+        { name: currentUser.name, email: currentUser.email, joinedAt: new Date().toISOString() },
+        { merge: true }
+      );
+    } catch(e) {}
+  }, 1000);
+
+  document.getElementById('navName').textContent = currentUser.name;
+  document.getElementById('navAvatar').textContent = currentUser.name.charAt(0).toUpperCase();
+  document.getElementById('adminBadge').style.display = isAdmin() ? 'inline-block' : 'none';
+  document.getElementById('addMemberSection').style.display = isAdmin() ? 'block' : 'none';
+  if (isAdmin()) {
+    document.getElementById('tabTeamSummary').style.display = '';
+    document.getElementById('mobileTabTeamSummary').style.display = '';
+    document.getElementById('tabDashAdmin').style.display = '';
+    document.getElementById('mobileTabDashAdmin').style.display = '';
+    document.getElementById('editLogsBtn') && (document.getElementById('editLogsBtn').style.display = 'block');
+  }
+
+  const now = new Date();
+  calYear = now.getFullYear(); calMonth = now.getMonth();
+  document.getElementById('manDate').value = todayKey();
+  document.getElementById('teamDate').value = todayKey();
+
+  populateSelectors();
+  startClock();
+  setupCheckoutReminder();
+  initDarkMode();
+  setupDailyReminders();
+  setupSmartReminder();
+  setupPullToRefresh();
+  loadProfilePhotos();
+  setInterval(checkLateArrivals, 60000);
+  await renderHome();
+
+  document.getElementById('loadingOverlay').classList.remove('show');
+  document.getElementById('app').style.display = 'block';
+
+  renderCalendar();
+  renderStats();
+  renderHistory();
+}
+
+function startClock() {
+  const days = ['อาทิตย์','จันทร์','อังคาร','พุธ','พฤหัสบดี','ศุกร์','เสาร์'];
+  const mons = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+  function tick() {
+    const n = new Date();
+    document.getElementById('liveClock').textContent =
+      [n.getHours(),n.getMinutes(),n.getSeconds()].map(v=>String(v).padStart(2,'0')).join(':');
+    document.getElementById('liveDate').textContent =
+      `วัน${days[n.getDay()]}ที่ ${n.getDate()} ${mons[n.getMonth()]} ${n.getFullYear()+543}`;
+  }
+  tick();
+  setInterval(tick, 1000);
+}
+
+// ===== HELPERS =====
+function todayKey() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function fmtTime(d) { return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`; }
+function fmtLate(min){if(!min)return '0น.';if(min<60)return min+'น.';const h=Math.floor(min/60),m=min%60;return m>0?h+'ชม.'+m+'น.':h+'ชม.';}
+
+function calcOT(checkOut,checkIn){
+  if(!checkOut)return 0;
+  const[oh,om]=getWorkOTStart().split(':').map(Number);
+  const otS=oh*60+om;
+  const[ch,cm]=checkOut.split(':').map(Number);
+  const coMin=ch*60+cm;
+  if(coMin<=otS)return 0;
+  let ob=otS;
+  if(checkIn){const[ih,im]=checkIn.split(':').map(Number);if(ih*60+im>otS)ob=ih*60+im;}
+  return Math.max(0,coMin-ob);
+}
+function calcHours(i,o) { if(!i||!o)return 0; const[ih,im]=i.split(':').map(Number); const[oh,om]=o.split(':').map(Number); return Math.max(0,(oh*60+om-ih*60-im)/60); }
+
+// Get deduction hours based on day of week
+// Sun=0, Mon=1, Tue=2, Wed=3, Thu=4, Fri=5, Sat=6
+function getDeduction(dateStr) {
+  if (!dateStr) return 0;
+  const d = new Date(dateStr);
+  const dow = d.getDay(); // 0=Sun, 5=Fri, 6=Sat
+  if (dow === 6) return 0;        // เสาร์ ไม่หัก
+  if (dow === 5) return 1;        // ศุกร์ หัก 1 ชม. (เดินทาง)
+  return 2;                        // อา-พฤ หัก 2 ชม. (เดินทาง + พักเที่ยง)
+}
+
+function calcNetHours(i, o, dateStr) {
+  const raw = calcHours(i, o);
+  const deduct = getDeduction(dateStr);
+  return Math.max(0, raw - deduct);
+}
+
+function deductionLabel(dateStr) {
+  const d = getDeduction(dateStr);
+  if (d === 0) return '';
+  if (d === 1) return 'หักเดินทาง 1 ชม.';
+  return 'หักเดินทาง+พักเที่ยง 2 ชม.';
+}
+
+// ===== CHECK IN/OUT =====
+async function doCheckIn() {
+  const now = new Date(); const tk = todayKey();
+  const recs = await loadRecords();
+  if (recs.find(r=>r.date===tk&&!r.checkOut)) { toast('มีการเข้างานที่ยังไม่ออก','warning'); return; }
+  const t = fmtTime(now);
+  const inMin = now.getHours()*60+now.getMinutes();
+  const [wh,wm] = getWorkStartTime().split(':').map(Number);
+  const isLate = inMin > wh*60+wm;
+  recs.push({ id:Date.now(), date:tk, checkIn:t, checkInTs:now.getTime(), checkOut:null, checkOutTs:null, isLate, lateMin:isLate?inMin-360:0, otMin:0, note:'' });
+  await saveRecords(recs);
+  document.getElementById('btnIn').disabled = true;
+  document.getElementById('btnOut').disabled = false;
+  haptic(isLate?'error':'success');
+  toast(`เข้างาน ${t}${isLate?' ⚠ สาย':''}`, isLate?'warning':'success');
+  if(!isLate) setTimeout(launchConfetti,300);
+  await renderHome();
+}
+
+async function doCheckOut() {
+  const now = new Date(); const tk = todayKey();
+  const recs = await loadRecords();
+  const idx = recs.findIndex(r=>r.date===tk&&!r.checkOut);
+  if (idx===-1) { toast('ไม่พบการเข้างาน','error'); return; }
+  const t = fmtTime(now);
+  recs[idx].checkOut = t;
+  recs[idx].checkOutTs = now.getTime();
+  recs[idx].otMin = calcOT(t, recs[idx].checkIn);
+  await saveRecords(recs);
+  document.getElementById('btnIn').disabled = false;
+  document.getElementById('btnOut').disabled = true;
+  const hrs = ((now.getTime()-recs[idx].checkInTs)/3600000).toFixed(1);
+  haptic('success');
+  setTimeout(launchParticles,200);
+  toast(`ออกงาน ${t} — ทำงาน ${hrs} ชม.${recs[idx].otMin>0?' ⚡ OT!':''}`, 'success');
+  await renderHome();
+}
+
+// ===== MANUAL =====
+async function addManual() {
+  const date = document.getElementById('manDate').value;
+  const inT = document.getElementById('manIn').value;
+  const outT = document.getElementById('manOut').value;
+  const note = document.getElementById('manNote').value;
+  if (!date||!inT) { toast('กรุณาระบุวันที่และเวลาเข้า','error'); return; }
+  const [h,m] = inT.split(':').map(Number);
+  const inMin = h*60+m;
+  const [wh2,wm2] = getWorkStartTime().split(':').map(Number);
+  const isLate = inMin > wh2*60+wm2;
+  const recs = await loadRecords();
+  recs.push({ id:Date.now(), date, checkIn:inT, checkInTs:null, checkOut:outT||null, checkOutTs:null, isLate, lateMin:isLate?inMin-360:0, otMin:outT?calcOT(outT,inT):0, note });
+  await saveRecords(recs);
+  document.getElementById('manIn').value='';
+  document.getElementById('manOut').value='';
+  document.getElementById('manNote').value='';
+  toast(`บันทึก ${date} เรียบร้อย`,'success');
+  await renderHome(); renderCalendar(); renderStats(); renderHistory();
+}
+
+// ===== DELETE =====
+async function deleteRec(id, ownerEmail) {
+  if (!confirm('ยืนยันลบรายการนี้?')) return;
+  const recs = (await loadRecords(ownerEmail)).filter(r=>r.id!==id);
+  await saveRecords(recs, ownerEmail);
+  toast('ลบแล้ว','success');
+  await renderHome(); renderCalendar(); renderStats(); renderHistory();
+  if (document.getElementById('page-team').classList.contains('active')) renderTeam();
+}
+
+// ===== EDIT =====
+async function openEdit(id, ownerEmail) {
+  if (ownerEmail !== currentUser.email && !isAdmin()) { toast('ไม่มีสิทธิ์แก้ไข','error'); return; }
+  const recs = await loadRecords(ownerEmail);
+  const r = recs.find(r=>r.id===id);
+  if (!r) { toast('ไม่พบรายการ','error'); return; }
+  document.getElementById('editDate').value = r.date;
+  document.getElementById('editIn').value = r.checkIn||'';
+  document.getElementById('editOut').value = r.checkOut||'';
+  document.getElementById('editNote').value = r.note||'';
+  document.getElementById('editId').value = id;
+  document.getElementById('editOwnerEmail').value = ownerEmail;
+  document.getElementById('editOwnerName').value = ownerEmail === currentUser.email ? currentUser.name : ownerEmail;
+  document.getElementById('editModal').classList.add('open');
+}
+
+async function saveEdit() {
+  const id = parseInt(document.getElementById('editId').value);
+  const ownerEmail = document.getElementById('editOwnerEmail').value;
+  const date = document.getElementById('editDate').value;
+  const inT = document.getElementById('editIn').value;
+  const outT = document.getElementById('editOut').value;
+  const note = document.getElementById('editNote').value;
+  if (!date||!inT) { toast('กรุณาระบุวันที่และเวลาเข้า','error'); return; }
+  if (ownerEmail !== currentUser.email && !isAdmin()) { toast('ไม่มีสิทธิ์','error'); return; }
+  const recs = await loadRecords(ownerEmail);
+  const idx = recs.findIndex(r=>r.id===id);
+  if (idx===-1) { toast('ไม่พบรายการ','error'); return; }
+  const [h,m] = inT.split(':').map(Number);
+  const inMin = h*60+m;
+  const isLate = inMin > 360;
+  recs[idx] = { ...recs[idx], date, checkIn:inT, checkOut:outT||null, isLate, lateMin:isLate?inMin-360:0, otMin:outT?calcOT(outT,inT):0, note };
+  await saveRecords(recs, ownerEmail);
+  logEdit('แก้ไขเวลา', ownerEmail, `${date} ${inT}→${outT||'?'} ${note||''}`);
+  closeModal('editModal');
+  toast('แก้ไขเรียบร้อย','success');
+  if (ownerEmail===currentUser.email) { await renderHome(); renderCalendar(); renderStats(); renderHistory(); }
+  if (document.getElementById('page-team').classList.contains('active')) renderTeam();
+}
+
+// ===== RENDER HOME =====
+async function renderHome() {
+  try { renderMoodWidget(); } catch(e){}
+  // Load daily note
+  const noteEl = document.getElementById('dailyNoteInput');
+  if (noteEl) noteEl.value = getDailyNote(todayKey());
+  // Render weekly summary
+  renderWeeklySummary();
+  const tk = todayKey();
+  const recs = await loadRecords();
+  const todayRecs = recs.filter(r=>r.date===tk);
+  const completed = todayRecs.filter(r=>r.checkOut);
+  const open = todayRecs.find(r=>!r.checkOut);
+
+  document.getElementById('btnIn').disabled = !!open;
+  document.getElementById('btnOut').disabled = !open;
+
+  if (todayRecs.length>0) {
+    const f = todayRecs[0];
+    document.getElementById('s-firstin').textContent = f.checkIn;
+    document.getElementById('s-latestatus').innerHTML = f.isLate
+      ? `<span style="color:var(--red)">สาย ${f.lateMin||f.lateMinutes||0} นาที</span>`
+      : `<span style="color:var(--green)">ตรงเวลา ✓</span>`;
+  } else {
+    document.getElementById('s-firstin').textContent = '--:--';
+    document.getElementById('s-latestatus').textContent = '';
+  }
+
+  const totalH = completed.reduce((s,r)=>s+calcNetHours(r.checkIn,r.checkOut,r.date),0);
+  const totalOT = completed.reduce((s,r)=>s+(r.otMin||0),0);
+  animCount(document.getElementById('s-hours'),totalH,600,1);
+  animCount(document.getElementById('s-ot'),totalOT/60,600,1);
+  animCount(document.getElementById('s-rounds'),todayRecs.length,500,0);
+
+  const list = document.getElementById('todayList');
+  if (todayRecs.length===0) {
+    list.innerHTML = '<div class="empty-state"><div class="empty-icon">🕐</div><div class="empty-text">ยังไม่มีรายการวันนี้</div></div>';
+    return;
+  }
+
+  list.innerHTML = todayRecs.map((r,i) => {
+    const rawHrs = r.checkOut ? calcHours(r.checkIn,r.checkOut) : null;
+    const hrs = r.checkOut ? calcNetHours(r.checkIn,r.checkOut,r.date).toFixed(1) : null;
+    const deductLbl = r.checkOut ? deductionLabel(r.date) : '';
+    const ot = r.otMin>0 ? `${Math.floor(r.otMin/60)}:${String(r.otMin%60).padStart(2,'0')}` : null;
+    const canEdit = isAdmin() || r.date === tk;
+    return `<div class="record-item">
+      <div class="record-num">${i+1}</div>
+      <div class="record-times">
+        <div class="record-time-row">${r.checkIn} → ${r.checkOut || '<span style="color:var(--accent)">กำลังทำงาน...</span>'}</div>
+        <div class="record-status-row">
+          ${r.isLate ? `<span class="badge badge-late">⚠ สาย ${fmtLate(r.lateMin||r.lateMinutes||0)}</span>` : '<span class="badge badge-ontime">✓ ตรงเวลา</span>'}
+          ${ot ? `<span class="badge badge-ot">⚡ OT ${ot}</span>` : ''}
+          ${hrs ? `<span class="badge" style="background:var(--surface2);color:var(--text2)">${hrs} ชม.</span>` : ''}
+          ${deductLbl ? `<span class="badge" style="background:#fef9c3;color:#92400e;font-size:10px;">✂️ ${deductLbl}</span>` : ''}
+          ${r.note ? `<span class="badge" style="background:var(--surface2);color:var(--text2)">📝 ${r.note}</span>` : ''}
+        </div>
+      </div>
+      <div class="record-actions">
+        ${canEdit ? `<button class="btn-icon edit" onclick="openEdit(${r.id},'${currentUser.email}')" title="แก้ไข">✏️</button>` : ''}
+        <button class="btn-icon" onclick="deleteRec(${r.id},'${currentUser.email}')" title="ลบ">🗑</button>
+      </div>
+    </div>`;
+  }).join('');
+  updateLiveActivity(todayRecs);
+  checkAchievements(recs);
+}
+
+// ===== CALENDAR =====
+async function renderCalendar() {
+  const mons = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+  document.getElementById('calTitle').textContent = `${mons[calMonth]} ${calYear+543}`;
+  const days = ['อา','จ','อ','พ','พฤ','ศ','ส'];
+  document.getElementById('calWeekdays').innerHTML = days.map(d=>`<div class="cal-weekday">${d}</div>`).join('');
+
+  const recs = await loadRecords();
+  const today = new Date();
+  const firstDay = new Date(calYear,calMonth,1).getDay();
+  const daysInMonth = new Date(calYear,calMonth+1,0).getDate();
+  const prevDays = new Date(calYear,calMonth,0).getDate();
+  let html = '';
+
+  for (let i=firstDay-1;i>=0;i--) html+=`<div class="cal-day other"><div class="cal-day-num">${prevDays-i}</div></div>`;
+
+  for (let d=1;d<=daysInMonth;d++) {
+    const dk = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const dr = recs.filter(r=>r.date===dk&&r.checkOut);
+    const isToday = today.getFullYear()===calYear&&today.getMonth()===calMonth&&today.getDate()===d;
+    const hasLate = dr.some(r=>r.isLate);
+    const hasOT = dr.some(r=>r.otMin>0);
+    let dots = '';
+    if (dr.length>0) {
+      dots += `<div class="cal-dot" style="background:${hasLate?'var(--red)':'var(--green)'}"></div>`;
+      if (hasOT) dots += `<div class="cal-dot" style="background:var(--orange)"></div>`;
+    }
+    const isHol = isHoliday(dk);
+    if (isHol) { dots = `<div class="cal-dot" style="background:#a855f7"></div>`; }
+    html += `<div class="cal-day ${isToday?'today':isHol?'':''}${!isToday&&!isHol&&dr.length>0?' has-data':''}" 
+      style="${isHol?'background:#f5f3ff;border-color:#a855f7;':''}"
+      onclick="showDayDetail('${dk}')"
+      oncontextmenu="event.preventDefault();${isAdmin()?`toggleHoliday('${dk}')`:''}">
+      <div class="cal-day-num">${d}</div>
+      <div class="cal-dots">${dots}</div>
+      ${isHol?`<div style="font-size:9px;color:#7c3aed;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${getHolidays()[dk]||'หยุด'}</div>`:''}
+    </div>`;
+  }
+  document.getElementById('calDays').innerHTML = html;
+}
+
+function calMove(dir) {
+  calMonth += dir;
+  if (calMonth>11){calMonth=0;calYear++;}
+  if (calMonth<0){calMonth=11;calYear--;}
+  renderCalendar();
+}
+
+// ===== DAY DETAIL =====
+async function showDayDetail(dateKey, ownerEmail) {
+  const email = ownerEmail || currentUser.email;
+  const recs = await loadRecords(email);
+  const dr = recs.filter(r=>r.date===dateKey);
+  const [y,m,d] = dateKey.split('-');
+  const mons=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+  document.getElementById('dayModalTitle').textContent = `${parseInt(d)} ${mons[parseInt(m)-1]} ${parseInt(y)+543}`;
+
+  let html = '';
+  if (dr.length===0) {
+    html = '<div class="empty-state"><div class="empty-icon">😴</div><div class="empty-text">ไม่มีข้อมูลวันนี้</div></div>';
+  } else {
+    const totalH = dr.filter(r=>r.checkOut).reduce((s,r)=>s+calcNetHours(r.checkIn,r.checkOut,r.date),0);
+    const totalOT = dr.filter(r=>r.checkOut).reduce((s,r)=>s+(r.otMin||0),0);
+    const hasLate = dr.some(r=>r.isLate);
+    html += `<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px;">
+      <div class="sum-card"><div class="sum-val color-green">${totalH.toFixed(1)}</div><div class="sum-lbl">ชม.ทำงาน</div></div>
+      <div class="sum-card"><div class="sum-val color-orange">${(totalOT/60).toFixed(1)}</div><div class="sum-lbl">ชม.โอที</div></div>
+      <div class="sum-card"><div class="sum-val ${hasLate?'color-red':'color-green'}">${hasLate?'สาย':'ปกติ'}</div><div class="sum-lbl">สถานะ</div></div>
+    </div>`;
+    dr.forEach((r,i) => {
+      const hrs = r.checkOut ? calcNetHours(r.checkIn,r.checkOut,r.date).toFixed(1) : '-';
+      const dLbl = r.checkOut ? deductionLabel(r.date) : '';
+      const canEdit = isAdmin() || email===currentUser.email;
+      html += `<div class="record-item">
+        <div class="record-num">${i+1}</div>
+        <div class="record-times">
+          <div class="record-time-row">${r.checkIn} → ${r.checkOut||'<span style="color:var(--accent)">กำลังทำงาน</span>'}</div>
+          <div class="record-status-row">
+            ${r.isLate?`<span class="badge badge-late">สาย ${fmtLate(r.lateMin||r.lateMinutes||0)}</span>`:'<span class="badge badge-ontime">ตรงเวลา</span>'}
+            ${r.otMin>0?`<span class="badge badge-ot">OT</span>`:''}
+            ${r.checkOut?`<span class="badge" style="background:var(--surface2);color:var(--text2)">${hrs} ชม.</span>`:''}
+            ${dLbl?`<span class="badge" style="background:#fef9c3;color:#92400e;font-size:10px;">✂️ ${dLbl}</span>`:''}
+            ${r.note?`<span class="badge" style="background:var(--surface2);color:var(--text2)">📝 ${r.note}</span>`:''}
+          </div>
+        </div>
+        <div class="record-actions">
+          ${canEdit?`<button class="btn-icon edit" onclick="closeModal('dayModal');openEdit(${r.id},'${email}')" title="แก้ไข">✏️</button>`:''}
+          ${canEdit?`<button class="btn-icon" onclick="closeModal('dayModal');deleteRec(${r.id},'${email}')" title="ลบ">🗑</button>`:''}
+        </div>
+      </div>`;
+    });
+  }
+  document.getElementById('dayModalContent').innerHTML = html;
+  document.getElementById('dayModal').classList.add('open');
+}
+
+// ===== STATS =====
+async function renderStats() {
+  const month = parseInt(document.getElementById('statMonth').value);
+  const year = parseInt(document.getElementById('statYear').value);
+  const recs = await loadRecords();
+  const dim = new Date(year,month+1,0).getDate();
+  const labels=[], hoursData=[], otData=[];
+  let totalDays=0, totalH=0, totalOTMin=0, lateCount=0;
+
+  for (let d=1;d<=dim;d++) {
+    const dk=`${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const dr=recs.filter(r=>r.date===dk&&r.checkOut);
+    labels.push(d);
+    if (dr.length>0) {
+      totalDays++;
+      const h=dr.reduce((s,r)=>s+calcNetHours(r.checkIn,r.checkOut,r.date),0);
+      const ot=dr.reduce((s,r)=>s+(r.otMin||0),0);
+      totalH+=h; totalOTMin+=ot;
+      if (dr.some(r=>r.isLate)) lateCount++;
+      hoursData.push(parseFloat(h.toFixed(2)));
+      otData.push(parseFloat((ot/60).toFixed(2)));
+    } else { hoursData.push(0); otData.push(0); }
+  }
+
+  document.getElementById('monthSummary').innerHTML = `
+    <div class="sum-card"><div class="sum-val color-blue">${totalDays}</div><div class="sum-lbl">วันที่มา</div></div>
+    <div class="sum-card"><div class="sum-val color-green">${totalH.toFixed(1)}</div><div class="sum-lbl">ชม.รวม</div></div>
+    <div class="sum-card"><div class="sum-val color-orange">${(totalOTMin/60).toFixed(1)}</div><div class="sum-lbl">ชม.โอที</div></div>
+    <div class="sum-card"><div class="sum-val color-red">${lateCount}</div><div class="sum-lbl">วันสาย</div></div>
+    <div class="sum-card"><div class="sum-val">${totalDays>0?(totalH/totalDays).toFixed(1):0}</div><div class="sum-lbl">เฉลี่ย/วัน</div></div>
+    <div class="sum-card"><div class="sum-val color-purple">${totalDays>0?(totalH/totalDays*5).toFixed(0):0}</div><div class="sum-lbl">ชม./สัปดาห์</div></div>`;
+
+  const cfg = { responsive:true, plugins:{legend:{display:false}}, scales:{
+    x:{grid:{color:'rgba(0,0,0,0.04)'},ticks:{color:'#94a3b8',font:{size:10}}},
+    y:{grid:{color:'rgba(0,0,0,0.04)'},ticks:{color:'#94a3b8',font:{size:10}}}
+  }};
+
+  if (chartH) chartH.destroy();
+  chartH = new Chart(document.getElementById('chartHours'), {
+    type:'bar',
+    data:{ labels, datasets:[{ data:hoursData,
+      backgroundColor:hoursData.map(v=>v>=8?'rgba(5,150,105,.7)':v>0?'rgba(37,99,235,.7)':'rgba(226,232,240,.5)'),
+      borderRadius:6 }] },
+    options:{ ...cfg }
+  });
+
+  if (chartOT_chart) chartOT_chart.destroy();
+  chartOT_chart = new Chart(document.getElementById('chartOT'), {
+    type:'bar',
+    data:{ labels, datasets:[{ data:otData, backgroundColor:'rgba(217,119,6,.7)', borderRadius:6 }] },
+    options:{ ...cfg }
+  });
+}
+
+// ===== HISTORY =====
+async function renderHistory() {
+  const month = parseInt(document.getElementById('histMonth').value);
+  const year = parseInt(document.getElementById('histYear').value);
+  const recs = await loadRecords();
+  const mr = recs.filter(r=>{const[y,m]=r.date.split('-').map(Number);return y===year&&m===month+1;});
+  const byDate = {};
+  mr.forEach(r=>{if(!byDate[r.date])byDate[r.date]=[];byDate[r.date].push(r);});
+  const sorted = Object.keys(byDate).sort().reverse();
+  const mons=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+  const list = document.getElementById('historyList');
+
+  if (sorted.length===0) {
+    list.innerHTML='<div class="empty-state"><div class="empty-icon">📋</div><div class="empty-text">ไม่มีข้อมูลเดือนนี้</div></div>';
+    return;
+  }
+
+  list.innerHTML = sorted.map(date => {
+    const rs = byDate[date];
+    const comp = rs.filter(r=>r.checkOut);
+    const totalH = comp.reduce((s,r)=>s+calcNetHours(r.checkIn,r.checkOut,r.date),0);
+    const totalOT = comp.reduce((s,r)=>s+(r.otMin||0),0);
+    const hasLate = rs.some(r=>r.isLate);
+    const [y,m,d] = date.split('-');
+    const tr = rs.map(r=>`${r.checkIn}${r.checkOut?'→'+r.checkOut:'→...'}`).join(', ');
+    return `<div class="history-item" onclick="showDayDetail('${date}')">
+      <div class="history-date">${parseInt(d)} ${mons[parseInt(m)-1]} ${parseInt(y)+543}</div>
+      <div class="history-times">${tr}</div>
+      <div class="history-stats">
+        <span class="badge" style="background:var(--green-light);color:var(--green)">⏱ ${totalH.toFixed(1)} ชม.</span>
+        ${totalOT>0?`<span class="badge badge-ot">⚡ OT ${(totalOT/60).toFixed(1)} ชม.</span>`:''}
+        ${hasLate?'<span class="badge badge-late">⚠ สาย</span>':'<span class="badge badge-ontime">✓ ปกติ</span>'}
+        <span class="badge" style="background:var(--surface2);color:var(--text2)">${rs.length} รอบ</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ===== TEAM (REAL-TIME) =====
+// Members now come from Firestore - cached locally
+let _membersCache = null;
+
+async function getMembers() {
+  if (_membersCache !== null) return _membersCache;
+  try {
+    const snap = await db.collection('members').get();
+    _membersCache = snap.docs.map(d => d.data()).filter(m => m.email !== currentUser.email);
+    if (_membersCache.length === 0) {
+      // Fallback to localStorage
+      _membersCache = JSON.parse(localStorage.getItem('wp_team')||'[]').filter(m => m.email !== currentUser.email);
+    }
+    return _membersCache;
+  } catch(e) { 
+    _membersCache = JSON.parse(localStorage.getItem('wp_team')||'[]').filter(m => m.email !== currentUser.email);
+    return _membersCache;
+  }
+}
+
+async function getAllMembers() {
+  try {
+    // Read from 'users' collection - everyone who has ever logged in
+    const snap = await Promise.race([
+      db.collection('users').get(),
+      new Promise((_, r) => setTimeout(() => r(new Error('timeout')), 5000))
+    ]);
+    if (snap && snap.docs) {
+      const users = snap.docs.map(d => d.data()).filter(u => u.email);
+      if (users.length > 0) return users;
+    }
+  } catch(e) { 
+    console.warn('getAllMembers error:', e.message);
+  }
+  // Fallback to localStorage
+  return JSON.parse(localStorage.getItem('wp_team')||'[]');
+}
+
+function saveMembers(m) { _membersCache = null; } // just invalidate cache
+
+async function addMember() {
+  const email = document.getElementById('memberEmail').value.trim().toLowerCase();
+  const name = document.getElementById('memberName').value.trim();
+  if (!email||!email.includes('@')) { toast('อีเมลไม่ถูกต้อง','error'); return; }
+  try {
+    await db.collection('members').doc(email.replace(/[^a-zA-Z0-9]/g,'_')).set(
+      { name: name||email.split('@')[0], email, joinedAt: new Date().toISOString() },
+      { merge: true }
+    );
+    _membersCache = null;
+    document.getElementById('memberEmail').value='';
+    document.getElementById('memberName').value='';
+    toast(`เพิ่ม ${email} แล้ว`,'success');
+    renderTeam();
+  } catch(e) { toast('เพิ่มไม่สำเร็จ','error'); }
+}
+
+async function removeMember(email) {
+  if (!confirm('ลบสมาชิกนี้?')) return;
+  try {
+    await db.collection('members').doc(email.replace(/[^a-zA-Z0-9]/g,'_')).delete();
+    _membersCache = null;
+    toast('ลบสมาชิกแล้ว','success');
+    renderTeam();
+  } catch(e) { toast('ลบไม่สำเร็จ','error'); }
+}
+
+async function renderTeam() {
+  const dateKey = document.getElementById('teamDate').value || todayKey();
+  const list = document.getElementById('teamList');
+  list.innerHTML = '<div class="empty-state"><div class="spinner" style="margin:0 auto"></div><div style="margin-top:12px;font-size:13px;color:var(--text2)">กำลังโหลดข้อมูลทีม...</div></div>';
+
+  let members = [];
+  try {
+    const snap = await db.collection('users').get();
+    members = snap.docs.map(d => d.data()).filter(u => u.email && u.name);
+  } catch(e) {
+    members = JSON.parse(localStorage.getItem('wp_team') || '[]');
+  }
+
+  if (members.length === 0) {
+    list.innerHTML = `<div class="empty-state"><div class="empty-icon">👥</div><div class="empty-text">ยังไม่มีสมาชิก<br><span style="font-size:12px;color:var(--text3)">สมาชิกจะปรากฏหลังจากล็อกอินเข้าแอพครั้งแรก</span></div></div>`;
+    return;
+  }
+
+  const colors = ['#2563eb','#059669','#7c3aed','#d97706','#dc2626','#0891b2','#0284c7','#16a34a'];
+  const results = [];
+
+  for (const [i, member] of members.entries()) {
+    try {
+      const snap = await db.collection('users').doc(skey(member.email)).get();
+      const data = snap.exists ? snap.data() : {};
+      const recs = data.records || [];
+      const dr = recs.filter(r => r.date === dateKey);
+      const comp = dr.filter(r => r.checkOut);
+      const open = dr.find(r => !r.checkOut);
+      const totalH = comp.reduce((s,r) => s + calcNetHours(r.checkIn,r.checkOut,r.date), 0);
+      const totalOT = comp.reduce((s,r) => s + (r.otMin||0), 0);
+      const hasLate = dr.some(r => r.isLate);
+      results.push({ member, name: data.name||member.name||member.email.split('@')[0], dr, totalH, totalOT, open, hasLate, color: colors[i%colors.length], photo: data.photo||getProfilePhoto(member.email)||'' });
+    } catch(e) {
+      results.push({ member, name: member.name||member.email.split('@')[0], dr:[], totalH:0, totalOT:0, open:null, hasLate:false, color:colors[i%colors.length], photo:'' });
+    }
+  }
+
+  list.innerHTML = results.map(r => {
+    const firstIn = r.dr.length > 0 ? r.dr[0].checkIn : '--:--';
+    let statusBadge = '';
+    if (r.open) statusBadge = '<span class="badge badge-working">🟢 กำลังทำงาน</span>';
+    else if (r.dr.length > 0) statusBadge = r.hasLate ? '<span class="badge badge-late">⚠ มาสาย</span>' : '<span class="badge badge-ontime">✓ มาแล้ว</span>';
+    else statusBadge = '<span class="badge" style="background:var(--surface2);color:var(--text3)">— ยังไม่มา</span>';
+
+    return `<div class="team-card" data-email="${r.member.email}" onclick="showDayDetail('${dateKey}','${r.member.email}')">
+      <div class="team-card-top">
+        <div class="team-avatar" style="background:${r.color}">
+          ${r.photo ? `<img src="${r.photo}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">` : r.name.charAt(0).toUpperCase()}
+        </div>
+        <div class="team-info">
+          <div class="team-name">${r.name}</div>
+          <div class="team-email">${r.member.email}</div>
+        </div>
+        <div>${statusBadge}</div>
+      </div>
+      <div class="team-stats-row">
+        <div class="team-stat"><div class="team-stat-val color-blue">${firstIn}</div><div class="team-stat-lbl">เข้างาน</div></div>
+        <div class="team-stat"><div class="team-stat-val color-green">${r.totalH.toFixed(1)}</div><div class="team-stat-lbl">ชม.ทำงาน</div></div>
+        <div class="team-stat"><div class="team-stat-val color-orange">${(r.totalOT/60).toFixed(1)}</div><div class="team-stat-lbl">ชม.โอที</div></div>
+      </div>
+      ${isAdmin()?`<div style="text-align:right;margin-top:8px;">
+        <button onclick="event.stopPropagation();openEdit(${r.dr[0]?.id||0},'${r.member.email}')" style="font-size:11px;padding:4px 10px;border:1px solid var(--accent);border-radius:6px;background:var(--accent-light);color:var(--accent);cursor:pointer;font-family:'Sarabun',sans-serif;margin-right:4px;" ${r.dr.length===0?'disabled style="opacity:.4"':''}>✏️ แก้ไข</button>
+        <button onclick="event.stopPropagation();showDayDetail('${dateKey}','${r.member.email}')" style="font-size:11px;padding:4px 10px;border:1px solid var(--border);border-radius:6px;background:none;color:var(--text2);cursor:pointer;font-family:'Sarabun',sans-serif;">📋 รายละเอียด</button>
+      </div>`:''}
+    </div>`;
+  }).join('');
+
+  setupRealtimeListeners(members, dateKey);
+}
+
+async function renderTeamSilent() {
+  // Re-render team without showing spinner
+  _membersCache = null;
+  const members = isAdmin() ? await getAllMembers() : await getMembers();
+  const dateKey = document.getElementById('teamDate').value || todayKey();
+  const list = document.getElementById('teamList');
+  if (members.length === 0) return;
+
+  const colors = ['#2563eb','#059669','#7c3aed','#d97706','#dc2626','#0891b2'];
+  const results = [];
+
+  for (const [i, member] of members.entries()) {
+    try {
+      const snap = await db.collection('users').doc(skey(member.email)).get();
+      const data = snap.exists ? snap.data() : {};
+      const recs = data.records || [];
+      const dr = recs.filter(r=>r.date===dateKey);
+      const comp = dr.filter(r=>r.checkOut);
+      const open = dr.find(r=>!r.checkOut);
+      const totalH = comp.reduce((s,r)=>s+calcNetHours(r.checkIn,r.checkOut,r.date),0);
+      const totalOT = comp.reduce((s,r)=>s+(r.otMin||0),0);
+      const hasLate = dr.some(r=>r.isLate);
+      const name = data.name || member.name || member.email.split('@')[0];
+      results.push({ member, name, dr, totalH, totalOT, open, hasLate, color:colors[i%colors.length] });
+    } catch(e) {
+      results.push({ member, name:member.name||member.email.split('@')[0], dr:[], totalH:0, totalOT:0, open:null, hasLate:false, color:colors[i%colors.length] });
+    }
+  }
+
+  list.innerHTML = results.map(r => {
+    const firstIn = r.dr.length>0 ? r.dr[0].checkIn : '--:--';
+    let statusBadge = '';
+    if (r.open) statusBadge = '<span class="badge badge-working">🟢 กำลังทำงาน</span>';
+    else if (r.dr.length>0) statusBadge = r.hasLate ? '<span class="badge badge-late">⚠ มาสาย</span>' : '<span class="badge badge-ontime">✓ มาแล้ว</span>';
+    else statusBadge = '<span class="badge" style="background:var(--surface2);color:var(--text3)">— ยังไม่มา</span>';
+
+    return `<div class="team-card" data-email="${r.member.email}" onclick="showDayDetail('${dateKey}','${r.member.email}')">
+      <div class="team-card-top">
+        <div class="team-avatar" style="background:${r.color}">
+          ${photos[r.member.email] ? `<img src="${photos[r.member.email]}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">` : r.name.charAt(0).toUpperCase()}
+        </div>
+        <div class="team-info">
+          <div class="team-name">${r.name}</div>
+          <div class="team-email">${r.member.email}</div>
+        </div>
+        <div>${statusBadge}</div>
+      </div>
+      <div class="team-stats-row">
+        <div class="team-stat"><div class="team-stat-val color-blue">${firstIn}</div><div class="team-stat-lbl">เข้างาน</div></div>
+        <div class="team-stat"><div class="team-stat-val color-green">${r.totalH.toFixed(1)}</div><div class="team-stat-lbl">ชม.ทำงาน</div></div>
+        <div class="team-stat"><div class="team-stat-val color-orange">${(r.totalOT/60).toFixed(1)}</div><div class="team-stat-lbl">ชม.โอที</div></div>
+      </div>
+      ${isAdmin()?`<div style="text-align:right;margin-top:10px;"><button onclick="event.stopPropagation();removeMember('${r.member.email}')" style="font-size:11px;padding:4px 10px;border:1px solid var(--border);border-radius:6px;background:none;color:var(--text3);cursor:pointer;">ลบสมาชิก</button></div>`:''}
+    </div>`;
+  }).join('');
+}
+
+
+
+// ===== SALARY CALCULATOR =====
+function salKey() {
+  return 'sal_' + currentUser.email.replace(/[^a-zA-Z0-9]/g,'_');
+}
+
+function saveSalaryInput() {
+  const month = document.getElementById('salMonth').value;
+  const year = document.getElementById('salYear').value;
+  const val = document.getElementById('salaryInput').value;
+  const key = salKey() + '_' + year + '_' + month;
+  if (val) localStorage.setItem(key, val);
+  else localStorage.removeItem(key);
+}
+
+function loadSalaryInput(month, year) {
+  const key = salKey() + '_' + year + '_' + month;
+  return localStorage.getItem(key) || '';
+}
+
+async function renderSalary() {
+  if (isAdmin()) setTimeout(renderAdminSalary, 500);
+  const month = parseInt(document.getElementById('salMonth').value);
+  const year = parseInt(document.getElementById('salYear').value);
+  const salaryRaw = document.getElementById('salaryInput').value;
+
+  // Load saved salary for this month
+  const saved = loadSalaryInput(month, year);
+  if (document.getElementById('salaryInput').value === '' && saved) {
+    document.getElementById('salaryInput').value = saved;
+  }
+
+  const salary = parseFloat(document.getElementById('salaryInput').value) || 0;
+  const mons = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+  const recs = await loadRecords();
+  const mr = recs.filter(r => {
+    const [y,m] = r.date.split('-').map(Number);
+    return y === year && m === month + 1;
+  });
+
+  const byDate = {};
+  mr.forEach(r => { if(!byDate[r.date]) byDate[r.date]=[]; byDate[r.date].push(r); });
+
+  const days = Object.keys(byDate).length;
+  const comp = mr.filter(r => r.checkOut);
+  const totalH = comp.reduce((s,r) => s + calcNetHours(r.checkIn, r.checkOut, r.date), 0);
+  const totalOT = comp.reduce((s,r) => s + (r.otMin||0), 0);
+  const totalOTH = totalOT / 60;
+  const totalAllH = totalH; // OT already included in totalH
+  const lateCount = Object.values(byDate).filter(rs => rs.some(r => r.isLate)).length;
+
+  const perHour = totalAllH > 0 && salary > 0 ? salary / totalAllH : 0;
+
+  const resultEl = document.getElementById('salaryResult');
+
+  if (salary === 0) {
+    resultEl.innerHTML = `
+      <div class="section-card" style="text-align:center;padding:32px;">
+        <div style="font-size:48px;margin-bottom:12px;">💰</div>
+        <div style="color:var(--text2);font-size:15px;">กรอกเงินเดือนที่ได้รับด้านบนเพื่อคำนวณครับ</div>
+      </div>`;
+    return;
+  }
+
+  resultEl.innerHTML = `
+    <div class="section-card" style="margin-bottom:16px;">
+      <div class="section-title" style="margin-bottom:16px;">📊 สรุป ${mons[month]} ${year+543}</div>
+      
+      <!-- Main result -->
+      <div style="background:linear-gradient(135deg,#667eea,#764ba2);border-radius:16px;padding:24px;text-align:center;color:#fff;margin-bottom:16px;">
+        <div style="font-size:13px;opacity:.85;margin-bottom:8px;">ค่าแรงต่อชั่วโมง</div>
+        <div style="font-family:'Prompt',sans-serif;font-size:42px;font-weight:700;letter-spacing:-1px;">
+          ฿${perHour.toLocaleString('th-TH', {minimumFractionDigits:2, maximumFractionDigits:2})}
+        </div>
+        <div style="font-size:13px;opacity:.75;margin-top:6px;">= ${salary.toLocaleString('th-TH')} ÷ ${totalAllH.toFixed(2)} ชม.</div>
+      </div>
+
+      <!-- Stats grid -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
+        <div class="sum-card">
+          <div class="sum-val color-blue">${salary.toLocaleString('th-TH')}</div>
+          <div class="sum-lbl">เงินเดือน (บาท)</div>
+        </div>
+        <div class="sum-card">
+          <div class="sum-val color-green">${totalAllH.toFixed(2)}</div>
+          <div class="sum-lbl">ชม.ทำงานรวม</div>
+        </div>
+        <div class="sum-card">
+          <div class="sum-val color-orange">${totalOTH.toFixed(2)}</div>
+          <div class="sum-lbl">ชม.โอที</div>
+        </div>
+        <div class="sum-card">
+          <div class="sum-val color-purple">${days}</div>
+          <div class="sum-lbl">วันที่มาทำงาน</div>
+        </div>
+      </div>
+
+      <!-- Breakdown -->
+      <div style="background:var(--surface2);border-radius:12px;padding:16px;">
+        <div style="font-size:13px;font-weight:700;margin-bottom:12px;color:var(--text2);">รายละเอียดการคำนวณ</div>
+        <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:14px;">
+          <span>เงินเดือนที่ได้รับ</span>
+          <span style="font-weight:700;">฿${salary.toLocaleString('th-TH')}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:14px;">
+          <span>ชั่วโมงทำงานสุทธิ (หักเดินทาง/พักเที่ยงแล้ว)</span>
+          <span style="font-weight:700;">${totalAllH.toFixed(2)} ชม.</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:14px;">
+          <span>ชั่วโมงปกติ</span>
+          <span style="font-weight:700;">${(totalAllH - totalOTH).toFixed(2)} ชม.</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:14px;">
+          <span>ชั่วโมงโอที</span>
+          <span style="font-weight:700;color:var(--orange);">${totalOTH.toFixed(2)} ชม.</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:10px 0 0;font-size:15px;">
+          <span style="font-weight:700;">ค่าแรงต่อชั่วโมง</span>
+          <span style="font-weight:700;color:var(--accent);font-size:16px;">฿${perHour.toLocaleString('th-TH', {minimumFractionDigits:2, maximumFractionDigits:2})}</span>
+        </div>
+      </div>
+    </div>
+
+    ${lateCount > 0 ? `
+    <div class="section-card" style="border-left:3px solid var(--red);">
+      <div style="display:flex;align-items:center;gap:8px;color:var(--red);">
+        <span style="font-size:18px;">⚠️</span>
+        <span style="font-weight:700;">มาสาย ${lateCount} วันในเดือนนี้</span>
+      </div>
+    </div>` : `
+    <div class="section-card" style="border-left:3px solid var(--green);">
+      <div style="display:flex;align-items:center;gap:8px;color:var(--green);">
+        <span style="font-size:18px;">✅</span>
+        <span style="font-weight:700;">ไม่มาสายเลยในเดือนนี้ 🎉</span>
+      </div>
+    </div>`}
+  `;
+}
+
+// ===== TEAM SUMMARY =====
+async function renderTeamSummary() {
+  if (!isAdmin()) return;
+  const month = parseInt(document.getElementById('tsMonth').value);
+  const year = parseInt(document.getElementById('tsYear').value);
+  const allMembers = await getAllMembers();
+  const dim = new Date(year, month+1, 0).getDate();
+  const colors = ['#2563eb','#059669','#7c3aed','#d97706','#dc2626','#0891b2','#0284c7','#16a34a'];
+  const mons = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+
+  document.getElementById('tsOverall').innerHTML = '<div style="text-align:center;padding:20px;"><div class="spinner" style="margin:0 auto"></div></div>';
+  document.getElementById('tsMemberList').innerHTML = '';
+
+  const results = [];
+  for (const [i, member] of allMembers.entries()) {
+    try {
+      const snap = await db.collection('users').doc(skey(member.email)).get();
+      const recs = snap.exists ? (snap.data().records || []) : [];
+      const mr = recs.filter(r => { const [y,m] = r.date.split('-').map(Number); return y===year && m===month+1; });
+      const byDate = {};
+      mr.forEach(r => { if(!byDate[r.date]) byDate[r.date]=[]; byDate[r.date].push(r); });
+      const days = Object.keys(byDate).length;
+      const totalH = mr.filter(r=>r.checkOut).reduce((s,r)=>s+calcNetHours(r.checkIn,r.checkOut,r.date),0);
+      const totalOT = mr.filter(r=>r.checkOut).reduce((s,r)=>s+(r.otMin||0),0);
+      const lateCount = Object.values(byDate).filter(rs=>rs.some(r=>r.isLate)).length;
+      const avgIn = mr.length > 0 ? (() => {
+        const firstIns = Object.values(byDate).map(rs => rs[0].checkIn).filter(Boolean);
+        if (firstIns.length === 0) return '--:--';
+        const avgMin = firstIns.reduce((s,t) => { const[h,m]=t.split(':').map(Number); return s+h*60+m; }, 0) / firstIns.length;
+        return `${String(Math.floor(avgMin/60)).padStart(2,'0')}:${String(Math.round(avgMin%60)).padStart(2,'0')}`;
+      })() : '--:--';
+      results.push({ member, name: member.name||member.email.split('@')[0], days, totalH, totalOT, lateCount, avgIn, color: colors[i%colors.length] });
+    } catch(e) {
+      results.push({ member, name: member.name||member.email.split('@')[0], days:0, totalH:0, totalOT:0, lateCount:0, avgIn:'--:--', color: colors[i%colors.length] });
+    }
+  }
+
+  // Sort by totalH desc
+  results.sort((a,b) => b.totalH - a.totalH);
+
+  // Overall stats
+  const totalMembers = results.length;
+  const totalDays = results.reduce((s,r)=>s+r.days,0);
+  const totalHours = results.reduce((s,r)=>s+r.totalH,0);
+  const totalOTAll = results.reduce((s,r)=>s+r.totalOT,0);
+  const totalLate = results.reduce((s,r)=>s+r.lateCount,0);
+
+  document.getElementById('tsOverall').innerHTML = `
+    <div class="section-title" style="margin-bottom:14px;">📊 ภาพรวม ${mons[month]} ${year+543}</div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;">
+      <div class="sum-card"><div class="sum-val color-blue">${totalMembers}</div><div class="sum-lbl">สมาชิกทั้งหมด</div></div>
+      <div class="sum-card"><div class="sum-val color-green">${totalHours.toFixed(1)}</div><div class="sum-lbl">ชม.รวมทั้งทีม</div></div>
+      <div class="sum-card"><div class="sum-val color-orange">${(totalOTAll/60).toFixed(1)}</div><div class="sum-lbl">ชม.โอทีรวม</div></div>
+      <div class="sum-card"><div class="sum-val color-purple">${totalDays}</div><div class="sum-lbl">วัน-คนรวม</div></div>
+      <div class="sum-card"><div class="sum-val color-red">${totalLate}</div><div class="sum-lbl">ครั้งที่สาย</div></div>
+      <div class="sum-card"><div class="sum-val">${totalMembers>0?(totalHours/totalMembers).toFixed(1):0}</div><div class="sum-lbl">เฉลี่ย ชม./คน</div></div>
+    </div>`;
+
+  if (results.length === 0) {
+    document.getElementById('tsMemberList').innerHTML = '<div class="empty-state"><div class="empty-icon">👥</div><div class="empty-text">ยังไม่มีสมาชิก</div></div>';
+    return;
+  }
+
+  // Member table
+  const rankEmoji = ['🥇','🥈','🥉'];
+  document.getElementById('tsMemberList').innerHTML = `
+    <div style="overflow-x:auto;">
+      <table class="ts-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>ชื่อ</th>
+            <th>วันที่มา</th>
+            <th>ชม.ทำงาน</th>
+            <th>ชม.โอที</th>
+            <th>มาสาย</th>
+            <th>เข้างานเฉลี่ย</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${results.map((r,i) => `
+            <tr onclick="showMemberMonthDetail('${r.member.email}','${r.name}',${month},${year})" style="cursor:pointer;">
+              <td><span style="font-size:18px">${rankEmoji[i]||i+1}</span></td>
+              <td>
+                <div class="ts-member-info">
+                  <div class="ts-avatar" style="background:${r.color}">${r.name.charAt(0).toUpperCase()}</div>
+                  <div>
+                    <div style="font-weight:700;font-size:13px;">${r.name}</div>
+                    <div style="font-size:11px;color:var(--text3);">${r.member.email}</div>
+                  </div>
+                </div>
+              </td>
+              <td><span style="font-weight:700;color:var(--accent)">${r.days}</span> วัน</td>
+              <td><span style="font-weight:700;color:var(--green)">${r.totalH.toFixed(1)}</span></td>
+              <td><span style="font-weight:700;color:var(--orange)">${(r.totalOT/60).toFixed(1)}</span></td>
+              <td>${r.lateCount > 0 ? `<span class="badge badge-late">${r.lateCount} ครั้ง</span>` : '<span class="badge badge-ontime">ไม่สาย</span>'}</td>
+              <td style="font-weight:600;">${r.avgIn}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>`;
+}
+
+async function showMemberMonthDetail(email, name, month, year) {
+  try {
+    const snap = await db.collection('users').doc(skey(email)).get();
+    const recs = snap.exists ? (snap.data().records || []) : [];
+    const mr = recs.filter(r => { const [y,m] = r.date.split('-').map(Number); return y===year && m===month+1; });
+    const byDate = {};
+    mr.forEach(r => { if(!byDate[r.date]) byDate[r.date]=[]; byDate[r.date].push(r); });
+    const mons=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+    document.getElementById('dayModalTitle').textContent = `${name} — ${mons[month]} ${year+543}`;
+
+    const sorted = Object.keys(byDate).sort().reverse();
+    let html = '';
+    if (sorted.length === 0) {
+      html = '<div class="empty-state"><div class="empty-icon">📋</div><div class="empty-text">ไม่มีข้อมูลเดือนนี้</div></div>';
+    } else {
+      sorted.forEach(date => {
+        const rs = byDate[date];
+        const comp = rs.filter(r=>r.checkOut);
+        const totalH = comp.reduce((s,r)=>s+calcNetHours(r.checkIn,r.checkOut,r.date),0);
+        const totalOT = comp.reduce((s,r)=>s+(r.otMin||0),0);
+        const hasLate = rs.some(r=>r.isLate);
+        const [y,m,d] = date.split('-');
+        html += `<div class="history-item" onclick="showDayDetail('${date}','${email}')">
+          <div class="history-date">${parseInt(d)} ${mons[parseInt(m)-1]} ${parseInt(y)+543}</div>
+          <div class="history-times">${rs.map(r=>`${r.checkIn}${r.checkOut?'→'+r.checkOut:'→...'}`).join(', ')}</div>
+          <div class="history-stats">
+            <span class="badge" style="background:var(--green-light);color:var(--green)">⏱ ${totalH.toFixed(1)} ชม.</span>
+            ${totalOT>0?`<span class="badge badge-ot">⚡ OT ${(totalOT/60).toFixed(1)} ชม.</span>`:''}
+            ${hasLate?'<span class="badge badge-late">⚠ สาย</span>':'<span class="badge badge-ontime">✓ ปกติ</span>'}
+          </div>
+        </div>`;
+      });
+    }
+    document.getElementById('dayModalContent').innerHTML = html;
+    document.getElementById('dayModal').classList.add('open');
+  } catch(e) { toast('โหลดข้อมูลไม่ได้','error'); }
+}
+
+
+// ===== EXPORT =====
+function exportToCSV(month, year) {
+  const mons = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+  loadRecords().then(recs => {
+    const mr = recs.filter(r => {
+      const [y,m] = r.date.split('-').map(Number);
+      return y === year && m === month + 1;
+    });
+    if (mr.length === 0) { toast('ไม่มีข้อมูลให้ Export','warning'); return; }
+
+    const byDate = {};
+    mr.forEach(r => { if(!byDate[r.date]) byDate[r.date]=[]; byDate[r.date].push(r); });
+
+    let csv = '\uFEFF'; // BOM for Thai
+    csv += 'วันที่,วัน,เวลาเข้า,เวลาออก,ชม.ดิบ,หักเวลา,ชม.สุทธิ,โอที(ชม.),สถานะ,หมายเหตุ\n';
+
+    const dayNames = ['อาทิตย์','จันทร์','อังคาร','พุธ','พฤหัสบดี','ศุกร์','เสาร์'];
+
+    Object.keys(byDate).sort().forEach(date => {
+      const rs = byDate[date];
+      const d = new Date(date);
+      const dayName = dayNames[d.getDay()];
+      const [y,m,dd] = date.split('-');
+      const dateStr = `${parseInt(dd)}/${parseInt(m)}/${parseInt(y)+543}`;
+      const deduct = getDeduction(date);
+
+      rs.forEach((r, i) => {
+        const rawH = r.checkOut ? calcHours(r.checkIn, r.checkOut) : 0;
+        const netH = r.checkOut ? calcNetHours(r.checkIn, r.checkOut, r.date) : 0;
+        const otH = (r.otMin||0) / 60;
+        const status = r.isLate ? `สาย ${r.lateMin||r.lateMinutes||0} นาที` : 'ตรงเวลา';
+        csv += `${dateStr},${dayName},${r.checkIn},${r.checkOut||''},${rawH.toFixed(2)},${i===0?deduct:0},${i===0?netH.toFixed(2):''},${otH.toFixed(2)},${status},${r.note||''}\n`;
+      });
+    });
+
+    // Summary row
+    const totalNetH = mr.filter(r=>r.checkOut).reduce((s,r)=>s+calcNetHours(r.checkIn,r.checkOut,r.date),0);
+    const totalOT = mr.filter(r=>r.checkOut).reduce((s,r)=>s+(r.otMin||0),0);
+    csv += `\nสรุป ${mons[month]} ${year+543},,,,,,${totalNetH.toFixed(2)},${(totalOT/60).toFixed(2)},,\n`;
+
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `ทีมงานลาล่า_${currentUser.name}_${mons[month]}${year+543}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast('✅ Export สำเร็จ', 'success');
+  });
+}
+
+// ===== ADMIN SALARY VIEW =====
+async function renderAdminSalary() {
+  if (!isAdmin()) return;
+  const month = parseInt(document.getElementById('salMonth').value);
+  const year = parseInt(document.getElementById('salYear').value);
+  const allMembers = await getAllMembers();
+  const mons = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+  
+  const adminSalEl = document.getElementById('adminSalarySection');
+  if (!adminSalEl) return;
+  adminSalEl.innerHTML = '<div style="text-align:center;padding:16px;"><div class="spinner" style="margin:0 auto"></div></div>';
+
+  const results = [];
+  for (const member of allMembers) {
+    try {
+      const snap = await db.collection('users').doc(skey(member.email)).get();
+      const recs = snap.exists ? (snap.data().records || []) : [];
+      const mr = recs.filter(r => { const [y,m]=r.date.split('-').map(Number); return y===year&&m===month+1; });
+      const comp = mr.filter(r=>r.checkOut);
+      const totalH = comp.reduce((s,r)=>s+calcNetHours(r.checkIn,r.checkOut,r.date),0);
+      const totalOT = comp.reduce((s,r)=>s+(r.otMin||0),0);
+      const days = new Set(mr.map(r=>r.date)).size;
+      // Get saved salary for this member
+      const salKey2 = 'sal_' + member.email.replace(/[^a-zA-Z0-9]/g,'_') + '_' + year + '_' + month;
+      const salary = parseFloat(localStorage.getItem(salKey2)) || 0;
+      const perHour = salary > 0 && totalH > 0 ? salary / totalH : 0;
+      results.push({ member, name: member.name||member.email.split('@')[0], totalH, totalOT, days, salary, perHour });
+    } catch(e) {
+      results.push({ member, name: member.name||member.email.split('@')[0], totalH:0, totalOT:0, days:0, salary:0, perHour:0 });
+    }
+  }
+
+  adminSalEl.innerHTML = `
+    <div class="section-title" style="margin-bottom:16px;">👑 ค่าแรงทีมงาน — ${mons[month]} ${year+543}</div>
+    <div style="overflow-x:auto;">
+      <table class="ts-table">
+        <thead>
+          <tr>
+            <th>ชื่อ</th>
+            <th>วันที่มา</th>
+            <th>ชม.สุทธิ</th>
+            <th>โอที</th>
+            <th>เงินเดือน (บาท)</th>
+            <th>ค่าแรง/ชม.</th>
+            <th>Export</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${results.map(r => `
+            <tr>
+              <td>
+                <div style="font-weight:700;">${r.name}</div>
+                <div style="font-size:11px;color:var(--text3);">${r.member.email}</div>
+              </td>
+              <td style="font-weight:700;color:var(--accent)">${r.days} วัน</td>
+              <td style="font-weight:700;color:var(--green)">${r.totalH.toFixed(2)}</td>
+              <td style="font-weight:700;color:var(--orange)">${(r.totalOT/60).toFixed(2)}</td>
+              <td>
+                <input type="number" placeholder="กรอกเงินเดือน"
+                  value="${r.salary||''}"
+                  onchange="saveAdminMemberSalary('${r.member.email}',this.value,${month},${year})"
+                  style="width:120px;padding:6px 10px;border:2px solid var(--border);border-radius:8px;font-size:13px;font-family:'Sarabun',sans-serif;outline:none;"
+                  onfocus="this.style.borderColor='var(--accent)'"
+                  onblur="this.style.borderColor='var(--border)'"/>
+              </td>
+              <td style="font-weight:700;color:var(--purple);">
+                ${r.perHour > 0 ? `฿${r.perHour.toLocaleString('th-TH',{minimumFractionDigits:2,maximumFractionDigits:2})}` : '<span style="color:var(--text3)">—</span>'}
+              </td>
+              <td>
+                <button onclick="exportMemberCSV('${r.member.email}','${r.name}',${month},${year})"
+                  style="padding:6px 12px;background:var(--green);color:#fff;border:none;border-radius:8px;font-size:12px;cursor:pointer;font-family:'Sarabun',sans-serif;">
+                  📥 CSV
+                </button>
+              </td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>`;
+}
+
+function saveAdminMemberSalary(email, salary, month, year) {
+  const key = 'sal_' + email.replace(/[^a-zA-Z0-9]/g,'_') + '_' + year + '_' + month;
+  if (salary) localStorage.setItem(key, salary);
+  else localStorage.removeItem(key);
+  renderAdminSalary();
+}
+
+async function exportMemberCSV(email, name, month, year) {
+  const mons = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+  const snap = await db.collection('users').doc(skey(email)).get();
+  const recs = snap.exists ? (snap.data().records || []) : [];
+  const mr = recs.filter(r => { const [y,m]=r.date.split('-').map(Number); return y===year&&m===month+1; });
+  
+  if (mr.length === 0) { toast('ไม่มีข้อมูล','warning'); return; }
+  
+  const byDate = {};
+  mr.forEach(r => { if(!byDate[r.date]) byDate[r.date]=[]; byDate[r.date].push(r); });
+  const dayNames = ['อาทิตย์','จันทร์','อังคาร','พุธ','พฤหัสบดี','ศุกร์','เสาร์'];
+
+  let csv = '\uFEFF';
+  csv += `รายงานเวลาทำงาน - ${name} - ${mons[month]} ${year+543}\n\n`;
+  csv += 'วันที่,วัน,เวลาเข้า,เวลาออก,ชม.ดิบ,หักเวลา,ชม.สุทธิ,โอที(ชม.),สถานะ\n';
+
+  Object.keys(byDate).sort().forEach(date => {
+    const rs = byDate[date];
+    const d = new Date(date);
+    const [y,m,dd] = date.split('-');
+    const dateStr = `${parseInt(dd)}/${parseInt(m)}/${parseInt(y)+543}`;
+    const deduct = getDeduction(date);
+    rs.forEach((r,i) => {
+      const rawH = r.checkOut ? calcHours(r.checkIn,r.checkOut) : 0;
+      const netH = r.checkOut ? calcNetHours(r.checkIn,r.checkOut,r.date) : 0;
+      const otH = (r.otMin||0)/60;
+      csv += `${dateStr},${dayNames[d.getDay()]},${r.checkIn},${r.checkOut||''},${rawH.toFixed(2)},${i===0?deduct:0},${i===0?netH.toFixed(2):''},${otH.toFixed(2)},${r.isLate?'สาย':'ตรงเวลา'}\n`;
+    });
+  });
+
+  const totalNetH = mr.filter(r=>r.checkOut).reduce((s,r)=>s+calcNetHours(r.checkIn,r.checkOut,r.date),0);
+  const totalOT = mr.filter(r=>r.checkOut).reduce((s,r)=>s+(r.otMin||0),0);
+  const salKey2 = 'sal_' + email.replace(/[^a-zA-Z0-9]/g,'_') + '_' + year + '_' + month;
+  const salary = parseFloat(localStorage.getItem(salKey2)) || 0;
+  const perHour = salary > 0 && totalNetH > 0 ? salary/totalNetH : 0;
+  
+  csv += `\nสรุป,,,,,,${totalNetH.toFixed(2)},${(totalOT/60).toFixed(2)},\n`;
+  if (salary > 0) {
+    csv += `เงินเดือน,,,,,,,฿${salary.toLocaleString('th-TH')},\n`;
+    csv += `ค่าแรง/ชม.,,,,,,,฿${perHour.toFixed(2)},\n`;
+  }
+
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `ทีมงานลาล่า_${name}_${mons[month]}${year+543}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('✅ Export สำเร็จ', 'success');
+}
+
+// ===== REMINDER: FORGOT CHECKOUT =====
+function setupCheckoutReminder() {
+  // Check every minute
+  setInterval(async () => {
+    const now = new Date();
+    const hour = now.getHours();
+    // Only remind from 19:00 onwards
+    if (hour < 19) return;
+    
+    const recs = await loadRecords();
+    const openSession = recs.find(r => r.date === todayKey() && !r.checkOut);
+    if (!openSession) return;
+
+    // Check if we already reminded in the last 30 mins
+    const lastRemind = parseInt(localStorage.getItem('wp_last_remind') || '0');
+    const diff = (now.getTime() - lastRemind) / 60000;
+    if (diff < 30) return;
+
+    localStorage.setItem('wp_last_remind', now.getTime().toString());
+    
+    // Show toast reminder
+    const sinceMin = Math.floor((now.getTime() - openSession.checkInTs) / 60000);
+    const sinceHour = (sinceMin / 60).toFixed(1);
+    
+    showReminderBanner(openSession.checkIn, sinceHour);
+  }, 60000); // check every minute
+}
+
+function showReminderBanner(checkInTime, hours) {
+  let banner = document.getElementById('checkoutReminderBanner');
+  if (!banner) {
+    banner = document.createElement('div');
+    banner.id = 'checkoutReminderBanner';
+    banner.style.cssText = 'position:fixed;top:68px;left:12px;right:12px;background:#fff;border:2px solid #f59e0b;border-radius:16px;padding:14px 16px;z-index:400;box-shadow:0 8px 32px rgba(0,0,0,0.15);animation:slideUp .3s ease;display:flex;align-items:center;gap:12px;';
+    document.body.appendChild(banner);
+  }
+  banner.innerHTML = `
+    <span style="font-size:24px;">⏰</span>
+    <div style="flex:1;">
+      <div style="font-weight:700;font-size:14px;color:#92400e;">อย่าลืมออกงาน!</div>
+      <div style="font-size:12px;color:#b45309;">เข้างาน ${checkInTime} — ผ่านมา ${hours} ชม.แล้ว</div>
+    </div>
+    <button onclick="doCheckOut();document.getElementById('checkoutReminderBanner').remove();"
+      style="padding:8px 14px;background:#f59e0b;color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Sarabun',sans-serif;">
+      ออกงาน
+    </button>
+    <button onclick="this.parentElement.remove();"
+      style="width:28px;height:28px;background:var(--surface2);border:none;border-radius:8px;cursor:pointer;font-size:14px;">✕</button>
+  `;
+  banner.style.display = 'flex';
+  
+  // Auto hide after 10 seconds
+  setTimeout(() => { if (banner.parentElement) banner.remove(); }, 10000);
+}
+
+
+
+// ===== PROFILE PHOTO =====
+function getProfilePhoto(email) {
+  return localStorage.getItem('wp_photo_' + (email||'').replace(/[^a-zA-Z0-9]/g,'_')) || '';
+}
+
+function saveProfilePhoto(email, dataUrl) {
+  localStorage.setItem('wp_photo_' + email.replace(/[^a-zA-Z0-9]/g,'_'), dataUrl);
+  // Save to Firestore too
+  db.collection('users').doc(skey(email)).set({ photo: dataUrl }, { merge: true }).catch(e => {});
+}
+
+async function loadProfilePhotos() {
+  // Load own photo from Firestore
+  try {
+    const snap = await db.collection('users').doc(skey()).get();
+    if (snap.exists && snap.data().photo) {
+      const photo = snap.data().photo;
+      localStorage.setItem('wp_photo_' + skey(), photo);
+      updateNavPhoto(photo);
+    }
+  } catch(e) {}
+}
+
+function updateNavPhoto(photoUrl) {
+  const avatar = document.getElementById('navAvatar');
+  if (!avatar) return;
+  if (photoUrl) {
+    avatar.innerHTML = `<img src="${photoUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+  } else {
+    avatar.textContent = currentUser.name.charAt(0).toUpperCase();
+  }
+}
+
+function openProfileUpload() {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'image/*';
+  input.onchange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      // Resize to 128x128
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = 128; canvas.height = 128;
+        const ctx = canvas.getContext('2d');
+        // Crop to square
+        const size = Math.min(img.width, img.height);
+        const x = (img.width - size) / 2;
+        const y = (img.height - size) / 2;
+        ctx.drawImage(img, x, y, size, size, 0, 0, 128, 128);
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+        saveProfilePhoto(currentUser.email, dataUrl);
+        updateNavPhoto(dataUrl);
+        toast('✅ อัปเดตรูปโปรไฟล์แล้ว', 'success');
+      };
+      img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+  };
+  input.click();
+}
+
+// ===== WEEKLY SUMMARY =====
+function getWeekDates(date) {
+  const d = new Date(date);
+  const day = d.getDay();
+  const diff = d.getDate() - day;
+  const start = new Date(d.setDate(diff));
+  const dates = [];
+  for (let i = 0; i < 7; i++) {
+    const dd = new Date(start);
+    dd.setDate(start.getDate() + i);
+    dates.push(dd.toISOString().split('T')[0]);
+  }
+  return dates;
+}
+
+async function renderWeeklySummary() {
+  const recs = await loadRecords();
+  const today = new Date();
+  const weekDates = getWeekDates(today);
+  const mons = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+  const dayNames = ['อา','จ','อ','พ','พฤ','ศ','ส'];
+  
+  const weekEl = document.getElementById('weeklySummaryCard');
+  if (!weekEl) return;
+
+  let totalH = 0, totalOT = 0, days = 0, lateCount = 0;
+  const dayCards = weekDates.map(date => {
+    const dr = recs.filter(r => r.date === date && r.checkOut);
+    const d = new Date(date + 'T00:00:00');
+    const dayH = dr.reduce((s,r) => s + calcNetHours(r.checkIn,r.checkOut,r.date), 0);
+    const dayOT = dr.reduce((s,r) => s + (r.otMin||0), 0);
+    const isToday = date === todayKey();
+    const hasLate = dr.some(r => r.isLate);
+    if (dr.length > 0) { days++; totalH += dayH; totalOT += dayOT; if (hasLate) lateCount++; }
+    
+    let bg = 'var(--surface2)';
+    let border = 'var(--border)';
+    if (isToday) { bg = 'var(--accent-light)'; border = 'var(--accent)'; }
+    else if (dr.length > 0 && !hasLate) { bg = 'var(--green-light)'; border = '#86efac'; }
+    else if (hasLate) { bg = 'var(--red-light)'; border = '#fca5a5'; }
+
+    return `<div style="flex:1;min-width:40px;background:${bg};border:1.5px solid ${border};border-radius:10px;padding:8px 4px;text-align:center;cursor:pointer;" onclick="showDayDetail('${date}')">
+      <div style="font-size:11px;font-weight:700;color:var(--text2);">${dayNames[d.getDay()]}</div>
+      <div style="font-size:12px;font-weight:600;margin:2px 0;">${d.getDate()}</div>
+      <div style="font-size:11px;color:var(--green);font-weight:700;">${dayH > 0 ? dayH.toFixed(1) : '—'}</div>
+      ${dayOT > 0 ? `<div style="font-size:10px;color:var(--orange);">OT</div>` : ''}
+    </div>`;
+  }).join('');
+
+  const [sy,sm,sd] = weekDates[0].split('-');
+  const [ey,em,ed] = weekDates[6].split('-');
+  weekEl.innerHTML = `
+    <div class="section-header">
+      <div class="section-title">📅 สัปดาห์นี้ (${parseInt(sd)} ${mons[parseInt(sm)-1]} — ${parseInt(ed)} ${mons[parseInt(em)-1]})</div>
+    </div>
+    <div style="display:flex;gap:6px;margin-bottom:14px;">${dayCards}</div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;">
+      <div class="team-stat"><div class="team-stat-val color-blue">${days}</div><div class="team-stat-lbl">วันที่มา</div></div>
+      <div class="team-stat"><div class="team-stat-val color-green">${totalH.toFixed(1)}</div><div class="team-stat-lbl">ชม.สุทธิ</div></div>
+      <div class="team-stat"><div class="team-stat-val color-orange">${(totalOT/60).toFixed(1)}</div><div class="team-stat-lbl">ชม.โอที</div></div>
+      <div class="team-stat"><div class="team-stat-val color-red">${lateCount}</div><div class="team-stat-lbl">ครั้งสาย</div></div>
+    </div>`;
+}
+
+// ===== HOLIDAYS =====
+function getHolidays() {
+  try { return JSON.parse(localStorage.getItem('wp_holidays') || '{}'); } catch(e) { return {}; }
+}
+function saveHolidays(h) { localStorage.setItem('wp_holidays', JSON.stringify(h)); }
+
+function toggleHoliday(dateStr) {
+  const holidays = getHolidays();
+  if (holidays[dateStr]) {
+    delete holidays[dateStr];
+    toast('ยกเลิกวันหยุดแล้ว', 'success');
+  } else {
+    const name = prompt('ชื่อวันหยุด (เช่น วันสงกรานต์):') || 'วันหยุด';
+    holidays[dateStr] = name;
+    toast(`เพิ่มวันหยุด: ${name}`, 'success');
+  }
+  saveHolidays(holidays);
+  renderCalendar();
+}
+
+function isHoliday(dateStr) {
+  return !!getHolidays()[dateStr];
+}
+
+// ===== DAILY NOTES =====
+function getDailyNotes() {
+  try { return JSON.parse(localStorage.getItem('wp_notes_' + skey()) || '{}'); } catch(e) { return {}; }
+}
+function saveDailyNote(date, note) {
+  const notes = getDailyNotes();
+  if (note) notes[date] = note;
+  else delete notes[date];
+  localStorage.setItem('wp_notes_' + skey(), JSON.stringify(notes));
+}
+function getDailyNote(date) { return getDailyNotes()[date] || ''; }
+
+// ===== LATE NOTIFICATION =====
+async function checkLateArrivals() {
+  if (!isAdmin()) return;
+  const now = new Date();
+  const hour = now.getHours();
+  const min = now.getMinutes();
+  // Check at 6:30 AM (30 min after work starts)
+  if (hour !== 6 || min < 30) return;
+  
+  const notifKey = 'wp_late_notif_' + todayKey();
+  if (localStorage.getItem(notifKey)) return;
+  localStorage.setItem(notifKey, '1');
+  
+  const allMembers = await getAllMembers();
+  const lateOnes = [];
+  
+  for (const member of allMembers) {
+    try {
+      const snap = await db.collection('users').doc(skey(member.email)).get();
+      const recs = snap.exists ? (snap.data().records || []) : [];
+      const todayRecs = recs.filter(r => r.date === todayKey());
+      if (todayRecs.length === 0) {
+        lateOnes.push(member.name || member.email.split('@')[0]);
+      } else if (todayRecs.some(r => r.isLate)) {
+        lateOnes.push((member.name || member.email.split('@')[0]) + ' (สาย)');
+      }
+    } catch(e) {}
+  }
+  
+  if (lateOnes.length > 0) {
+    showLateNotification(lateOnes);
+  }
+}
+
+function showLateNotification(names) {
+  let banner = document.getElementById('lateNotifBanner');
+  if (!banner) {
+    banner = document.createElement('div');
+    banner.id = 'lateNotifBanner';
+    banner.style.cssText = 'position:fixed;top:68px;left:12px;right:12px;background:#fff;border:2px solid var(--red);border-radius:16px;padding:14px 16px;z-index:400;box-shadow:0 8px 32px rgba(0,0,0,0.15);animation:slideUp .3s ease;';
+    document.body.appendChild(banner);
+  }
+  banner.innerHTML = `
+    <div style="display:flex;align-items:flex-start;gap:12px;">
+      <span style="font-size:24px;">⚠️</span>
+      <div style="flex:1;">
+        <div style="font-weight:700;font-size:14px;color:var(--red);margin-bottom:4px;">แจ้งเตือน Admin — ยังไม่มาทำงาน/มาสาย</div>
+        <div style="font-size:13px;color:var(--text2);">${names.join(', ')}</div>
+      </div>
+      <button onclick="this.parentElement.parentElement.remove();"
+        style="width:28px;height:28px;background:var(--surface2);border:none;border-radius:8px;cursor:pointer;font-size:14px;flex-shrink:0;">✕</button>
+    </div>`;
+}
+
+// ===== DARK MODE =====
+function initDarkMode() {
+  const saved = localStorage.getItem('wp_darkmode');
+  if (saved === '1') {
+    document.body.classList.add('dark');
+    const btn = document.getElementById('darkModeBtn');
+    if (btn) btn.textContent = '☀️';
+  }
+}
+
+function toggleDarkMode() {
+  const isDark = document.body.classList.toggle('dark');
+  localStorage.setItem('wp_darkmode', isDark ? '1' : '0');
+  const btn = document.getElementById('darkModeBtn');
+  if (btn) btn.textContent = isDark ? '☀️' : '🌙';
+}
+
+// ===== BULK ADD MEMBERS =====
+async function addBulkMembers() {
+  const text = document.getElementById('bulkEmails').value.trim();
+  if (!text) { toast('กรุณากรอกอีเมล','error'); return; }
+  
+  const lines = text.split(/[\n,;]/).map(l => l.trim()).filter(l => l.includes('@'));
+  if (lines.length === 0) { toast('ไม่พบอีเมลที่ถูกต้อง','error'); return; }
+  
+  let added = 0;
+  for (const email of lines) {
+    const cleanEmail = email.toLowerCase().trim();
+    try {
+      await db.collection('members').doc(cleanEmail.replace(/[^a-zA-Z0-9]/g,'_')).set(
+        { name: cleanEmail.split('@')[0], email: cleanEmail, joinedAt: new Date().toISOString() },
+        { merge: true }
+      );
+      added++;
+    } catch(e) {}
+  }
+  
+  _membersCache = null;
+  document.getElementById('bulkEmails').value = '';
+  document.getElementById('bulkSection').style.display = 'none';
+  toast(`✅ เพิ่ม ${added} คนแล้ว`, 'success');
+  renderTeam();
+}
+
+// ===== PDF REPORT =====
+async function generatePDF(month, year) {
+  const mons = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+  const mons2 = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+  const recs = await loadRecords();
+  const mr = recs.filter(r => { const [y,m] = r.date.split('-').map(Number); return y===year&&m===month+1; });
+  const dayNames = ['อาทิตย์','จันทร์','อังคาร','พุธ','พฤหัสบดี','ศุกร์','เสาร์'];
+  
+  const byDate = {};
+  mr.forEach(r => { if(!byDate[r.date]) byDate[r.date]=[]; byDate[r.date].push(r); });
+  
+  const totalNetH = mr.filter(r=>r.checkOut).reduce((s,r)=>s+calcNetHours(r.checkIn,r.checkOut,r.date),0);
+  const totalOT = mr.filter(r=>r.checkOut).reduce((s,r)=>s+(r.otMin||0),0);
+  const lateCount = Object.values(byDate).filter(rs=>rs.some(r=>r.isLate)).length;
+  const days = Object.keys(byDate).length;
+  const salKey2 = salKey() + '_' + year + '_' + month;
+  const salary = parseFloat(localStorage.getItem(salKey2)) || 0;
+  const perHour = salary > 0 && totalNetH > 0 ? salary/totalNetH : 0;
+
+  const rows = Object.keys(byDate).sort().map(date => {
+    const rs = byDate[date];
+    const d = new Date(date+'T00:00:00');
+    const [y,m,dd] = date.split('-');
+    const comp = rs.filter(r=>r.checkOut);
+    const dayH = comp.reduce((s,r)=>s+calcNetHours(r.checkIn,r.checkOut,r.date),0);
+    const dayOT = comp.reduce((s,r)=>s+(r.otMin||0),0);
+    const hasLate = rs.some(r=>r.isLate);
+    const timeStr = rs.map(r=>`${r.checkIn}${r.checkOut?'→'+r.checkOut:''}`).join(', ');
+    return `<tr>
+      <td style="padding:6px 10px;border-bottom:1px solid #e2e8f0;">${parseInt(dd)} ${mons2[parseInt(m)-1]}</td>
+      <td style="padding:6px 10px;border-bottom:1px solid #e2e8f0;">${dayNames[d.getDay()]}</td>
+      <td style="padding:6px 10px;border-bottom:1px solid #e2e8f0;font-size:12px;">${timeStr}</td>
+      <td style="padding:6px 10px;border-bottom:1px solid #e2e8f0;text-align:center;font-weight:600;color:#059669;">${dayH.toFixed(2)}</td>
+      <td style="padding:6px 10px;border-bottom:1px solid #e2e8f0;text-align:center;color:#d97706;">${dayOT>0?(dayOT/60).toFixed(2):'-'}</td>
+      <td style="padding:6px 10px;border-bottom:1px solid #e2e8f0;text-align:center;">
+        <span style="color:${hasLate?'#dc2626':'#059669'};font-weight:600;">${hasLate?'สาย':'ปกติ'}</span>
+      </td>
+    </tr>`;
+  }).join('');
+
+  const html = `<!DOCTYPE html><html lang="th">
+<head><meta charset="UTF-8">
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Sarabun',sans-serif; padding:32px; color:#1e293b; font-size:14px; }
+  @media print { body { padding:16px; } }
+</style>
+</head>
+<body>
+  <!-- Header -->
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;padding-bottom:16px;border-bottom:3px solid #667eea;">
+    <div>
+      <div style="font-size:22px;font-weight:700;color:#667eea;">ทีมงานลาล่า</div>
+      <div style="font-size:13px;color:#64748b;margin-top:2px;">รายงานเวลาทำงานประจำเดือน</div>
+    </div>
+    <div style="text-align:right;">
+      <div style="font-size:18px;font-weight:700;">${mons[month]} ${year+543}</div>
+      <div style="font-size:13px;color:#64748b;">${currentUser.name}</div>
+    </div>
+  </div>
+
+  <!-- Summary -->
+  <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:24px;">
+    <div style="background:#eff6ff;border-radius:12px;padding:14px;text-align:center;">
+      <div style="font-size:22px;font-weight:700;color:#2563eb;">${days}</div>
+      <div style="font-size:11px;color:#64748b;margin-top:4px;">วันที่มา</div>
+    </div>
+    <div style="background:#ecfdf5;border-radius:12px;padding:14px;text-align:center;">
+      <div style="font-size:22px;font-weight:700;color:#059669;">${totalNetH.toFixed(1)}</div>
+      <div style="font-size:11px;color:#64748b;margin-top:4px;">ชม.สุทธิ</div>
+    </div>
+    <div style="background:#fffbeb;border-radius:12px;padding:14px;text-align:center;">
+      <div style="font-size:22px;font-weight:700;color:#d97706;">${(totalOT/60).toFixed(1)}</div>
+      <div style="font-size:11px;color:#64748b;margin-top:4px;">ชม.โอที</div>
+    </div>
+    <div style="background:#fef2f2;border-radius:12px;padding:14px;text-align:center;">
+      <div style="font-size:22px;font-weight:700;color:#dc2626;">${lateCount}</div>
+      <div style="font-size:11px;color:#64748b;margin-top:4px;">ครั้งสาย</div>
+    </div>
+    <div style="background:#f5f3ff;border-radius:12px;padding:14px;text-align:center;">
+      <div style="font-size:16px;font-weight:700;color:#7c3aed;">${perHour>0?'฿'+perHour.toFixed(0):'-'}</div>
+      <div style="font-size:11px;color:#64748b;margin-top:4px;">บาท/ชม.</div>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <table style="width:100%;border-collapse:collapse;">
+    <thead>
+      <tr style="background:#667eea;color:#fff;">
+        <th style="padding:10px;text-align:left;border-radius:8px 0 0 0;">วันที่</th>
+        <th style="padding:10px;text-align:left;">วัน</th>
+        <th style="padding:10px;text-align:left;">เวลา</th>
+        <th style="padding:10px;text-align:center;">ชม.สุทธิ</th>
+        <th style="padding:10px;text-align:center;">โอที</th>
+        <th style="padding:10px;text-align:center;border-radius:0 8px 0 0;">สถานะ</th>
+      </tr>
+    </thead>
+    <tbody>${rows}</tbody>
+    <tfoot>
+      <tr style="background:#f8fafc;font-weight:700;">
+        <td colspan="3" style="padding:10px;border-top:2px solid #667eea;">รวมทั้งหมด</td>
+        <td style="padding:10px;text-align:center;color:#059669;border-top:2px solid #667eea;">${totalNetH.toFixed(2)}</td>
+        <td style="padding:10px;text-align:center;color:#d97706;border-top:2px solid #667eea;">${(totalOT/60).toFixed(2)}</td>
+        <td style="padding:10px;border-top:2px solid #667eea;"></td>
+      </tr>
+    </tfoot>
+  </table>
+
+  ${salary>0?`
+  <div style="margin-top:20px;background:#eff6ff;border-radius:12px;padding:16px;display:flex;justify-content:space-between;align-items:center;">
+    <div><span style="font-weight:700;">เงินเดือนเดือนนี้:</span> ฿${salary.toLocaleString('th-TH')}</div>
+    <div><span style="font-weight:700;">ค่าแรง/ชม.:</span> <span style="color:#667eea;font-size:18px;font-weight:700;">฿${perHour.toFixed(2)}</span></div>
+  </div>`:''}
+
+  <div style="margin-top:24px;text-align:center;color:#94a3b8;font-size:12px;">
+    สร้างโดย ทีมงานลาล่า — ${new Date().toLocaleDateString('th-TH',{year:'numeric',month:'long',day:'numeric'})}
+  </div>
+</body></html>`;
+
+  const win = window.open('', '_blank');
+  win.document.write(html);
+  win.document.close();
+  setTimeout(() => win.print(), 500);
+}
+
+
+// ===== WORK TIME SETTINGS =====
+function getWorkStartTime() {
+  return localStorage.getItem('wp_work_start_' + skey()) || '06:00';
+}
+function getWorkOTStart() {
+  return localStorage.getItem('wp_ot_start_' + skey()) || '16:30';
+}
+function saveWorkTimes(start, ot) {
+  localStorage.setItem('wp_work_start_' + skey(), start);
+  localStorage.setItem('wp_ot_start_' + skey(), ot);
+  db.collection('users').doc(skey()).set({ workStart: start, otStart: ot }, { merge: true });
+  // Recalculate cache
+  _cache = null;
+  toast('✅ บันทึกการตั้งค่าแล้ว', 'success');
+}
+
+// Admin password
+function saveAdminPassword() {
+  const pwd = document.getElementById('adminPassword').value;
+  if (pwd.length < 6) { toast('รหัสต้องมีอย่างน้อย 6 ตัว','error'); return; }
+  localStorage.setItem('wp_admin_pwd', btoa(pwd));
+  toast('✅ ตั้งรหัสผ่าน Admin แล้ว','success');
+  document.getElementById('adminPassword').value = '';
+}
+
+function checkAdminPassword() {
+  const saved = localStorage.getItem('wp_admin_pwd');
+  if (!saved) return true; // no password set
+  const input = prompt('กรุณากรอกรหัสผ่าน Admin:');
+  if (!input) return false;
+  return btoa(input) === saved;
+}
+
+
+// ===== WORK TIME SETTINGS =====
+function getWorkStartTime() {
+  return localStorage.getItem('wp_work_start') || '06:00';
+}
+function getWorkOTStart() {
+  return localStorage.getItem('wp_ot_start') || '16:30';
+}
+function saveWorkTimes(start, ot) {
+  if (!start || !ot) { toast('กรุณากรอกเวลา','error'); return; }
+  localStorage.setItem('wp_work_start', start);
+  localStorage.setItem('wp_ot_start', ot);
+  _cache = null;
+  toast('✅ บันทึกการตั้งค่าแล้ว', 'success');
+  renderHome();
+}
+
+function saveAdminPassword() {
+  const pwd = document.getElementById('adminPassword').value;
+  if (pwd.length < 6) { toast('รหัสต้องมีอย่างน้อย 6 ตัว','error'); return; }
+  localStorage.setItem('wp_admin_pwd', btoa(pwd));
+  toast('✅ ตั้งรหัสผ่าน Admin แล้ว','success');
+  document.getElementById('adminPassword').value = '';
+}
+
+
+// ===== PUSH NOTIFICATIONS =====
+async function requestNotificationPermission() {
+  if (!('Notification' in window)) return false;
+  if (Notification.permission === 'granted') return true;
+  const result = await Notification.requestPermission();
+  return result === 'granted';
+}
+
+function sendNotification(title, body, icon) {
+  if (Notification.permission !== 'granted') return;
+  new Notification(title, { 
+    body, 
+    icon: icon || '/favicon.ico',
+    badge: '/favicon.ico'
+  });
+}
+
+async function setupDailyReminders() {
+  const granted = await requestNotificationPermission();
+  if (!granted) return;
+  
+  // Check every minute for reminders
+  setInterval(async () => {
+    const now = new Date();
+    const h = now.getHours();
+    const m = now.getMinutes();
+    const [wh, wm] = getWorkStartTime().split(':').map(Number);
+    
+    // Remind 15 min before work starts
+    const reminderH = wh === 0 ? 23 : wh;
+    const reminderM = wm - 15 < 0 ? 45 : wm - 15;
+    
+    const notifKey = `wp_notif_${todayKey()}_${h}_${m}`;
+    if (localStorage.getItem(notifKey)) return;
+    
+    // Work start reminder
+    if (h === wh && m === wm) {
+      localStorage.setItem(notifKey, '1');
+      sendNotification('⏰ ทีมงานลาล่า', `ถึงเวลาเข้างานแล้วครับ! (${getWorkStartTime()})`, null);
+    }
+    
+    // Forgot checkout reminder (19:00+)
+    if (h >= 19) {
+      const recs = await loadRecords();
+      const open = recs.find(r => r.date === todayKey() && !r.checkOut);
+      if (open) {
+        const key2 = `wp_checkout_notif_${todayKey()}_${h}`;
+        if (!localStorage.getItem(key2)) {
+          localStorage.setItem(key2, '1');
+          sendNotification('⚠️ อย่าลืมออกงาน!', `คุณเข้างาน ${open.checkIn} แต่ยังไม่ได้บันทึกออกงานครับ`, null);
+        }
+      }
+    }
+  }, 60000);
+}
+
+// ===== ADMIN DASHBOARD =====
+async function renderAdminDashboard() {
+  if (!isAdmin()) return;
+  const el = document.getElementById('dashboardContent');
+  el.innerHTML = '<div class="empty-state"><div class="spinner" style="margin:0 auto"></div></div>';
+  
+  const today = todayKey();
+  let members = [];
+  try {
+    const snap = await db.collection('users').get();
+    members = snap.docs.map(d => d.data()).filter(u => u.email && u.name);
+  } catch(e) { members = []; }
+
+  const stats = { total: members.length, present: 0, late: 0, absent: 0, working: 0 };
+  const memberCards = [];
+
+  for (const member of members) {
+    try {
+      const snap = await db.collection('users').doc(skey(member.email)).get();
+      const recs = snap.exists ? (snap.data().records || []) : [];
+      const todayRecs = recs.filter(r => r.date === today);
+      const open = todayRecs.find(r => !r.checkOut);
+      const comp = todayRecs.filter(r => r.checkOut);
+      const totalH = comp.reduce((s,r) => s + calcNetHours(r.checkIn,r.checkOut,r.date), 0);
+      const hasLate = todayRecs.some(r => r.isLate);
+      
+      if (todayRecs.length > 0) {
+        stats.present++;
+        if (hasLate) stats.late++;
+        if (open) stats.working++;
+      } else {
+        stats.absent++;
+      }
+      
+      memberCards.push({ member, name: member.name, todayRecs, open, totalH, hasLate });
+    } catch(e) {}
+  }
+
+  const mons = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+  const now = new Date();
+  
+  el.innerHTML = `
+    <!-- Today Overview -->
+    <div class="section-card" style="margin-bottom:16px;">
+      <div class="section-title" style="margin-bottom:14px;">วันนี้ — ${now.getDate()} ${mons[now.getMonth()]} ${now.getFullYear()+543}</div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;">
+        <div class="sum-card"><div class="sum-val color-blue">${stats.total}</div><div class="sum-lbl">ทั้งหมด</div></div>
+        <div class="sum-card"><div class="sum-val color-green">${stats.present}</div><div class="sum-lbl">มาแล้ว</div></div>
+        <div class="sum-card"><div class="sum-val" style="color:#a855f7">${stats.working}</div><div class="sum-lbl">กำลังทำงาน</div></div>
+        <div class="sum-card"><div class="sum-val color-red">${stats.late}</div><div class="sum-lbl">มาสาย</div></div>
+      </div>
+    </div>
+
+    <!-- Absent Alert -->
+    ${stats.absent > 0 ? `
+    <div class="section-card" style="margin-bottom:16px;border-left:3px solid var(--orange);">
+      <div style="color:var(--orange);font-weight:700;margin-bottom:8px;">⚠️ ยังไม่ได้ลงเวลา ${stats.absent} คน</div>
+      <div style="font-size:13px;color:var(--text2);">
+        ${memberCards.filter(m => m.todayRecs.length === 0).map(m => m.name).join(', ')}
+      </div>
+    </div>` : `
+    <div class="section-card" style="margin-bottom:16px;border-left:3px solid var(--green);">
+      <div style="color:var(--green);font-weight:700;">✅ ทุกคนมาครบแล้ววันนี้!</div>
+    </div>`}
+
+    <!-- Member Status List -->
+    <div class="section-card">
+      <div class="section-title" style="margin-bottom:14px;">สถานะแต่ละคน</div>
+      ${memberCards.map(m => {
+        const firstIn = m.todayRecs.length > 0 ? m.todayRecs[0].checkIn : '-';
+        let status, statusColor;
+        if (m.open) { status = '🟢 กำลังทำงาน'; statusColor = 'var(--green)'; }
+        else if (m.todayRecs.length > 0 && m.hasLate) { status = '⚠️ มาสาย'; statusColor = 'var(--red)'; }
+        else if (m.todayRecs.length > 0) { status = '✅ มาแล้ว'; statusColor = 'var(--green)'; }
+        else { status = '❌ ยังไม่มา'; statusColor = 'var(--text3)'; }
+        
+        return `<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);">
+          <div>
+            <div style="font-weight:700;font-size:14px;">${m.name}</div>
+            <div style="font-size:12px;color:var(--text2);">เข้า: ${firstIn} | ${m.totalH.toFixed(1)} ชม.</div>
+          </div>
+          <span style="font-size:13px;font-weight:600;color:${statusColor};">${status}</span>
+        </div>`;
+      }).join('')}
+    </div>`;
+}
+
+// ===== EDIT HISTORY LOG =====
+function logEdit(action, targetEmail, detail) {
+  if (!isAdmin()) return;
+  const logs = JSON.parse(localStorage.getItem('wp_edit_logs') || '[]');
+  logs.unshift({
+    time: new Date().toISOString(),
+    admin: currentUser.email,
+    action,
+    targetEmail,
+    detail
+  });
+  // Keep only last 100 logs
+  localStorage.setItem('wp_edit_logs', JSON.stringify(logs.slice(0, 100)));
+}
+
+function renderEditLogs() {
+  const logs = JSON.parse(localStorage.getItem('wp_edit_logs') || '[]');
+  const mons = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+  const el = document.getElementById('editLogsContent');
+  if (!el) return;
+  
+  if (logs.length === 0) {
+    el.innerHTML = '<div class="empty-state"><div class="empty-icon">📋</div><div class="empty-text">ยังไม่มีประวัติการแก้ไข</div></div>';
+    return;
+  }
+  
+  el.innerHTML = logs.map(log => {
+    const d = new Date(log.time);
+    const dateStr = `${d.getDate()} ${mons[d.getMonth()]} ${d.getFullYear()+543} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+    return `<div style="padding:12px 0;border-bottom:1px solid var(--border);">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+        <span style="font-weight:700;font-size:14px;">${log.action}</span>
+        <span style="font-size:11px;color:var(--text3);">${dateStr}</span>
+      </div>
+      <div style="font-size:12px;color:var(--text2);">👤 ${log.targetEmail}</div>
+      <div style="font-size:12px;color:var(--text3);">${log.detail}</div>
+    </div>`;
+  }).join('');
+}
+
+// ===== YEARLY SUMMARY =====
+async function renderYearlySummary() {
+  const year = parseInt(document.getElementById('yearlyYear').value);
+  const el = document.getElementById('yearlyContent');
+  el.innerHTML = '<div class="empty-state"><div class="spinner" style="margin:0 auto"></div></div>';
+  
+  const recs = await loadRecords();
+  const yearRecs = recs.filter(r => r.date.startsWith(year.toString()));
+  const mons = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+  
+  const monthData = Array.from({length:12}, (_, i) => {
+    const mr = yearRecs.filter(r => parseInt(r.date.split('-')[1]) === i+1);
+    const comp = mr.filter(r => r.checkOut);
+    const byDate = {};
+    mr.forEach(r => { if(!byDate[r.date]) byDate[r.date]=[]; byDate[r.date].push(r); });
+    const days = Object.keys(byDate).length;
+    const totalH = comp.reduce((s,r) => s + calcNetHours(r.checkIn,r.checkOut,r.date), 0);
+    const totalOT = comp.reduce((s,r) => s + (r.otMin||0), 0);
+    const lateCount = Object.values(byDate).filter(rs => rs.some(r => r.isLate)).length;
+    return { month: mons[i], days, totalH, totalOT, lateCount };
+  });
+
+  const totalDays = monthData.reduce((s,m) => s+m.days, 0);
+  const totalH = monthData.reduce((s,m) => s+m.totalH, 0);
+  const totalOT = monthData.reduce((s,m) => s+m.totalOT, 0);
+  const totalLate = monthData.reduce((s,m) => s+m.lateCount, 0);
+
+  el.innerHTML = `
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:16px;">
+      <div class="sum-card"><div class="sum-val color-blue">${totalDays}</div><div class="sum-lbl">วันที่มาทั้งปี</div></div>
+      <div class="sum-card"><div class="sum-val color-green">${totalH.toFixed(0)}</div><div class="sum-lbl">ชม.ทำงานรวม</div></div>
+      <div class="sum-card"><div class="sum-val color-orange">${(totalOT/60).toFixed(0)}</div><div class="sum-lbl">ชม.โอทีรวม</div></div>
+      <div class="sum-card"><div class="sum-val color-red">${totalLate}</div><div class="sum-lbl">ครั้งสายทั้งปี</div></div>
+    </div>
+    <div class="section-card">
+      <table class="ts-table">
+        <thead><tr>
+          <th>เดือน</th><th>วันที่มา</th><th>ชม.ทำงาน</th><th>ชม.โอที</th><th>ครั้งสาย</th>
+        </tr></thead>
+        <tbody>
+          ${monthData.map((m,i) => `<tr onclick="switchToMonth(${i})" style="cursor:pointer;">
+            <td style="font-weight:700;">${m.month}</td>
+            <td style="color:var(--accent);">${m.days}</td>
+            <td style="color:var(--green);font-weight:600;">${m.totalH.toFixed(1)}</td>
+            <td style="color:var(--orange);">${(m.totalOT/60).toFixed(1)}</td>
+            <td>${m.lateCount > 0 ? '<span class="badge badge-late">'+m.lateCount+'</span>' : '<span class="badge badge-ontime">0</span>'}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>`;
+}
+
+function switchToMonth(monthIdx) {
+  document.getElementById('statMonth').value = monthIdx;
+  document.getElementById('histMonth').value = monthIdx;
+  showPage('stats');
+}
+
+// ===== SHARE PDF VIA LINE =====
+function sharePDFViaLine(month, year) {
+  const mons = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+  const text = `รายงานเวลาทำงาน ${currentUser.name} เดือน${mons[month]} ${year+543}%0Aดูรายละเอียดที่: https://chitipat-workpulse.netlify.app`;
+  window.open(`https://line.me/R/msg/text/?${text}`, '_blank');
+}
+
+async function shareReport(month, year) {
+  const mons = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+  const recs = await loadRecords();
+  const mr = recs.filter(r => { const [y,m] = r.date.split('-').map(Number); return y===year&&m===month+1; });
+  const totalH = mr.filter(r=>r.checkOut).reduce((s,r)=>s+calcNetHours(r.checkIn,r.checkOut,r.date),0);
+  const totalOT = mr.filter(r=>r.checkOut).reduce((s,r)=>s+(r.otMin||0),0);
+  const days = new Set(mr.map(r=>r.date)).size;
+  
+  const text = `📊 รายงานเวลาทำงาน\n👤 ${currentUser.name}\n📅 ${mons[month]} ${year+543}\n⏱ ${days} วัน | ${totalH.toFixed(1)} ชม. | OT ${(totalOT/60).toFixed(1)} ชม.\n🔗 https://chitipat-workpulse.netlify.app`;
+  
+  if (navigator.share) {
+    try {
+      await navigator.share({ title: 'รายงานเวลาทำงาน', text });
+      return;
+    } catch(e) {}
+  }
+  // Fallback: copy to clipboard
+  navigator.clipboard.writeText(text).then(() => toast('✅ คัดลอกข้อความแล้ว กด Paste ใน Line ได้เลย','success'));
+}
+
+// ===== NAVIGATION =====
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.desktop-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.mobile-nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  const map = {home:0,calendar:1,stats:2,history:3,team:4,teamsummary:5,salary:6,settings:7};
+  const idx = map[name];
+  document.querySelectorAll('.desktop-tab')[idx]?.classList.add('active');
+  document.querySelectorAll('.mobile-nav-btn')[idx]?.classList.add('active');
+  if (name==='stats') renderStats();
+  if (name==='calendar') renderCalendar();
+  if (name==='history') renderHistory();
+  if (name==='team') { 
+    document.getElementById('teamDate').value = todayKey(); 
+    renderTeam();
+    if (isAdmin()) document.getElementById('bulkSection'); // already handled by button
+  }
+  if (name==='teamsummary') renderTeamSummary();
+  if (name==='dashboard-admin') renderAdminDashboard();
+  if (name==='yearly') {
+    const yearSel = document.getElementById('yearlyYear');
+    const now = new Date();
+    if (!yearSel.options.length) {
+      [now.getFullYear()-1, now.getFullYear()].forEach(y => {
+        const opt = document.createElement('option');
+        opt.value = y; opt.textContent = y+543;
+        if (y === now.getFullYear()) opt.selected = true;
+        yearSel.appendChild(opt);
+      });
+    }
+    renderYearlySummary();
+  }
+  if (name==='editlogs') renderEditLogs();
+  if (name==='settings') {
+    document.getElementById('settingWorkStart').value = getWorkStartTime();
+    document.getElementById('settingOTStart').value = getWorkOTStart();
+    document.getElementById('settingsName').textContent = currentUser.name;
+    document.getElementById('settingsEmail').textContent = currentUser.email;
+    const photo = getProfilePhoto(currentUser.email);
+    const av = document.getElementById('settingsAvatar');
+    if (photo) av.innerHTML = `<img src="${photo}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+    else av.textContent = currentUser.name.charAt(0).toUpperCase();
+    if (isAdmin()) document.getElementById('adminPasswordSection').style.display = 'block';
+  }
+  if (name==='dashboard-admin') renderAdminDashboard();
+  if (name==='yearly') {
+    const yearSel = document.getElementById('yearlyYear');
+    const now = new Date();
+    if (!yearSel.options.length) {
+      [now.getFullYear()-1, now.getFullYear()].forEach(y => {
+        const opt = document.createElement('option');
+        opt.value = y; opt.textContent = y+543;
+        if (y === now.getFullYear()) opt.selected = true;
+        yearSel.appendChild(opt);
+      });
+    }
+    renderYearlySummary();
+  }
+  if (name==='editlogs') renderEditLogs();
+  if (name==='settings') {
+    document.getElementById('settingWorkStart').value = getWorkStartTime();
+    document.getElementById('settingOTStart').value = getWorkOTStart();
+    document.getElementById('settingsName').textContent = currentUser.name;
+    document.getElementById('settingsEmail').textContent = currentUser.email;
+    if (isAdmin()) document.getElementById('adminPwdCard').style.display = 'block';
+    const photo = getProfilePhoto(currentUser.email);
+    const av = document.getElementById('settingsAvatar');
+    if (photo) av.innerHTML = '<img src="'+photo+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">';
+    else av.textContent = currentUser.name.charAt(0).toUpperCase();
+  }
+  if (name==='salary') {
+    const m = document.getElementById('salMonth').value;
+    const y = document.getElementById('salYear').value;
+    const saved = loadSalaryInput(m, y);
+    if (saved) document.getElementById('salaryInput').value = saved;
+    renderSalary();
+    if (isAdmin()) renderAdminSalary();
+  }
+}
+
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+// ===== SELECTORS =====
+function populateSelectors() {
+  const mons=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+  const now = new Date();
+  ['statMonth','histMonth','tsMonth','salMonth'].forEach(id=>{
+    const s=document.getElementById(id); s.innerHTML='';
+    mons.forEach((m,i)=>s.innerHTML+=`<option value="${i}"${i===now.getMonth()?' selected':''}>${m}</option>`);
+  });
+  ['statYear','histYear','tsYear','salYear'].forEach(id=>{
+    const s=document.getElementById(id); s.innerHTML='';
+    [now.getFullYear()-1,now.getFullYear()].forEach(y=>s.innerHTML+=`<option value="${y}"${y===now.getFullYear()?' selected':''}>${y}</option>`);
+  });
+}
+
+// ===== TOAST =====
+function toast(msg, type='success') {
+  const icons = {success:'✅',error:'❌',warning:'⚠️'};
+  const t = document.getElementById('toast');
+  t.textContent = `${icons[type]||''} ${msg}`;
+  t.className = `toast ${type} show`;
+  setTimeout(()=>t.classList.remove('show'), 3000);
+}
+
+
+// ===== HAPTIC =====
+function haptic(t){try{if('vibrate' in navigator){const p={light:[8],medium:[15],success:[8,40,8],error:[40,20,40]};navigator.vibrate(p[t]||[8]);}}catch(e){}}
+
+// ===== CONFETTI =====
+function launchConfetti(){
+  const C=['#007aff','#34c759','#ff9500','#af52de','#ff3b30','#ffd60a'];
+  const cv=document.createElement('canvas');
+  cv.style.cssText='position:fixed;inset:0;z-index:9999;pointer-events:none;width:100%;height:100%;';
+  document.body.appendChild(cv);
+  const ctx=cv.getContext('2d');
+  cv.width=innerWidth;cv.height=innerHeight;
+  const p=Array.from({length:90},()=>({x:Math.random()*cv.width,y:-20,c:C[Math.random()*C.length|0],vx:(Math.random()-.5)*5,vy:2+Math.random()*4,w:5+Math.random()*8,h:4+Math.random()*5,a:Math.random()*Math.PI*2,s:(Math.random()-.5)*.15,o:1}));
+  let f=0;
+  (function draw(){ctx.clearRect(0,0,cv.width,cv.height);p.forEach(q=>{q.x+=q.vx;q.y+=q.vy;q.vy+=.07;q.a+=q.s;q.o=Math.max(0,1-f/150);ctx.save();ctx.globalAlpha=q.o;ctx.translate(q.x,q.y);ctx.rotate(q.a);ctx.fillStyle=q.c;ctx.fillRect(-q.w/2,-q.h/2,q.w,q.h);ctx.restore();});f++;if(f<170)requestAnimationFrame(draw);else cv.remove();})();
+}
+
+// ===== PARTICLES (checkout) =====
+function launchParticles(){
+  const E=['⭐','✨','🌟','💫','🎊'];
+  const cv=document.createElement('canvas');
+  cv.style.cssText='position:fixed;inset:0;z-index:9999;pointer-events:none;width:100%;height:100%;';
+  document.body.appendChild(cv);
+  const ctx=cv.getContext('2d');cv.width=innerWidth;cv.height=innerHeight;
+  const p=Array.from({length:20},()=>({x:cv.width/2+(Math.random()-.5)*60,y:cv.height*.45,e:E[Math.random()*E.length|0],vx:(Math.random()-.5)*9,vy:-5-Math.random()*6,g:.22,s:16+Math.random()*12,o:1,r:Math.random()*Math.PI*2,rs:(Math.random()-.5)*.18}));
+  let f=0;
+  (function draw(){ctx.clearRect(0,0,cv.width,cv.height);p.forEach(q=>{q.x+=q.vx;q.y+=q.vy;q.vy+=q.g;q.r+=q.rs;q.o=Math.max(0,1-f/75);ctx.save();ctx.globalAlpha=q.o;ctx.translate(q.x,q.y);ctx.rotate(q.r);ctx.font=q.s+'px serif';ctx.fillText(q.e,-q.s/2,q.s/2);ctx.restore();});f++;if(f<85)requestAnimationFrame(draw);else cv.remove();})();
+}
+
+// ===== ANIMATED COUNTER =====
+function animCount(el,target,dur,dec){
+  if(!el)return;
+  const s=parseFloat(el.textContent)||0,t0=performance.now();
+  (function step(now){
+    const p=Math.min((now-t0)/dur,1),e=1-Math.pow(1-p,3),v=s+(target-s)*e;
+    el.textContent=dec>0?v.toFixed(dec):Math.round(v)+'';
+    if(p<1)requestAnimationFrame(step);else el.textContent=dec>0?target.toFixed(dec):target+'';
+  })(t0);
+}
+
+// ===== MOOD =====
+const MOODS=[{e:'😄',l:'สดใส',c:'#34c759'},{e:'😊',l:'ดี',c:'#007aff'},{e:'😐',l:'ปกติ',c:'#ff9500'},{e:'😴',l:'ง่วง',c:'#af52de'},{e:'😤',l:'เครียด',c:'#ff3b30'}];
+window._pickMood=function(i){
+  const m=MOODS[i];
+  localStorage.setItem('wp_mood_'+todayKey()+'_'+skey(),JSON.stringify({...m,time:new Date().toISOString()}));
+  renderMoodWidget();
+  haptic('success');
+  toast(m.e+' บันทึกอารมณ์แล้ว','success');
+};
+function clearMood(){localStorage.removeItem('wp_mood_'+todayKey()+'_'+skey());renderMoodWidget();}
+function renderMoodWidget(){
+  const el=document.getElementById('moodWidget');if(!el)return;
+  let saved=null;try{saved=JSON.parse(localStorage.getItem('wp_mood_'+todayKey()+'_'+skey())||'null');}catch(e){}
+  if(saved){
+    el.innerHTML='<div style="display:flex;align-items:center;gap:10px;"><span style="font-size:26px;">'+saved.e+'</span><div style="flex:1"><div style="font-size:11px;color:#8e8e93;font-weight:600;">อารมณ์วันนี้</div><div style="font-size:14px;font-weight:700;color:'+saved.c+'">'+saved.l+'</div></div><button onclick="clearMood()" style="padding:5px 12px;background:#f2f2f7;border:none;border-radius:8px;font-size:12px;cursor:pointer;">เปลี่ยน</button></div>';
+  } else {
+    var b='';MOODS.forEach(function(m,i){b+='<button onclick="window._pickMood('+i+')" style="flex:1;padding:8px 2px;background:#f2f2f7;border:1.5px solid #e5e5ea;border-radius:14px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;"><span style="font-size:20px;">'+m.e+'</span><span style="font-size:9px;font-weight:600;color:#8e8e93;">'+m.l+'</span></button>';});
+    el.innerHTML='<div style="font-size:12px;font-weight:700;color:#3c3c43;margin-bottom:8px;">😊 วันนี้เป็นยังไงบ้าง?</div><div style="display:flex;gap:4px;">'+b+'</div>';
+  }
+}
+
+// ===== PULL TO REFRESH =====
+function setupPullToRefresh(){
+  var sy=0,pulling=false,bar=document.createElement('div');
+  bar.innerHTML='<span id="_ptrTxt" style="color:#fff;font-size:12px;font-weight:600;opacity:0;transition:opacity .2s;">↓ ดึงเพื่อรีเฟรช</span>';
+  bar.style.cssText='position:fixed;top:0;left:0;right:0;height:0;background:linear-gradient(135deg,#007aff,#5856d6);z-index:9998;display:flex;align-items:flex-end;justify-content:center;padding-bottom:6px;overflow:hidden;transition:height .15s;';
+  document.body.prepend(bar);
+  document.addEventListener('touchstart',function(e){if(scrollY===0){sy=e.touches[0].clientY;pulling=true;}},{passive:true});
+  document.addEventListener('touchmove',function(e){if(!pulling)return;var dy=e.touches[0].clientY-sy;if(dy>0&&dy<120){bar.style.height=(dy*.45)+'px';var t=document.getElementById('_ptrTxt');if(t){t.style.opacity=Math.min(dy/75,1);t.textContent=dy>75?'↑ ปล่อยเพื่อรีเฟรช':'↓ ดึงเพื่อรีเฟรช';}}},{passive:true});
+  document.addEventListener('touchend',function(e){if(!pulling)return;var dy=e.changedTouches[0].clientY-sy;bar.style.height='0';var t=document.getElementById('_ptrTxt');if(t)t.style.opacity='0';if(dy>75){haptic('success');_cache=null;toast('🔄 รีเฟรชแล้ว','success');renderHome();}pulling=false;},{passive:true});
+}
+
+// ===== MONTHLY RECAP =====
+async function showMonthlyRecap(){
+  const now=new Date(),mo=now.getMonth(),yr=now.getFullYear();
+  const MN=['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+  const recs=await loadRecords();
+  const mr=recs.filter(r=>{const d=new Date(r.date);return d.getMonth()===mo&&d.getFullYear()===yr&&r.checkOut;});
+  if(!mr.length){toast('ยังไม่มีข้อมูลเดือนนี้','warning');return;}
+  const tH=mr.reduce((s,r)=>s+calcHours(r.checkIn,r.checkOut),0);
+  const tOT=mr.reduce((s,r)=>s+(r.otMin||0)/60,0);
+  const lC=mr.filter(r=>r.isLate).length;
+  const pct=Math.round(((mr.length-lC)/mr.length)*100);
+  const sc=Math.max(0,Math.min(100,100-lC*5+Math.min(20,tOT*2|0)));
+  const gd=sc>=90?'🌟 ยอดเยี่ยม':sc>=75?'👍 ดีมาก':sc>=60?'😊 ดี':'💪 พัฒนาได้';
+  const ov=document.createElement('div');
+  ov.style.cssText='position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.75);backdrop-filter:blur(10px);display:flex;align-items:center;justify-content:center;padding:20px;';
+  ov.innerHTML='<div style="width:100%;max-width:360px;border-radius:28px;overflow:hidden;box-shadow:0 32px 80px rgba(0,0,0,.5);">'
+    +'<div style="background:linear-gradient(160deg,#1a1a2e,#16213e,#0f3460);padding:28px 22px 22px;text-align:center;">'
+    +'<div style="font-size:10px;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:3px;margin-bottom:6px;">สรุปประจำเดือน</div>'
+    +'<div style="font-size:22px;font-weight:800;color:#fff;margin-bottom:14px;">'+MN[mo]+' '+(yr+543)+'</div>'
+    +'<div style="font-size:52px;margin-bottom:8px;">'+(sc>=90?'🏆':sc>=75?'⭐':sc>=60?'✅':'💪')+'</div>'
+    +'<div style="font-size:20px;font-weight:800;color:#fff;">'+gd+'</div>'
+    +'<div style="background:rgba(255,255,255,.1);border-radius:20px;padding:4px 14px;display:inline-block;margin-top:6px;font-size:12px;color:rgba(255,255,255,.7);">คะแนน '+sc+'/100</div>'
+    +'</div>'
+    +'<div style="background:#f2f2f7;padding:16px;display:grid;grid-template-columns:1fr 1fr;gap:10px;">'
+    +'<div style="background:#fff;border-radius:16px;padding:14px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.06);"><div style="font-size:28px;font-weight:800;color:#007aff;">'+tH.toFixed(0)+'</div><div style="font-size:10px;color:#8e8e93;font-weight:600;margin-top:2px;">ชม.ทำงาน</div></div>'
+    +'<div style="background:#fff;border-radius:16px;padding:14px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.06);"><div style="font-size:28px;font-weight:800;color:#34c759;">'+pct+'%</div><div style="font-size:10px;color:#8e8e93;font-weight:600;margin-top:2px;">ตรงเวลา</div></div>'
+    +'<div style="background:#fff;border-radius:16px;padding:14px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.06);"><div style="font-size:28px;font-weight:800;color:#ff9500;">'+tOT.toFixed(1)+'</div><div style="font-size:10px;color:#8e8e93;font-weight:600;margin-top:2px;">ชม. OT</div></div>'
+    +'<div style="background:#fff;border-radius:16px;padding:14px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.06);"><div style="font-size:28px;font-weight:800;color:#ff3b30;">'+lC+'</div><div style="font-size:10px;color:#8e8e93;font-weight:600;margin-top:2px;">วันที่สาย</div></div>'
+    +'</div>'
+    +'<div style="background:#f2f2f7;padding:0 16px 16px;">'
+    +'<div style="background:linear-gradient(135deg,#007aff,#5856d6);border-radius:16px;padding:14px;text-align:center;color:#fff;margin-bottom:10px;">'
+    +'<div style="font-size:11px;opacity:.8;margin-bottom:3px;">เฉลี่ยต่อวัน</div>'
+    +'<div style="font-size:30px;font-weight:800;">'+(tH/mr.length).toFixed(1)+' <span style="font-size:14px;opacity:.7;">ชม.</span></div>'
+    +'</div>'
+    +'<button onclick="this.closest(\'div[style*=fixed]\').remove()" style="width:100%;padding:14px;background:#1c1c1e;color:#fff;border:none;border-radius:14px;font-size:15px;font-weight:700;cursor:pointer;">ปิด</button>'
+    +'</div></div>';
+  ov.onclick=function(e){if(e.target===ov)ov.remove();};
+  document.body.appendChild(ov);
+}
+
+// ===== ACHIEVEMENTS =====
+const ACHS=[
+  {id:'first',icon:'🎯',name:'เริ่มต้นดี!',desc:'สแกนเข้างานครั้งแรก',check:function(r){return r.length>=1;}},
+  {id:'ot5',icon:'⭐',name:'ตรงเวลา 5 วัน',desc:'มาตรงเวลา 5 วัน',check:function(r){return r.filter(function(x){return !x.isLate;}).length>=5;}},
+  {id:'ot30',icon:'🏅',name:'ขยันตรงเวลา',desc:'มาตรงเวลา 30 วัน',check:function(r){return r.filter(function(x){return !x.isLate;}).length>=30;}},
+  {id:'ot100',icon:'💪',name:'OT Hero',desc:'โอทีรวม 50 ชม.',check:function(r){return r.reduce(function(s,x){return s+(x.otMin||0);},0)>=3000;}},
+  {id:'d100',icon:'🏆',name:'100 วัน',desc:'บันทึกครบ 100 วัน',check:function(r){return r.length>=100;}}
+];
+function checkAchievements(recs){
+  ACHS.forEach(function(a){
+    var k='wp_ach_'+a.id;
+    if(!localStorage.getItem(k)&&a.check(recs)){
+      localStorage.setItem(k,'1');
+      var el=document.createElement('div');
+      el.style.cssText='position:fixed;top:70px;left:50%;transform:translateX(-50%) translateY(-130px);background:linear-gradient(135deg,#1c1c1e,#2c2c2e);color:#fff;border-radius:22px;padding:14px 18px;z-index:9999;display:flex;align-items:center;gap:12px;box-shadow:0 16px 48px rgba(0,0,0,.4);min-width:260px;max-width:88vw;border:1px solid rgba(255,255,255,.1);transition:transform .45s cubic-bezier(.34,1.56,.64,1);';
+      el.innerHTML='<div style="font-size:34px;">'+a.icon+'</div><div><div style="font-size:10px;color:#ffd60a;font-weight:700;text-transform:uppercase;letter-spacing:.8px;">🏆 ปลดล็อค!</div><div style="font-size:14px;font-weight:700;margin-top:2px;">'+a.name+'</div><div style="font-size:11px;color:#8e8e93;margin-top:1px;">'+a.desc+'</div></div>';
+      document.body.appendChild(el);
+      haptic('success');
+      setTimeout(function(){el.style.transform='translateX(-50%) translateY(0)';},80);
+      setTimeout(function(){el.style.transform='translateX(-50%) translateY(-130px)';setTimeout(function(){el.remove();},450);},4000);
+    }
+  });
+}
+
+// ===== LIVE ACTIVITY =====
+function updateLiveActivity(recs){
+  var card=document.getElementById('liveActivityCard');if(!card)return;
+  var open=(recs||[]).find(function(r){return r.date===todayKey()&&!r.checkOut;});
+  if(open){
+    card.style.display='block';
+    clearInterval(window._liveT);
+    window._liveT=setInterval(function(){
+      var now=new Date(),parts=open.checkIn.split(':').map(Number);
+      var el=now.getHours()*60+now.getMinutes()-parts[0]*60-parts[1];
+      var h=Math.floor(el/60),mn=el%60;
+      var hw=document.getElementById('_liveHrs');if(hw)hw.textContent=h+':'+('0'+mn).slice(-2);
+      var fp=document.getElementById('_liveFill');if(fp)fp.style.width=Math.min(100,el/480*100)+'%';
+    },30000);
+    var now2=new Date(),parts2=open.checkIn.split(':').map(Number);
+    var el2=now2.getHours()*60+now2.getMinutes()-parts2[0]*60-parts2[1];
+    var h2=Math.floor(el2/60),mn2=el2%60;
+    var hw2=document.getElementById('_liveHrs');if(hw2)hw2.textContent=h2+':'+('0'+mn2).slice(-2);
+    var fp2=document.getElementById('_liveFill');if(fp2)fp2.style.width=Math.min(100,el2/480*100)+'%';
+  } else {
+    card.style.display='none';
+    clearInterval(window._liveT);
+  }
+}
+
+// ===== EXPORT EXCEL =====
+async function exportToExcel(month,year){
+  const recs=await loadRecords();
+  const mr=recs.filter(function(r){var d=new Date(r.date);return d.getMonth()===month&&d.getFullYear()===year;}).sort(function(a,b){return a.date.localeCompare(b.date);});
+  const MN=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+  let csv='\uFEFF';
+  csv+='วันที่,เข้างาน,ออกงาน,ชม.สุทธิ,OT(ชม.),สถานะ\n';
+  mr.forEach(function(r){
+    var net=r.checkOut?calcNetHours(r.checkIn,r.checkOut,r.date).toFixed(2):'';
+    var ot=((r.otMin||0)/60).toFixed(2);
+    csv+='"'+r.date+'","'+(r.checkIn||'')+'","'+(r.checkOut||'')+'","'+net+'","'+ot+'","'+(r.isLate?'สาย':'ตรงเวลา')+'"\n';
+  });
+  var blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');a.href=url;a.download='เวลาทำงาน_'+MN[month]+'_'+year+'.csv';
+  a.click();URL.revokeObjectURL(url);
+  toast('📊 Export สำเร็จ','success');
+}
+
+// ===== SMART REMINDER =====
+async function setupSmartReminder(){
+  if(!('Notification' in window)||Notification.permission!=='granted')return;
+  setInterval(async function(){
+    var now=new Date(),tk=todayKey();
+    var recs=await loadRecords();
+    var recent=recs.filter(function(r){return r.checkIn;}).slice(-7);
+    if(recent.length<3)return;
+    var avg=recent.reduce(function(s,r){var p=r.checkIn.split(':').map(Number);return s+p[0]*60+p[1];},0)/recent.length;
+    var nowMin=now.getHours()*60+now.getMinutes();
+    if(Math.abs(nowMin-avg-30)<1){
+      var has=recs.find(function(r){return r.date===tk;});
+      if(!has){var k='wp_sr_'+tk;if(!localStorage.getItem(k)){localStorage.setItem(k,'1');new Notification('🔔 อย่าลืมสแกนเข้างาน!',{body:'ปกติคุณเข้างาน '+('0'+Math.floor(avg/60)).slice(-2)+':'+('0'+Math.round(avg%60)).slice(-2)+' น.'});}}
+    }
+  },60000);
+}
+
+// ===== BOOT =====
+window.addEventListener('load', () => {
+  let retries = 0;
+  function tryBoot() {
+    if (initFirebase()) {
+      const saved = localStorage.getItem('wp_session');
+      if (saved) {
+        try { currentUser = JSON.parse(saved); startApp(); }
+        catch(e) { document.getElementById('loginScreen').style.display = 'flex'; }
+      } else {
+        document.getElementById('loginScreen').style.display = 'flex';
+      }
+    } else if (retries++ < 10) {
+      setTimeout(tryBoot, 500);
+    } else {
+      document.getElementById('loginScreen').style.display = 'flex';
+    }
+  }
+  tryBoot();
+});
+
+</script>
+
 <script>
 let deferredPrompt = null;
 
@@ -3436,6 +5780,5 @@ window.addEventListener('appinstalled', () => {
   console.log('PWA installed!');
 });
 </script>
-
 </body>
 </html>
