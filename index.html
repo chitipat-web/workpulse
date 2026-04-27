@@ -1380,6 +1380,7 @@ function doLogout() {
 
 // ===== INIT =====
 async function startApp() {
+  try {
   document.getElementById('loadingOverlay').classList.add('show');
   document.getElementById('loginScreen').style.display = 'none';
 
@@ -1431,6 +1432,13 @@ async function startApp() {
   renderCalendar();
   renderStats();
   renderHistory();
+  } catch(e) {
+    console.error('startApp error:', e);
+    alert('Error: ' + e.message);
+    document.getElementById('loadingOverlay').classList.remove('show');
+    document.getElementById('loginScreen').style.display = 'flex';
+    document.getElementById('app').style.display = 'none';
+  }
 }
 
 function startClock() {
