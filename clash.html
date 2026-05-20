@@ -1,0 +1,1170 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#0f172a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Clan Village">
+<link rel="apple-touch-icon" href="game-icon-180.png">
+<title>Clan Village — สร้างฐาน บุกศัตรู</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; user-select:none; font-family: 'Sarabun', system-ui, -apple-system, sans-serif; }
+  html, body { width:100%; height:100%; overflow:hidden; background:#0f172a; color:#fff; }
+  #app { position:fixed; inset:0; display:flex; flex-direction:column; }
+  #topbar { background:linear-gradient(180deg,#1e293b,#0f172a); padding:8px 10px; display:flex; gap:6px; align-items:center; flex-wrap:wrap; border-bottom:2px solid #334155; box-shadow:0 2px 8px rgba(0,0,0,.4); z-index:5; }
+  .res { background:rgba(0,0,0,.4); padding:4px 10px; border-radius:10px; font-weight:700; font-size:13px; display:flex; align-items:center; gap:4px; border:1px solid rgba(255,255,255,.1); }
+  .res.gold { color:#fbbf24; }
+  .res.elixir { color:#a78bfa; }
+  .res.trophy { color:#fde047; }
+  .res.builder { color:#fb923c; }
+  .res small { color:#94a3b8; font-weight:500; }
+  #stage { flex:1; position:relative; overflow:hidden; background:#16a34a; }
+  canvas { display:block; cursor:pointer; touch-action:none; }
+  #bottombar { background:linear-gradient(0deg,#1e293b,#0f172a); padding:8px; display:flex; gap:6px; justify-content:center; border-top:2px solid #334155; box-shadow:0 -2px 8px rgba(0,0,0,.4); z-index:5; }
+  .tab { background:#334155; color:#fff; border:none; padding:10px 18px; border-radius:12px; font-weight:700; font-size:15px; cursor:pointer; box-shadow: 0 3px 0 #1e293b; transition: all .1s; }
+  .tab.active { background:linear-gradient(180deg,#fbbf24,#f59e0b); color:#1e293b; box-shadow: 0 3px 0 #b45309; }
+  .tab:active { transform: translateY(2px); box-shadow: 0 1px 0 #1e293b; }
+
+  /* Panels */
+  .panel { position:absolute; left:0; right:0; bottom:0; background:linear-gradient(180deg,#1e293b 0%,#0f172a 100%); border-top:3px solid #fbbf24; padding:14px; max-height:60vh; overflow-y:auto; z-index:8; animation: slideUp .25s ease; box-shadow: 0 -8px 30px rgba(0,0,0,.5); }
+  @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+  .panel h2 { font-size:18px; margin-bottom:8px; color:#fbbf24; }
+  .panel .close { position:absolute; top:8px; right:10px; background:#334155; color:#fff; border:none; width:32px; height:32px; border-radius:50%; font-size:18px; font-weight:800; cursor:pointer; }
+  .row { background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.08); border-radius:12px; padding:10px; margin-bottom:6px; display:flex; align-items:center; gap:10px; }
+  .row .icon { font-size:32px; }
+  .row .info { flex:1; min-width:0; }
+  .row .info b { display:block; font-size:15px; }
+  .row .info small { color:#94a3b8; font-size:12px; }
+  .row .stats { font-size:12px; color:#cbd5e1; margin-top:2px; }
+  .btn { background:linear-gradient(180deg,#22c55e,#16a34a); color:#fff; border:none; padding:8px 14px; border-radius:10px; font-weight:700; font-size:14px; cursor:pointer; box-shadow: 0 3px 0 #15803d; white-space:nowrap; }
+  .btn:active { transform: translateY(2px); box-shadow: 0 1px 0 #15803d; }
+  .btn.gold { background:linear-gradient(180deg,#fbbf24,#f59e0b); color:#1e293b; box-shadow: 0 3px 0 #b45309; }
+  .btn.red { background:linear-gradient(180deg,#ef4444,#dc2626); box-shadow: 0 3px 0 #991b1b; }
+  .btn:disabled { background:#475569; color:#94a3b8; box-shadow: 0 3px 0 #334155; cursor:not-allowed; }
+  .cost { font-size:12px; color:#fbbf24; }
+  .cost.e { color:#a78bfa; }
+
+  /* Battle deploy bar */
+  #deployBar { position:absolute; left:0; right:0; bottom:0; background:rgba(15,23,42,.95); border-top:2px solid #fbbf24; padding:8px; display:flex; gap:8px; justify-content:center; align-items:center; z-index:9; flex-wrap:wrap; }
+  .troopBtn { background:#1e293b; border:2px solid #334155; border-radius:14px; padding:6px 10px; min-width:62px; cursor:pointer; text-align:center; color:#fff; }
+  .troopBtn:disabled { opacity:.4; }
+  .troopBtn .ic { font-size:28px; }
+  .troopBtn .ct { font-size:13px; font-weight:700; }
+  .troopBtn.selected { background:#fbbf24; color:#1e293b; border-color:#fde047; }
+  #endBtn { background:linear-gradient(180deg,#ef4444,#dc2626); color:#fff; border:none; padding:10px 16px; border-radius:12px; font-weight:800; cursor:pointer; box-shadow: 0 3px 0 #991b1b; }
+
+  /* Battle HUD */
+  #battleHud { position:absolute; top:8px; left:0; right:0; display:flex; justify-content:space-between; padding:0 10px; pointer-events:none; z-index:6; gap:8px; flex-wrap:wrap; }
+  .b-stat { background:rgba(0,0,0,.6); padding:6px 12px; border-radius:10px; font-weight:700; font-size:14px; }
+
+  /* Modal */
+  #modal { position:fixed; inset:0; background:rgba(0,0,0,.8); display:flex; align-items:center; justify-content:center; z-index:20; padding:20px; }
+  #modal.hidden { display:none; }
+  #modal .card { background:linear-gradient(180deg,#1e293b,#0f172a); border-radius:20px; padding:24px; max-width:420px; width:100%; text-align:center; border:3px solid #fbbf24; box-shadow: 0 20px 60px rgba(0,0,0,.6); }
+  #modal h1 { font-size:32px; margin-bottom:10px; background:linear-gradient(90deg,#fde047,#f97316); -webkit-background-clip:text; background-clip:text; color:transparent; }
+  #modal .stars { font-size:48px; margin:14px 0; letter-spacing:8px; }
+  #modal p { color:#cbd5e1; margin:8px 0; }
+  #modal .reward { background:rgba(0,0,0,.4); border-radius:12px; padding:10px; margin:14px 0; }
+
+  /* Speed slider for battle */
+  #speedBtn { position:absolute; top:50px; right:8px; background:rgba(0,0,0,.6); border:none; color:#fde047; padding:8px 12px; border-radius:10px; font-weight:800; cursor:pointer; z-index:6; }
+
+  /* Toast */
+  #toast { position:fixed; top:60px; left:50%; transform:translateX(-50%); background:rgba(0,0,0,.85); color:#fff; padding:10px 18px; border-radius:10px; z-index:30; opacity:0; transition: opacity .25s; pointer-events:none; font-weight:600; }
+  #toast.show { opacity:1; }
+
+  @media (max-width: 500px) {
+    .res { font-size:11px; padding:3px 8px; }
+    .tab { padding:8px 12px; font-size:13px; }
+    .row .icon { font-size:24px; }
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="topbar">
+    <div class="res gold">💰 <span id="gold">0</span><small>/<span id="goldCap">0</span></small></div>
+    <div class="res elixir">💧 <span id="elixir">0</span><small>/<span id="elixCap">0</span></small></div>
+    <div class="res trophy">🏆 <span id="trophy">0</span></div>
+    <div class="res builder">🛠 <span id="builder">ว่าง</span></div>
+    <div class="res" style="background:#1e293b; color:#fde047;">TH <span id="thLevel">1</span></div>
+  </div>
+  <div id="stage">
+    <canvas id="game"></canvas>
+    <div id="battleHud" style="display:none;">
+      <div class="b-stat">⏱ <span id="battleTime">3:00</span></div>
+      <div class="b-stat">💥 <span id="destroyPct">0</span>%</div>
+      <div class="b-stat">⭐ <span id="stars">0</span></div>
+    </div>
+    <button id="speedBtn" style="display:none;">⚡ 1x</button>
+  </div>
+  <div id="bottombar">
+    <button class="tab active" data-view="village">🏠 หมู่บ้าน</button>
+    <button class="tab" data-view="train">⚔️ ฝึกทหาร</button>
+    <button class="tab" data-view="attack">🗡 บุก</button>
+  </div>
+</div>
+
+<div id="modal" class="hidden">
+  <div class="card">
+    <h1 id="mTitle">Title</h1>
+    <div class="stars" id="mStars"></div>
+    <p id="mBody"></p>
+    <div class="reward" id="mReward"></div>
+    <button class="btn gold" id="mClose">ปิด</button>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+(() => {
+  // ===== CONSTANTS =====
+  const SAVE_KEY = 'clan-village-save-v2';
+  const TILE = 36;
+  const GRID_W = 18, GRID_H = 14;
+  const WORLD_W = GRID_W * TILE; // 648
+  const WORLD_H = GRID_H * TILE; // 504
+
+  // Building definitions
+  const B = {
+    th: {
+      name:'ศาลากลาง', icon:'🏛️', color:'#a16207', size:3, maxLvl:5,
+      hp:[500,800,1200,1800,3000], costGold:[0,3000,15000,75000,300000],
+      upTimeMin:[0,1,5,20,60],
+    },
+    goldMine: {
+      name:'เหมืองทอง', icon:'⛏️', color:'#ca8a04', size:2, maxLvl:4, needTH:[1,2,3,4],
+      hp:[100,200,400,700], costGold:[150,1000,5000,20000],
+      upTimeMin:[0,1,3,10],
+      produces:'gold', rate:[100,200,400,800], storage:[200,500,1000,2000],
+    },
+    elixMine: {
+      name:'บ่อน้ำยา', icon:'💧', color:'#7c3aed', size:2, maxLvl:4, needTH:[1,2,3,4],
+      hp:[100,200,400,700], costGold:[150,1000,5000,20000],
+      upTimeMin:[0,1,3,10],
+      produces:'elixir', rate:[100,200,400,800], storage:[200,500,1000,2000],
+    },
+    goldVault: {
+      name:'คลังทอง', icon:'🏦', color:'#92400e', size:2, maxLvl:4, needTH:[1,2,3,4],
+      hp:[300,600,1000,1800], costGold:[300,2000,8000,30000],
+      upTimeMin:[0,1,5,15],
+      capacity:[2000,5000,15000,40000],
+    },
+    elixVault: {
+      name:'คลังน้ำยา', icon:'🍶', color:'#5b21b6', size:2, maxLvl:4, needTH:[1,2,3,4],
+      hp:[300,600,1000,1800], costGold:[300,2000,8000,30000],
+      upTimeMin:[0,1,5,15],
+      capacity:[2000,5000,15000,40000],
+    },
+    camp: {
+      name:'ค่ายทัพ', icon:'⛺', color:'#0e7490', size:2, maxLvl:4, needTH:[1,2,3,4],
+      hp:[300,500,800,1200], costElix:[500,2500,8000,25000],
+      upTimeMin:[0,2,8,20],
+      housing:[15,25,40,60],
+    },
+    barracks: {
+      name:'โรงฝึก', icon:'🏰', color:'#9a3412', size:2, maxLvl:4, needTH:[1,2,3,4],
+      hp:[400,700,1200,2000], costElix:[300,1500,6000,20000],
+      upTimeMin:[0,2,5,15],
+    },
+    cannon: {
+      name:'ป้อมยิง', icon:'🔫', color:'#475569', size:2, maxLvl:4, needTH:[1,2,3,4],
+      hp:[200,400,700,1200], costGold:[300,2000,8000,30000],
+      upTimeMin:[0,2,8,20],
+      isDefense:true, dmg:[20,35,60,100], range:7, cd:60,
+    },
+  };
+
+  // Troop definitions
+  const T = {
+    barb: { name:'บาร์บาเรียน', icon:'⚔️', housing:1, costE:25, timeS:6, hp:50, dmg:10, speed:1.3, range:0.6, target:'any', color:'#fbbf24', unlock:1 },
+    arch: { name:'นักธนู', icon:'🏹', housing:1, costE:50, timeS:9, hp:25, dmg:13, speed:1.0, range:4.5, target:'any', color:'#84cc16', unlock:1 },
+    giant: { name:'ยักษ์', icon:'🦣', housing:5, costE:200, timeS:30, hp:280, dmg:9, speed:0.6, range:0.6, target:'defense', color:'#a78bfa', unlock:2 },
+    wiz:   { name:'พ่อมด', icon:'🧙', housing:4, costE:300, timeS:35, hp:75, dmg:28, speed:0.95, range:3.0, target:'any', color:'#3b82f6', splash:true, unlock:3 },
+  };
+
+  // Enemy bases (relative tile coords; type, level)
+  const ENEMY_BASES = [
+    { name:'หมู่บ้านก๊อบลิน', diff:1, gold:600, elixir:400, trophy:18, recommendTH:1,
+      buildings:[
+        ['th',1,7,5],['goldMine',1,3,3],['elixMine',1,12,3],
+        ['goldVault',1,3,8],['elixVault',1,12,8],['cannon',1,7,9],
+      ]
+    },
+    { name:'ค่ายโจร', diff:2, gold:1500, elixir:1200, trophy:25, recommendTH:2,
+      buildings:[
+        ['th',2,7,5],['goldMine',2,3,3],['goldMine',1,3,9],['elixMine',2,12,3],['elixMine',1,12,9],
+        ['goldVault',1,5,9],['elixVault',1,9,9],['cannon',1,5,4],['cannon',1,11,4],
+      ]
+    },
+    { name:'ป้อมปีศาจ', diff:3, gold:3500, elixir:3000, trophy:35, recommendTH:3,
+      buildings:[
+        ['th',3,8,6],['goldMine',2,2,2],['goldMine',2,14,2],['elixMine',2,2,11],['elixMine',2,14,11],
+        ['goldVault',2,6,2],['elixVault',2,10,2],['goldVault',2,6,11],['elixVault',2,10,11],
+        ['cannon',2,5,5],['cannon',2,11,5],['cannon',1,8,9],
+      ]
+    },
+    { name:'ปราสาทมังกร', diff:4, gold:6000, elixir:5000, trophy:50, recommendTH:4,
+      buildings:[
+        ['th',4,8,6],['goldMine',3,2,2],['goldMine',3,14,2],['elixMine',3,2,11],['elixMine',3,14,11],
+        ['goldVault',3,6,2],['elixVault',3,10,2],['goldVault',3,6,11],['elixVault',3,10,11],
+        ['cannon',3,5,5],['cannon',3,11,5],['cannon',2,5,9],['cannon',2,11,9],
+      ]
+    },
+    { name:'อาณาจักรเทพ', diff:5, gold:12000, elixir:10000, trophy:80, recommendTH:5,
+      buildings:[
+        ['th',5,8,6],['goldMine',4,2,2],['goldMine',4,14,2],['elixMine',4,2,11],['elixMine',4,14,11],
+        ['goldVault',4,6,2],['elixVault',4,10,2],['goldVault',4,6,11],['elixVault',4,10,11],
+        ['cannon',4,5,5],['cannon',4,11,5],['cannon',3,5,9],['cannon',3,11,9],['cannon',2,8,3],['cannon',2,8,10],
+      ]
+    },
+  ];
+
+  // ===== STATE =====
+  let state = null;
+  function defaultState() {
+    return {
+      gold: 500, elixir: 300, trophy: 0,
+      builderBusy: null, // { bid, doneAt }
+      buildings: [
+        { id:1, type:'th', level:1, x:8, y:6, hp:500 },
+        { id:2, type:'goldMine', level:1, x:3, y:3, hp:100, stash:0 },
+        { id:3, type:'elixMine', level:1, x:13, y:3, hp:100, stash:0 },
+        { id:4, type:'goldVault', level:1, x:3, y:9, hp:300 },
+        { id:5, type:'elixVault', level:1, x:13, y:9, hp:300 },
+        { id:6, type:'camp', level:1, x:6, y:11, hp:300 },
+        { id:7, type:'barracks', level:1, x:11, y:11, hp:400 },
+        { id:8, type:'cannon', level:1, x:8, y:9, hp:200 },
+      ],
+      troops: { barb:0, arch:0, giant:0, wiz:0 }, // ready in army camp
+      training: [], // [{type, doneAt}]
+      lastTick: Date.now(),
+      nextId: 100,
+    };
+  }
+  function load() {
+    try {
+      const raw = localStorage.getItem(SAVE_KEY);
+      if (raw) state = JSON.parse(raw);
+    } catch(e) {}
+    if (!state) state = defaultState();
+  }
+  function save() {
+    try { localStorage.setItem(SAVE_KEY, JSON.stringify(state)); } catch(e) {}
+  }
+
+  // ===== HELPERS =====
+  function thLevel() {
+    const th = state.buildings.find(b => b.type==='th');
+    return th ? th.level : 1;
+  }
+  function goldCap() {
+    let cap = 200;
+    state.buildings.forEach(b => {
+      if (b.type === 'goldVault') cap += B.goldVault.capacity[b.level-1];
+      if (b.type === 'goldMine') cap += B.goldMine.storage[b.level-1];
+    });
+    return cap;
+  }
+  function elixCap() {
+    let cap = 200;
+    state.buildings.forEach(b => {
+      if (b.type === 'elixVault') cap += B.elixVault.capacity[b.level-1];
+      if (b.type === 'elixMine') cap += B.elixMine.storage[b.level-1];
+    });
+    return cap;
+  }
+  function housingTotal() {
+    let h = 0;
+    state.buildings.forEach(b => { if (b.type==='camp') h += B.camp.housing[b.level-1]; });
+    return h;
+  }
+  function housingUsed() {
+    let u = 0;
+    Object.keys(state.troops).forEach(k => u += state.troops[k] * T[k].housing);
+    state.training.forEach(t => u += T[t.type].housing);
+    return u;
+  }
+  function maxHP(type, lvl) { return B[type].hp[lvl-1]; }
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(t._to);
+    t._to = setTimeout(() => t.classList.remove('show'), 2000);
+  }
+  function fmtTime(sec) {
+    sec = Math.max(0, Math.ceil(sec));
+    const m = Math.floor(sec/60), s = sec%60;
+    return m>0 ? `${m}น ${s}ว` : `${s}ว`;
+  }
+
+  // ===== TICK (resources) =====
+  function tick() {
+    const now = Date.now();
+    const elapsed = (now - state.lastTick) / 1000;
+    state.lastTick = now;
+
+    // Resource production
+    state.buildings.forEach(b => {
+      if (b.type === 'goldMine') {
+        b.stash = (b.stash || 0) + B.goldMine.rate[b.level-1] / 3600 * elapsed;
+        const max = B.goldMine.storage[b.level-1];
+        if (b.stash > max) b.stash = max;
+      }
+      if (b.type === 'elixMine') {
+        b.stash = (b.stash || 0) + B.elixMine.rate[b.level-1] / 3600 * elapsed;
+        const max = B.elixMine.storage[b.level-1];
+        if (b.stash > max) b.stash = max;
+      }
+    });
+
+    // Builder completion
+    if (state.builderBusy) {
+      if (now >= state.builderBusy.doneAt) {
+        const target = state.buildings.find(b => b.id === state.builderBusy.bid);
+        if (target) {
+          target.level++;
+          target.hp = maxHP(target.type, target.level);
+          showToast(`${B[target.type].name} เลเวล ${target.level}!`);
+        }
+        state.builderBusy = null;
+      }
+    }
+
+    // Training completion
+    while (state.training.length && now >= state.training[0].doneAt) {
+      const t = state.training.shift();
+      if (housingUsed() + T[t.type].housing - T[t.type].housing <= housingTotal()) {
+        state.troops[t.type] = (state.troops[t.type] || 0) + 1;
+      } else {
+        // Can't house, just refund elixir (simple)
+        state.elixir = Math.min(elixCap(), state.elixir + T[t.type].costE);
+      }
+    }
+
+    save();
+  }
+
+  // ===== RENDER (HUD) =====
+  function renderHUD() {
+    document.getElementById('gold').textContent = Math.floor(state.gold);
+    document.getElementById('elixir').textContent = Math.floor(state.elixir);
+    document.getElementById('trophy').textContent = state.trophy;
+    document.getElementById('goldCap').textContent = goldCap();
+    document.getElementById('elixCap').textContent = elixCap();
+    document.getElementById('thLevel').textContent = thLevel();
+    const bb = state.builderBusy;
+    if (!bb) {
+      document.getElementById('builder').textContent = 'ว่าง';
+    } else {
+      const left = (bb.doneAt - Date.now()) / 1000;
+      document.getElementById('builder').textContent = fmtTime(left);
+    }
+  }
+
+  // ===== COLLECT RESOURCES =====
+  function collectFrom(b) {
+    if (b.type === 'goldMine') {
+      const amount = Math.floor(b.stash || 0);
+      if (amount > 0) {
+        const avail = goldCap() - state.gold;
+        const take = Math.min(amount, avail);
+        state.gold += take;
+        b.stash -= take;
+        showToast(`+${take} 💰`);
+      }
+    } else if (b.type === 'elixMine') {
+      const amount = Math.floor(b.stash || 0);
+      if (amount > 0) {
+        const avail = elixCap() - state.elixir;
+        const take = Math.min(amount, avail);
+        state.elixir += take;
+        b.stash -= take;
+        showToast(`+${take} 💧`);
+      }
+    }
+  }
+
+  // ===== UPGRADE =====
+  function tryUpgrade(b) {
+    const def = B[b.type];
+    if (b.level >= def.maxLvl) { showToast('เลเวลสูงสุดแล้ว'); return; }
+    if (b.type !== 'th' && def.needTH && thLevel() < def.needTH[b.level]) {
+      showToast('ต้องอัพ TH ก่อน'); return;
+    }
+    if (state.builderBusy) { showToast('ช่างไม่ว่าง'); return; }
+    const costG = def.costGold ? def.costGold[b.level] : 0;
+    const costE = def.costElix ? def.costElix[b.level] : 0;
+    if (state.gold < costG) { showToast(`ทองไม่พอ (ต้องการ ${costG})`); return; }
+    if (state.elixir < costE) { showToast(`น้ำยาไม่พอ (ต้องการ ${costE})`); return; }
+    state.gold -= costG;
+    state.elixir -= costE;
+    state.builderBusy = { bid: b.id, doneAt: Date.now() + def.upTimeMin[b.level] * 60000 };
+    save();
+    renderHUD();
+    closePanel();
+    showToast(`เริ่มอัพเกรด ${def.name}...`);
+  }
+
+  // ===== CANVAS =====
+  const cvs = document.getElementById('game');
+  const ctx = cvs.getContext('2d');
+  function resizeCanvas() {
+    const stage = document.getElementById('stage');
+    const sw = stage.clientWidth;
+    const sh = stage.clientHeight;
+    const scale = Math.min(sw / WORLD_W, sh / WORLD_H);
+    cvs.width = WORLD_W;
+    cvs.height = WORLD_H;
+    cvs.style.width = (WORLD_W * scale) + 'px';
+    cvs.style.height = (WORLD_H * scale) + 'px';
+  }
+  window.addEventListener('resize', resizeCanvas);
+
+  // ===== VIEW STATE =====
+  let view = 'village'; // village | train | attack | battle
+  let battle = null;
+  let selectedBuilding = null;
+
+  // ===== RENDER WORLD =====
+  function drawTileBg() {
+    // Grass with subtle pattern
+    ctx.fillStyle = '#16a34a';
+    ctx.fillRect(0, 0, WORLD_W, WORLD_H);
+    ctx.fillStyle = '#15803d';
+    for (let y = 0; y < GRID_H; y++) {
+      for (let x = 0; x < GRID_W; x++) {
+        if ((x+y) % 2 === 0) ctx.fillRect(x*TILE, y*TILE, TILE, TILE);
+      }
+    }
+    // Lighter speckles
+    ctx.fillStyle = 'rgba(255,255,255,.05)';
+    for (let i = 0; i < 80; i++) {
+      const x = (i*97) % WORLD_W;
+      const y = (i*53) % WORLD_H;
+      ctx.fillRect(x, y, 2, 2);
+    }
+  }
+
+  function drawBuilding(b, opts={}) {
+    const def = B[b.type];
+    const px = b.x * TILE;
+    const py = b.y * TILE;
+    const w = def.size * TILE;
+    const h = def.size * TILE;
+    // Shadow
+    ctx.fillStyle = 'rgba(0,0,0,.3)';
+    ctx.fillRect(px+3, py+3, w, h);
+    // Body
+    ctx.fillStyle = def.color;
+    ctx.fillRect(px, py, w, h);
+    // Highlight
+    ctx.fillStyle = 'rgba(255,255,255,.18)';
+    ctx.fillRect(px, py, w, 6);
+    ctx.fillStyle = 'rgba(0,0,0,.18)';
+    ctx.fillRect(px, py + h - 6, w, 6);
+    // Icon
+    ctx.font = `${Math.floor(w*0.45)}px sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = '#fff';
+    ctx.fillText(def.icon, px + w/2, py + h/2);
+    // Level badge
+    if (!opts.hideBadge) {
+      ctx.fillStyle = '#fbbf24';
+      ctx.fillRect(px + w - 18, py + 2, 16, 14);
+      ctx.fillStyle = '#1e293b';
+      ctx.font = 'bold 11px sans-serif';
+      ctx.textBaseline = 'middle';
+      ctx.textAlign = 'center';
+      ctx.fillText(b.level, px + w - 10, py + 9);
+    }
+    // Stash indicator on mines
+    const max = (b.type === 'goldMine') ? B.goldMine.storage[b.level-1] : (b.type === 'elixMine' ? B.elixMine.storage[b.level-1] : 0);
+    if (max > 0 && b.stash > 1) {
+      ctx.fillStyle = b.type==='goldMine' ? '#fbbf24' : '#a78bfa';
+      ctx.beginPath();
+      ctx.arc(px + 8, py + 8, 6, 0, Math.PI*2);
+      ctx.fill();
+      ctx.fillStyle = '#000';
+      ctx.font = 'bold 8px sans-serif';
+      ctx.fillText('!', px + 8, py + 9);
+    }
+    // Builder indicator
+    if (state.builderBusy && state.builderBusy.bid === b.id) {
+      ctx.fillStyle = '#fb923c';
+      ctx.fillRect(px - 2, py - 14, w + 4, 12);
+      ctx.fillStyle = '#fff';
+      ctx.font = 'bold 10px sans-serif';
+      ctx.fillText('🛠 อัพ...', px + w/2, py - 8);
+    }
+    // Selection highlight
+    if (selectedBuilding && selectedBuilding.id === b.id && view === 'village') {
+      ctx.strokeStyle = '#fde047';
+      ctx.lineWidth = 3;
+      ctx.setLineDash([6,4]);
+      ctx.strokeRect(px-2, py-2, w+4, h+4);
+      ctx.setLineDash([]);
+    }
+    // HP bar (during battle)
+    if (opts.showHP && b.hp !== undefined) {
+      const maxH = maxHP(b.type, b.level);
+      const pct = Math.max(0, b.hp / maxH);
+      ctx.fillStyle = '#0008';
+      ctx.fillRect(px, py - 8, w, 4);
+      ctx.fillStyle = pct > 0.5 ? '#22c55e' : (pct > 0.2 ? '#fbbf24' : '#ef4444');
+      ctx.fillRect(px, py - 8, w * pct, 4);
+    }
+    // Destruction overlay
+    if (opts.showHP && b.destroyed) {
+      ctx.fillStyle = 'rgba(0,0,0,.5)';
+      ctx.fillRect(px, py, w, h);
+      ctx.font = `${Math.floor(w*0.6)}px sans-serif`;
+      ctx.fillStyle = '#ef4444';
+      ctx.fillText('💥', px + w/2, py + h/2);
+    }
+  }
+
+  function drawVillage() {
+    drawTileBg();
+    state.buildings.forEach(b => drawBuilding(b));
+  }
+
+  // ===== PANELS =====
+  let openPanel = null;
+  function closePanel() {
+    if (openPanel) { openPanel.remove(); openPanel = null; }
+    selectedBuilding = null;
+  }
+  function makePanel(html) {
+    closePanel();
+    const div = document.createElement('div');
+    div.className = 'panel';
+    div.innerHTML = `<button class="close" onclick="closePanel()">×</button>` + html;
+    document.getElementById('stage').appendChild(div);
+    openPanel = div;
+    return div;
+  }
+  window.closePanel = closePanel;
+
+  function showBuildingPanel(b) {
+    const def = B[b.type];
+    const lvl = b.level;
+    const canUp = lvl < def.maxLvl;
+    const costG = canUp && def.costGold ? def.costGold[lvl] : 0;
+    const costE = canUp && def.costElix ? def.costElix[lvl] : 0;
+    const tNeed = canUp ? def.needTH ? def.needTH[lvl] : 0 : 0;
+    const time = canUp ? def.upTimeMin[lvl] : 0;
+    let nextStats = '';
+    if (canUp) {
+      if (def.produces) nextStats = `ผลผลิต ${def.rate[lvl-1]}/ชม → <b>${def.rate[lvl]}/ชม</b>`;
+      else if (def.capacity) nextStats = `เก็บได้ ${def.capacity[lvl-1]} → <b>${def.capacity[lvl]}</b>`;
+      else if (def.housing) nextStats = `บรรจุ ${def.housing[lvl-1]} → <b>${def.housing[lvl]}</b>`;
+      else if (def.isDefense) nextStats = `ดาเมจ ${def.dmg[lvl-1]} → <b>${def.dmg[lvl]}</b>`;
+      else nextStats = `HP ${def.hp[lvl-1]} → <b>${def.hp[lvl]}</b>`;
+    }
+    let collectBtn = '';
+    if ((b.type === 'goldMine' || b.type === 'elixMine') && (b.stash|0) > 0) {
+      collectBtn = `<button class="btn gold" onclick="collect(${b.id})">เก็บ ${Math.floor(b.stash)} ${b.type==='goldMine'?'💰':'💧'}</button>`;
+    }
+    const upBtn = canUp
+      ? `<button class="btn" id="upBtn" ${state.builderBusy ? 'disabled' : ''} onclick="doUpgrade(${b.id})">
+            อัพเกรด → Lv ${lvl+1}
+            <div class="cost">${costG?`💰 ${costG}`:''} ${costE?`<span style='color:#a78bfa'>💧 ${costE}</span>`:''}</div>
+            <div style="font-size:11px; opacity:.8;">⏱ ${fmtTime(time*60)}</div>
+         </button>`
+      : `<button class="btn" disabled>เลเวลสูงสุด</button>`;
+    const reqTH = canUp && tNeed > thLevel() ? `<div style="color:#f87171; font-size:12px;">⚠ ต้องการ TH เลเวล ${tNeed}</div>` : '';
+    makePanel(`
+      <h2>${def.icon} ${def.name} (เลเวล ${lvl})</h2>
+      <div class="row">
+        <div class="icon">${def.icon}</div>
+        <div class="info">
+          <b>${def.name} • Lv ${lvl}/${def.maxLvl}</b>
+          <small>HP ${def.hp[lvl-1]}</small>
+          <div class="stats">${nextStats}</div>
+          ${reqTH}
+        </div>
+        <div style="display:flex; flex-direction:column; gap:6px;">
+          ${collectBtn}
+          ${upBtn}
+        </div>
+      </div>
+    `);
+  }
+  window.collect = (id) => {
+    const b = state.buildings.find(x => x.id === id);
+    if (b) { collectFrom(b); save(); renderHUD(); closePanel(); }
+  };
+  window.doUpgrade = (id) => {
+    const b = state.buildings.find(x => x.id === id);
+    if (b) tryUpgrade(b);
+  };
+
+  function showTrainPanel() {
+    const camps = housingTotal();
+    const used = housingUsed();
+    const queue = state.training.length > 0
+      ? state.training.map((t,i) => {
+          const left = i === 0 ? (t.doneAt - Date.now())/1000 : (state.training[i-1].doneAt - Date.now())/1000 + T[t.type].timeS;
+          return `<div style="display:inline-block; background:#334155; padding:4px 8px; margin:2px; border-radius:6px;">${T[t.type].icon} ${fmtTime(left)}</div>`;
+        }).join('')
+      : '<i style="color:#94a3b8;">— ไม่มี —</i>';
+    let troopRows = '';
+    Object.keys(T).forEach(k => {
+      const tr = T[k];
+      const locked = thLevel() < tr.unlock;
+      const canAfford = state.elixir >= tr.costE;
+      const canHouse = used + tr.housing <= camps;
+      const have = state.troops[k] || 0;
+      troopRows += `
+        <div class="row">
+          <div class="icon" style="color:${tr.color}">${tr.icon}</div>
+          <div class="info">
+            <b>${tr.name} <small style="color:#94a3b8;">x${have}</small></b>
+            <div class="stats">HP ${tr.hp} • DMG ${tr.dmg} • ที่ ${tr.housing} • <span style="color:#a78bfa;">💧 ${tr.costE}</span> • ${fmtTime(tr.timeS)}</div>
+            ${locked ? `<div style="color:#f87171; font-size:12px;">🔒 ปลดล็อกที่ TH ${tr.unlock}</div>` : ''}
+          </div>
+          <button class="btn" ${(locked || !canAfford || !canHouse) ? 'disabled' : ''} onclick="trainOne('${k}')">ฝึก</button>
+        </div>
+      `;
+    });
+    makePanel(`
+      <h2>⚔️ ฝึกทหาร <small style="font-size:13px; color:#94a3b8;">ที่ ${used}/${camps}</small></h2>
+      <div style="font-size:13px; color:#cbd5e1; margin-bottom:6px;">คิวฝึก: ${queue}</div>
+      ${troopRows}
+    `);
+  }
+  window.trainOne = (key) => {
+    const tr = T[key];
+    if (thLevel() < tr.unlock) return;
+    if (state.elixir < tr.costE) { showToast('น้ำยาไม่พอ'); return; }
+    if (housingUsed() + tr.housing > housingTotal()) { showToast('ค่ายเต็ม'); return; }
+    state.elixir -= tr.costE;
+    const last = state.training[state.training.length-1];
+    const start = last ? last.doneAt : Date.now();
+    state.training.push({ type: key, doneAt: start + tr.timeS * 1000 });
+    save();
+    renderHUD();
+    showTrainPanel(); // refresh
+  };
+
+  function showAttackPanel() {
+    const trained = Object.keys(state.troops).reduce((s,k) => s + state.troops[k], 0);
+    if (trained === 0) {
+      makePanel(`
+        <h2>🗡 บุก</h2>
+        <p style="color:#fca5a5;">ยังไม่มีทหารในค่าย — ไปฝึกก่อน!</p>
+      `);
+      return;
+    }
+    let rows = '';
+    ENEMY_BASES.forEach((b, i) => {
+      const lock = thLevel() < b.recommendTH - 1;
+      rows += `
+        <div class="row">
+          <div class="icon">${'⚔️'.repeat(b.diff)}</div>
+          <div class="info">
+            <b>${b.name}</b>
+            <small>ความยาก ${b.diff}/5 • แนะนำ TH ${b.recommendTH}</small>
+            <div class="stats">💰 ${b.gold} • <span style="color:#a78bfa;">💧 ${b.elixir}</span> • 🏆 ±${b.trophy}</div>
+          </div>
+          <button class="btn red" ${lock ? 'disabled' : ''} onclick="startBattle(${i})">บุก!</button>
+        </div>
+      `;
+    });
+    makePanel(`
+      <h2>🗡 เลือกฐานที่จะบุก</h2>
+      <p style="font-size:12px; color:#94a3b8; margin-bottom:6px;">ทหารพร้อม: ${trained} หน่วย</p>
+      ${rows}
+    `);
+  }
+  window.startBattle = (idx) => {
+    closePanel();
+    initBattle(ENEMY_BASES[idx]);
+  };
+
+  // ===== BATTLE =====
+  function initBattle(baseDef) {
+    view = 'battle';
+    document.getElementById('battleHud').style.display = 'flex';
+    document.getElementById('speedBtn').style.display = 'block';
+    document.getElementById('bottombar').style.display = 'none';
+    battle = {
+      base: baseDef,
+      enemyBuildings: baseDef.buildings.map((b, i) => ({
+        id: 1000+i, type: b[0], level: b[1], x: b[2], y: b[3],
+        hp: B[b[0]].hp[b[1]-1],
+        cd: 0, destroyed:false,
+      })),
+      troops: [],
+      projectiles: [],
+      particles: [],
+      placeQueue: { ...state.troops },
+      selectedTroop: 'barb',
+      time: 180, // 3 min
+      lastTickT: performance.now(),
+      destroyedCount: 0,
+      totalBuildings: baseDef.buildings.length,
+      thDestroyed: false,
+      stars: 0,
+      speed: 1,
+      ended: false,
+    };
+    // Set selected to first available
+    const avail = Object.keys(battle.placeQueue).filter(k => battle.placeQueue[k] > 0);
+    battle.selectedTroop = avail[0] || 'barb';
+    renderDeployBar();
+  }
+
+  function renderDeployBar() {
+    let bar = document.getElementById('deployBar');
+    if (!bar) {
+      bar = document.createElement('div');
+      bar.id = 'deployBar';
+      document.getElementById('stage').appendChild(bar);
+    }
+    let html = '';
+    Object.keys(T).forEach(k => {
+      const t = T[k];
+      const cnt = battle.placeQueue[k] || 0;
+      if (cnt > 0 || state.troops[k] > 0) {
+        html += `<button class="troopBtn ${battle.selectedTroop===k?'selected':''}" ${cnt===0?'disabled':''} onclick="pickTroop('${k}')">
+          <div class="ic" style="color:${t.color}">${t.icon}</div>
+          <div class="ct">${cnt}</div>
+        </button>`;
+      }
+    });
+    html += `<button id="endBtn" onclick="endBattle(true)">ยอมแพ้</button>`;
+    bar.innerHTML = html;
+  }
+  window.pickTroop = (k) => {
+    battle.selectedTroop = k;
+    renderDeployBar();
+  };
+  window.endBattle = (surrender) => finishBattle(surrender);
+
+  // Spawn troop on click
+  function deployTroopAt(tileX, tileY) {
+    const k = battle.selectedTroop;
+    if (!battle.placeQueue[k] || battle.placeQueue[k] <= 0) return;
+    // Must be on the edge (not interior)
+    const edgeBand = 2;
+    if (tileX >= edgeBand && tileX < GRID_W - edgeBand && tileY >= edgeBand && tileY < GRID_H - edgeBand) {
+      showToast('วางที่ขอบสนามเท่านั้น');
+      return;
+    }
+    const tr = T[k];
+    battle.troops.push({
+      id: Math.random(),
+      type: k,
+      x: tileX + 0.5,
+      y: tileY + 0.5,
+      hp: tr.hp,
+      target: null,
+      cd: 0,
+    });
+    battle.placeQueue[k]--;
+    renderDeployBar();
+  }
+
+  // Find target for troop
+  function findTroopTarget(troop) {
+    const tr = T[troop.type];
+    let pool = battle.enemyBuildings.filter(b => !b.destroyed);
+    if (tr.target === 'defense') {
+      const defs = pool.filter(b => B[b.type].isDefense);
+      if (defs.length > 0) pool = defs;
+    }
+    if (pool.length === 0) return null;
+    // Nearest
+    let best = null, bestD = Infinity;
+    for (const b of pool) {
+      const dx = (b.x + B[b.type].size/2) - troop.x;
+      const dy = (b.y + B[b.type].size/2) - troop.y;
+      const d = dx*dx + dy*dy;
+      if (d < bestD) { bestD = d; best = b; }
+    }
+    return best;
+  }
+
+  function buildingCenter(b) {
+    const s = B[b.type].size;
+    return { x: b.x + s/2, y: b.y + s/2, halfSize: s/2 };
+  }
+
+  function updateBattle(dt) {
+    if (battle.ended) return;
+    // Time
+    battle.time -= dt;
+    if (battle.time <= 0) { finishBattle(false); return; }
+
+    // Update troops
+    for (const t of battle.troops) {
+      if (t.hp <= 0) continue;
+      const tr = T[t.type];
+      // Reacquire target if needed
+      if (!t.target || t.target.destroyed) t.target = findTroopTarget(t);
+      if (!t.target) continue;
+      const tc = buildingCenter(t.target);
+      const dx = tc.x - t.x, dy = tc.y - t.y;
+      const dist = Math.hypot(dx, dy);
+      const stopDist = tc.halfSize + tr.range;
+      if (dist > stopDist) {
+        const step = tr.speed * dt;
+        t.x += (dx/dist) * step;
+        t.y += (dy/dist) * step;
+      } else {
+        // Attack
+        t.cd -= dt;
+        if (t.cd <= 0) {
+          t.cd = 1.0; // attack every 1s
+          // Projectile for ranged
+          if (tr.range > 1.5) {
+            battle.projectiles.push({
+              x: t.x, y: t.y,
+              tx: tc.x, ty: tc.y,
+              speed: 12, dmg: tr.dmg, target: t.target,
+              color: tr.color, splash: tr.splash,
+            });
+          } else {
+            // Melee instant
+            t.target.hp -= tr.dmg;
+            spawnHit(tc.x, tc.y, tr.color);
+            if (t.target.hp <= 0) destroyBuilding(t.target);
+          }
+        }
+      }
+    }
+    // Cleanup dead troops
+    battle.troops = battle.troops.filter(t => t.hp > 0);
+
+    // Defenses fire
+    for (const b of battle.enemyBuildings) {
+      if (b.destroyed) continue;
+      const def = B[b.type];
+      if (!def.isDefense) continue;
+      b.cd = (b.cd || 0) - dt;
+      if (b.cd > 0) continue;
+      const bc = buildingCenter(b);
+      // Nearest troop in range
+      let best = null, bestD = Infinity;
+      for (const t of battle.troops) {
+        const dx = t.x - bc.x, dy = t.y - bc.y;
+        const d = Math.hypot(dx, dy);
+        if (d < def.range && d < bestD) { bestD = d; best = t; }
+      }
+      if (best) {
+        battle.projectiles.push({
+          x: bc.x, y: bc.y,
+          tx: best.x, ty: best.y,
+          speed: 14, dmg: def.dmg[b.level-1],
+          targetTroop: best, color: '#94a3b8',
+        });
+        b.cd = def.cd / 60; // cd in frames -> sec
+      }
+    }
+
+    // Update projectiles
+    for (const p of battle.projectiles) {
+      const dx = p.tx - p.x, dy = p.ty - p.y;
+      const d = Math.hypot(dx, dy);
+      if (d < 0.3) {
+        // Hit
+        if (p.target && !p.target.destroyed) {
+          p.target.hp -= p.dmg;
+          spawnHit(p.tx, p.ty, p.color);
+          if (p.splash) {
+            // Splash damage to nearby buildings
+            for (const b of battle.enemyBuildings) {
+              if (b === p.target || b.destroyed) continue;
+              const bc = buildingCenter(b);
+              const dd = Math.hypot(bc.x - p.tx, bc.y - p.ty);
+              if (dd < 2) {
+                b.hp -= p.dmg * 0.5;
+                if (b.hp <= 0) destroyBuilding(b);
+              }
+            }
+          }
+          if (p.target.hp <= 0) destroyBuilding(p.target);
+        } else if (p.targetTroop) {
+          p.targetTroop.hp -= p.dmg;
+          spawnHit(p.tx, p.ty, p.color);
+        }
+        p.dead = true;
+      } else {
+        const step = p.speed * dt;
+        p.x += (dx/d) * step;
+        p.y += (dy/d) * step;
+      }
+    }
+    battle.projectiles = battle.projectiles.filter(p => !p.dead);
+
+    // Particles
+    for (const pt of battle.particles) {
+      pt.x += pt.vx * dt;
+      pt.y += pt.vy * dt;
+      pt.life -= dt;
+    }
+    battle.particles = battle.particles.filter(p => p.life > 0);
+
+    // Check end
+    const alive = battle.enemyBuildings.filter(b => !b.destroyed);
+    const troopsAvail = battle.troops.length + Object.values(battle.placeQueue).reduce((a,b)=>a+b,0);
+    if (alive.length === 0) { finishBattle(false); return; }
+    if (troopsAvail === 0) {
+      // Wait a sec for last troops to fight then end
+      setTimeout(() => { if (!battle.ended) finishBattle(false); }, 800);
+    }
+  }
+
+  function destroyBuilding(b) {
+    if (b.destroyed) return;
+    b.destroyed = true;
+    battle.destroyedCount++;
+    if (b.type === 'th') battle.thDestroyed = true;
+    // Particles
+    const bc = buildingCenter(b);
+    for (let i = 0; i < 16; i++) {
+      battle.particles.push({
+        x: bc.x, y: bc.y,
+        vx: (Math.random()-.5)*8,
+        vy: (Math.random()-.5)*8,
+        life: 1 + Math.random(),
+        color: B[b.type].color, size: 4 + Math.random()*4,
+      });
+    }
+  }
+  function spawnHit(x, y, color) {
+    for (let i = 0; i < 4; i++) {
+      battle.particles.push({
+        x, y,
+        vx: (Math.random()-.5)*5,
+        vy: (Math.random()-.5)*5,
+        life: 0.4,
+        color, size: 2 + Math.random()*2,
+      });
+    }
+  }
+
+  function finishBattle(surrender) {
+    if (battle.ended) return;
+    battle.ended = true;
+    const destroyPct = (battle.destroyedCount / battle.totalBuildings) * 100;
+    let stars = 0;
+    if (battle.thDestroyed) stars++;
+    if (destroyPct >= 50) stars++;
+    if (destroyPct >= 99) stars++;
+    if (surrender) stars = 0;
+    battle.stars = stars;
+    // Compute loot
+    const lootFrac = surrender ? 0 : (stars > 0 ? Math.min(1, destroyPct/100 + 0.3) : 0);
+    const lootGold = Math.floor(battle.base.gold * lootFrac);
+    const lootElix = Math.floor(battle.base.elixir * lootFrac);
+    const trophyChange = stars > 0 ? Math.floor(battle.base.trophy * (0.4 + stars*0.2)) : -Math.floor(battle.base.trophy * 0.4);
+    // Apply
+    state.gold = Math.min(goldCap(), state.gold + lootGold);
+    state.elixir = Math.min(elixCap(), state.elixir + lootElix);
+    state.trophy = Math.max(0, state.trophy + trophyChange);
+    // Consume troops used (those not in placeQueue)
+    Object.keys(state.troops).forEach(k => {
+      state.troops[k] = battle.placeQueue[k] || 0;
+    });
+    save();
+    // Show modal
+    document.getElementById('mTitle').textContent = stars > 0 ? '🏆 ชนะ!' : '☠ พ่ายแพ้';
+    document.getElementById('mStars').textContent = ['☆☆☆','★☆☆','★★☆','★★★'][stars];
+    document.getElementById('mBody').innerHTML = `ทำลายฐานได้ <b>${destroyPct.toFixed(0)}%</b><br>${battle.thDestroyed?'ทำลายศาลากลางสำเร็จ ✓':''}`;
+    document.getElementById('mReward').innerHTML = `
+      💰 +${lootGold} &nbsp; 💧 +${lootElix} &nbsp; 🏆 ${trophyChange>=0?'+':''}${trophyChange}
+    `;
+    document.getElementById('modal').classList.remove('hidden');
+  }
+
+  document.getElementById('mClose').addEventListener('click', () => {
+    document.getElementById('modal').classList.add('hidden');
+    // Return to village
+    view = 'village';
+    battle = null;
+    document.getElementById('battleHud').style.display = 'none';
+    document.getElementById('speedBtn').style.display = 'none';
+    document.getElementById('bottombar').style.display = 'flex';
+    const dep = document.getElementById('deployBar'); if (dep) dep.remove();
+    setActiveTab('village');
+    renderHUD();
+  });
+
+  // ===== DRAW BATTLE =====
+  function drawBattle() {
+    drawTileBg();
+    // Edge band visual (deployment zone)
+    ctx.fillStyle = 'rgba(251,191,36,.12)';
+    ctx.fillRect(0, 0, WORLD_W, 2*TILE);
+    ctx.fillRect(0, WORLD_H - 2*TILE, WORLD_W, 2*TILE);
+    ctx.fillRect(0, 0, 2*TILE, WORLD_H);
+    ctx.fillRect(WORLD_W - 2*TILE, 0, 2*TILE, WORLD_H);
+    ctx.strokeStyle = 'rgba(251,191,36,.5)';
+    ctx.lineWidth = 2;
+    ctx.setLineDash([8,6]);
+    ctx.strokeRect(2*TILE, 2*TILE, WORLD_W - 4*TILE, WORLD_H - 4*TILE);
+    ctx.setLineDash([]);
+
+    // Enemy buildings
+    for (const b of battle.enemyBuildings) {
+      drawBuilding(b, { showHP:true, hideBadge:false });
+    }
+
+    // Troops
+    for (const t of battle.troops) {
+      const tr = T[t.type];
+      const px = t.x * TILE;
+      const py = t.y * TILE;
+      ctx.fillStyle = 'rgba(0,0,0,.3)';
+      ctx.beginPath(); ctx.ellipse(px, py + 6, 10, 4, 0, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = tr.color;
+      ctx.beginPath(); ctx.arc(px, py, 9, 0, Math.PI*2); ctx.fill();
+      // Icon
+      ctx.font = '14px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(tr.icon, px, py);
+      // HP bar
+      const pct = t.hp / tr.hp;
+      ctx.fillStyle = '#0008';
+      ctx.fillRect(px - 12, py - 16, 24, 3);
+      ctx.fillStyle = pct > 0.5 ? '#22c55e' : (pct > 0.2 ? '#fbbf24' : '#ef4444');
+      ctx.fillRect(px - 12, py - 16, 24*pct, 3);
+    }
+
+    // Projectiles
+    for (const p of battle.projectiles) {
+      ctx.fillStyle = p.color;
+      ctx.beginPath(); ctx.arc(p.x * TILE, p.y * TILE, 4, 0, Math.PI*2); ctx.fill();
+    }
+
+    // Particles
+    for (const pt of battle.particles) {
+      ctx.globalAlpha = Math.min(1, pt.life);
+      ctx.fillStyle = pt.color;
+      ctx.fillRect(pt.x * TILE - pt.size/2, pt.y * TILE - pt.size/2, pt.size, pt.size);
+    }
+    ctx.globalAlpha = 1;
+
+    // Battle HUD update
+    const m = Math.max(0, Math.floor(battle.time / 60));
+    const s = Math.max(0, Math.floor(battle.time % 60));
+    document.getElementById('battleTime').textContent = `${m}:${String(s).padStart(2,'0')}`;
+    document.getElementById('destroyPct').textContent = Math.floor((battle.destroyedCount / battle.totalBuildings) * 100);
+    let stars = 0;
+    if (battle.thDestroyed) stars++;
+    const dpct = (battle.destroyedCount / battle.totalBuildings) * 100;
+    if (dpct >= 50) stars++;
+    if (dpct >= 99) stars++;
+    document.getElementById('stars').textContent = ['☆☆☆','★☆☆','★★☆','★★★'][stars];
+  }
+
+  // ===== CLICK HANDLING =====
+  function tileFromEvent(e) {
+    const rect = cvs.getBoundingClientRect();
+    const cx = (e.clientX || (e.touches && e.touches[0]?.clientX) || 0) - rect.left;
+    const cy = (e.clientY || (e.touches && e.touches[0]?.clientY) || 0) - rect.top;
+    const sx = cx / rect.width * WORLD_W;
+    const sy = cy / rect.height * WORLD_H;
+    return { tx: Math.floor(sx / TILE), ty: Math.floor(sy / TILE), x: sx/TILE, y: sy/TILE };
+  }
+  cvs.addEventListener('click', e => {
+    const { tx, ty, x, y } = tileFromEvent(e);
+    if (view === 'battle' && battle && !battle.ended) {
+      deployTroopAt(x, y);
+      return;
+    }
+    if (view === 'village') {
+      // Find clicked building
+      const hit = state.buildings.find(b => {
+        const s = B[b.type].size;
+        return tx >= b.x && tx < b.x + s && ty >= b.y && ty < b.y + s;
+      });
+      if (hit) {
+        selectedBuilding = hit;
+        showBuildingPanel(hit);
+      } else {
+        closePanel();
+      }
+    }
+  });
+
+  // ===== TAB SWITCHING =====
+  function setActiveTab(name) {
+    document.querySelectorAll('.tab').forEach(t => {
+      t.classList.toggle('active', t.dataset.view === name);
+    });
+  }
+  document.querySelectorAll('.tab').forEach(t => {
+    t.addEventListener('click', () => {
+      const v = t.dataset.view;
+      setActiveTab(v);
+      closePanel();
+      if (v === 'village') view = 'village';
+      if (v === 'train')   { view = 'village'; showTrainPanel(); }
+      if (v === 'attack')  { view = 'village'; showAttackPanel(); }
+    });
+  });
+
+  // Speed button
+  document.getElementById('speedBtn').addEventListener('click', () => {
+    if (!battle) return;
+    battle.speed = battle.speed === 1 ? 2 : (battle.speed === 2 ? 3 : 1);
+    document.getElementById('speedBtn').textContent = `⚡ ${battle.speed}x`;
+  });
+
+  // ===== MAIN LOOP =====
+  let lastDraw = performance.now();
+  function loop(t) {
+    const dt = Math.min(0.05, (t - lastDraw) / 1000);
+    lastDraw = t;
+    tick();
+    renderHUD();
+    if (view === 'battle' && battle) {
+      for (let i = 0; i < battle.speed; i++) updateBattle(dt);
+      drawBattle();
+    } else {
+      drawVillage();
+    }
+    requestAnimationFrame(loop);
+  }
+
+  // ===== INIT =====
+  load();
+  resizeCanvas();
+  // Re-resize after a tick to catch layout
+  setTimeout(resizeCanvas, 50);
+  setActiveTab('village');
+  requestAnimationFrame(loop);
+  // Periodic save
+  setInterval(save, 5000);
+  window.addEventListener('beforeunload', save);
+
+  // Reset button (hidden, debug — long-press trophy to reset)
+  let resetCount = 0;
+  document.querySelector('.res.trophy').addEventListener('click', () => {
+    resetCount++;
+    if (resetCount >= 5) {
+      if (confirm('รีเซ็ตเกม? ข้อมูลทั้งหมดจะหายไป')) {
+        state = defaultState();
+        save();
+        location.reload();
+      }
+      resetCount = 0;
+    }
+    setTimeout(() => resetCount = 0, 3000);
+  });
+
+})();
+</script>
+</body>
+</html>
