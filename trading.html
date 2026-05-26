@@ -1,0 +1,1581 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0f172a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="color-scheme" content="light only">
+<title>Trading Helper — US Stocks</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=Prompt:wght@500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root {
+  --bg: #f1f5f9;
+  --surface: #ffffff;
+  --surface2: #f8fafc;
+  --surface3: #f1f5f9;
+  --border: #e2e8f0;
+  --border-strong: #cbd5e1;
+  --accent: #2563eb;
+  --accent-light: #eff6ff;
+  --accent-dark: #1d4ed8;
+  --green: #059669;
+  --green-bg: #ecfdf5;
+  --red: #dc2626;
+  --red-bg: #fef2f2;
+  --orange: #d97706;
+  --orange-bg: #fffbeb;
+  --purple: #7c3aed;
+  --purple-bg: #f5f3ff;
+  --text: #0f172a;
+  --text2: #475569;
+  --text3: #94a3b8;
+  --radius: 14px;
+  --radius-sm: 10px;
+  --shadow: 0 1px 3px rgba(15,23,42,0.06), 0 4px 16px rgba(15,23,42,0.05);
+  --shadow-lg: 0 4px 24px rgba(15,23,42,0.10), 0 12px 48px rgba(15,23,42,0.08);
+}
+.live-dot { display: inline-block; width: 7px; height: 7px; background: var(--green); border-radius: 50%; margin-right: 5px; animation: pulse 1.6s ease-in-out infinite; vertical-align: middle; }
+.live-dot.stale { background: var(--text3); animation: none; }
+@keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(0.85); } }
+.refresh-bar { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 12px; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius-sm); margin-bottom: 10px; font-size: 12px; color: var(--text2); }
+.refresh-bar .left { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.refresh-bar .ts { font-family: 'JetBrains Mono', monospace; font-weight: 600; color: var(--text); }
+.refresh-bar button { padding: 6px 12px; font-size: 12px; }
+.refresh-bar button.spin span { display: inline-block; animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.item .live-price { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--text); }
+.item .live-change { font-family: 'JetBrains Mono', monospace; font-size: 11px; margin-top: 1px; }
+.target-hit { background: linear-gradient(135deg, #fffbeb, #fef3c7) !important; border-color: #fbbf24 !important; }
+.target-hit::before { content: '🔔 '; font-size: 14px; }
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { font-family: 'Sarabun', -apple-system, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+body { padding-bottom: calc(76px + env(safe-area-inset-bottom)); font-size: 15px; line-height: 1.55; }
+.mono { font-family: 'JetBrains Mono', ui-monospace, monospace; font-variant-numeric: tabular-nums; }
+
+/* ===== HEADER ===== */
+.app-header {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+  color: #fff;
+  padding: 18px 18px 22px;
+  padding-top: calc(18px + env(safe-area-inset-top));
+  position: sticky; top: 0; z-index: 50;
+  box-shadow: 0 4px 20px rgba(15,23,42,0.15);
+}
+.app-header .row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.app-title { font-family: 'Prompt', sans-serif; font-size: 19px; font-weight: 700; letter-spacing: -0.01em; }
+.app-title .dot { color: #38bdf8; }
+.account-pill {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 999px;
+  padding: 8px 14px;
+  display: flex; align-items: center; gap: 8px;
+  cursor: pointer; transition: background 0.15s;
+  font-size: 13px;
+}
+.account-pill:active { background: rgba(255,255,255,0.16); }
+.account-pill .label { color: #94a3b8; font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; }
+.account-pill .val { color: #fff; font-weight: 600; }
+
+/* ===== CONTAINER ===== */
+.container { max-width: 720px; margin: 0 auto; padding: 16px; }
+.view { display: none; animation: fadeIn 0.25s ease; }
+.view.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ===== CARDS ===== */
+.card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 18px;
+  margin-bottom: 14px;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+}
+.card h2 {
+  font-family: 'Prompt', sans-serif;
+  font-size: 16px; font-weight: 600;
+  margin-bottom: 14px;
+  display: flex; align-items: center; gap: 8px;
+}
+.card h2 .icon { font-size: 18px; }
+.card .subtitle { color: var(--text2); font-size: 13px; margin-top: -10px; margin-bottom: 14px; }
+
+/* ===== FORMS ===== */
+.field { margin-bottom: 12px; }
+.field label {
+  display: block;
+  font-size: 13px; font-weight: 600;
+  color: var(--text2);
+  margin-bottom: 5px;
+}
+.field label .hint { font-weight: 400; color: var(--text3); font-size: 12px; }
+.field input, .field select, .field textarea {
+  width: 100%;
+  padding: 11px 13px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 15px;
+  font-family: inherit;
+  background: var(--surface);
+  color: var(--text);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.field input.mono, .field select.mono { font-family: 'JetBrains Mono', monospace; }
+.field input:focus, .field select:focus, .field textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(37,99,235,0.12);
+}
+.field textarea { resize: vertical; min-height: 70px; line-height: 1.5; }
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.field-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+.input-prefix, .input-suffix {
+  position: relative;
+}
+.input-prefix > span, .input-suffix > span {
+  position: absolute;
+  top: 50%; transform: translateY(-50%);
+  color: var(--text3); font-size: 14px;
+  pointer-events: none;
+}
+.input-prefix > span { left: 12px; }
+.input-prefix input { padding-left: 26px; }
+.input-suffix > span { right: 12px; }
+.input-suffix input { padding-right: 32px; }
+
+/* ===== BUTTONS ===== */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 11px 18px;
+  border: none; border-radius: var(--radius-sm);
+  font-family: inherit; font-size: 14px; font-weight: 600;
+  cursor: pointer; transition: transform 0.1s, background 0.15s, box-shadow 0.15s;
+  background: var(--surface3); color: var(--text);
+}
+.btn:active { transform: scale(0.97); }
+.btn-primary { background: var(--accent); color: #fff; box-shadow: 0 4px 12px rgba(37,99,235,0.25); }
+.btn-primary:active { background: var(--accent-dark); }
+.btn-success { background: var(--green); color: #fff; }
+.btn-danger { background: var(--red); color: #fff; }
+.btn-ghost { background: transparent; color: var(--text2); }
+.btn-block { width: 100%; }
+.btn-sm { padding: 7px 12px; font-size: 13px; }
+.btn-icon { padding: 8px 10px; }
+
+/* ===== RESULT BOX ===== */
+.result {
+  background: linear-gradient(135deg, #eff6ff 0%, #f0f9ff 100%);
+  border: 1px solid #bfdbfe;
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-top: 14px;
+}
+.result.warn { background: linear-gradient(135deg, #fffbeb, #fef3c7); border-color: #fde68a; }
+.result.err { background: linear-gradient(135deg, #fef2f2, #fee2e2); border-color: #fecaca; }
+.result-row { display: flex; justify-content: space-between; align-items: baseline; padding: 6px 0; border-bottom: 1px dashed rgba(15,23,42,0.08); }
+.result-row:last-child { border-bottom: none; }
+.result-row .label { color: var(--text2); font-size: 13px; }
+.result-row .val { font-family: 'JetBrains Mono', monospace; font-weight: 600; font-size: 15px; }
+.result-row.hero { padding: 10px 0; }
+.result-row.hero .label { font-size: 14px; font-weight: 600; color: var(--text); }
+.result-row.hero .val { font-size: 22px; color: var(--accent); }
+.result .note { margin-top: 10px; font-size: 12px; color: var(--text2); }
+
+/* ===== POS/NEG ===== */
+.pos { color: var(--green); }
+.neg { color: var(--red); }
+.muted { color: var(--text3); }
+
+/* ===== STATS GRID ===== */
+.stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.stat-box {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 14px;
+}
+.stat-box .label { font-size: 12px; color: var(--text2); margin-bottom: 4px; }
+.stat-box .value { font-family: 'JetBrains Mono', monospace; font-size: 20px; font-weight: 700; letter-spacing: -0.02em; }
+.stat-box .sub { font-size: 12px; color: var(--text3); margin-top: 2px; }
+
+/* ===== LIST ITEMS ===== */
+.item {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  margin-bottom: 8px;
+  display: flex; align-items: center; gap: 12px;
+}
+.item .ticker {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  font-size: 15px;
+  background: var(--surface);
+  padding: 5px 9px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  min-width: 64px;
+  text-align: center;
+}
+.item .main { flex: 1; min-width: 0; }
+.item .main .line1 { font-weight: 600; font-size: 14px; }
+.item .main .line2 { font-size: 12px; color: var(--text2); margin-top: 2px; }
+.item .pnl { text-align: right; }
+.item .pnl .amount { font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 15px; }
+.item .pnl .pct { font-family: 'JetBrains Mono', monospace; font-size: 12px; margin-top: 2px; }
+.item .actions { display: flex; gap: 4px; }
+
+.tag {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px; font-weight: 600;
+  letter-spacing: 0.01em;
+}
+.tag-long { background: var(--green-bg); color: var(--green); }
+.tag-short { background: var(--red-bg); color: var(--red); }
+.tag-open { background: var(--orange-bg); color: var(--orange); }
+.tag-win { background: var(--green-bg); color: var(--green); }
+.tag-loss { background: var(--red-bg); color: var(--red); }
+
+/* ===== EMPTY ===== */
+.empty {
+  text-align: center;
+  padding: 36px 16px;
+  color: var(--text3);
+}
+.empty .icon { font-size: 40px; margin-bottom: 8px; opacity: 0.5; }
+.empty .text { font-size: 14px; }
+
+/* ===== SEGMENT ===== */
+.segment {
+  display: flex;
+  background: var(--surface3);
+  padding: 3px;
+  border-radius: var(--radius-sm);
+  margin-bottom: 14px;
+}
+.segment button {
+  flex: 1;
+  padding: 9px;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  font-family: inherit; font-size: 13px; font-weight: 600;
+  color: var(--text2);
+  cursor: pointer; transition: all 0.15s;
+}
+.segment button.active { background: var(--surface); color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+
+/* ===== BOTTOM NAV ===== */
+.bottom-nav {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  display: flex;
+  padding: 8px 4px calc(8px + env(safe-area-inset-bottom));
+  z-index: 100;
+  box-shadow: 0 -2px 12px rgba(15,23,42,0.06);
+}
+.bottom-nav button {
+  flex: 1;
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  padding: 6px 4px;
+  background: transparent; border: none;
+  color: var(--text3);
+  font-family: inherit; font-size: 11px; font-weight: 600;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: color 0.15s;
+}
+.bottom-nav button.active { color: var(--accent); }
+.bottom-nav button .nav-icon { font-size: 22px; }
+
+/* ===== MODAL ===== */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(15,23,42,0.55);
+  display: none; align-items: flex-end; justify-content: center;
+  z-index: 200;
+  padding: 0;
+}
+.modal-overlay.show { display: flex; animation: fadeIn 0.2s; }
+.modal {
+  background: var(--surface);
+  border-radius: 20px 20px 0 0;
+  width: 100%;
+  max-width: 720px;
+  max-height: 92vh;
+  overflow-y: auto;
+  padding: 18px 18px calc(18px + env(safe-area-inset-bottom));
+  animation: slideUp 0.25s ease;
+}
+@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+.modal-handle { width: 40px; height: 4px; background: var(--border-strong); border-radius: 999px; margin: 0 auto 14px; }
+.modal h3 {
+  font-family: 'Prompt', sans-serif;
+  font-size: 17px; font-weight: 600;
+  margin-bottom: 14px;
+}
+.modal-actions { display: flex; gap: 8px; margin-top: 16px; }
+
+/* ===== TOAST ===== */
+.toast {
+  position: fixed; bottom: calc(90px + env(safe-area-inset-bottom)); left: 50%;
+  transform: translateX(-50%) translateY(100px);
+  background: var(--text);
+  color: #fff;
+  padding: 10px 18px;
+  border-radius: 999px;
+  font-size: 14px; font-weight: 500;
+  box-shadow: var(--shadow-lg);
+  z-index: 300;
+  transition: transform 0.3s;
+  pointer-events: none;
+  max-width: 90vw;
+  text-align: center;
+}
+.toast.show { transform: translateX(-50%) translateY(0); }
+
+/* ===== CHART ===== */
+.chart-wrap { position: relative; height: 240px; margin-top: 4px; }
+
+/* ===== UTILITY ===== */
+.flex-between { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.flex-row { display: flex; align-items: center; gap: 8px; }
+.mb-0 { margin-bottom: 0; }
+.mt-12 { margin-top: 12px; }
+
+@media (min-width: 600px) {
+  .stats-grid { grid-template-columns: repeat(4, 1fr); }
+}
+</style>
+</head>
+<body>
+
+<header class="app-header">
+  <div class="container" style="padding:0; max-width:720px;">
+    <div class="row">
+      <div class="app-title">Trading<span class="dot">.</span>Helper</div>
+      <div class="account-pill" id="accountPill" onclick="openSettings()">
+        <div>
+          <div class="label">Account</div>
+          <div class="val mono" id="headerAccount">$10,000</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+
+  <!-- ===== CALCULATOR VIEW ===== -->
+  <section class="view active" id="view-calc">
+    <div class="card">
+      <h2><span class="icon">🧮</span> Position Size Calculator</h2>
+      <p class="subtitle">คำนวณจำนวนหุ้นตาม risk management — Entry, Stop, Target</p>
+
+      <div class="segment">
+        <button class="active" data-dir="long" onclick="setDir('long')">📈 Long</button>
+        <button data-dir="short" onclick="setDir('short')">📉 Short</button>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label>Ticker <span class="hint">(optional)</span></label>
+          <input type="text" id="calcTicker" class="mono" placeholder="AAPL" style="text-transform:uppercase" maxlength="6">
+        </div>
+        <div class="field">
+          <label>Risk % <span class="hint">ของ account</span></label>
+          <div class="input-suffix">
+            <input type="number" id="calcRiskPct" class="mono" value="1" step="0.1" min="0.1" max="10">
+            <span>%</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="field-row-3">
+        <div class="field">
+          <label>Entry</label>
+          <div class="input-prefix">
+            <span>$</span>
+            <input type="number" id="calcEntry" class="mono" step="0.01" inputmode="decimal" placeholder="100.00">
+          </div>
+        </div>
+        <div class="field">
+          <label>Stop Loss</label>
+          <div class="input-prefix">
+            <span>$</span>
+            <input type="number" id="calcStop" class="mono" step="0.01" inputmode="decimal" placeholder="95.00">
+          </div>
+        </div>
+        <div class="field">
+          <label>Target <span class="hint">opt.</span></label>
+          <div class="input-prefix">
+            <span>$</span>
+            <input type="number" id="calcTarget" class="mono" step="0.01" inputmode="decimal" placeholder="115.00">
+          </div>
+        </div>
+      </div>
+
+      <button class="btn btn-primary btn-block" onclick="calcPosition()">คำนวณ</button>
+
+      <div id="calcResult"></div>
+
+      <button class="btn btn-success btn-block mt-12" id="calcOpenBtn" onclick="openFromCalc()" style="display:none">
+        ➕ เปิด position จากการคำนวณนี้
+      </button>
+    </div>
+  </section>
+
+  <!-- ===== PORTFOLIO VIEW ===== -->
+  <section class="view" id="view-portfolio">
+    <div class="card">
+      <h2><span class="icon">💼</span> Open Positions</h2>
+      <div class="stats-grid" style="margin-bottom:14px">
+        <div class="stat-box">
+          <div class="label">Open P&L</div>
+          <div class="value mono" id="openPnl">$0.00</div>
+          <div class="sub" id="openPnlPct">0.00%</div>
+        </div>
+        <div class="stat-box">
+          <div class="label">Invested</div>
+          <div class="value mono" id="openInvested">$0.00</div>
+          <div class="sub" id="openCount">0 positions</div>
+        </div>
+      </div>
+      <div class="refresh-bar" id="posRefreshBar">
+        <div class="left">
+          <span class="live-dot stale" id="posLiveDot"></span>
+          <span>Last: <span class="ts" id="posLastTs">never</span></span>
+        </div>
+        <button class="btn btn-sm" id="posRefreshBtn" onclick="refreshPrices('positions')"><span>🔄</span> Refresh</button>
+      </div>
+      <button class="btn btn-primary btn-block" onclick="openPositionModal()">➕ เพิ่ม Position</button>
+      <div id="positionsList" style="margin-top:14px"></div>
+    </div>
+
+    <div class="card">
+      <h2><span class="icon">👁️</span> Watchlist</h2>
+      <div class="refresh-bar" id="watchRefreshBar">
+        <div class="left">
+          <span class="live-dot stale" id="watchLiveDot"></span>
+          <span>Last: <span class="ts" id="watchLastTs">never</span></span>
+        </div>
+        <button class="btn btn-sm" id="watchRefreshBtn" onclick="refreshPrices('watchlist')"><span>🔄</span> Refresh</button>
+      </div>
+      <button class="btn btn-primary btn-block" onclick="openWatchModal()">➕ เพิ่มหุ้น</button>
+      <div id="watchlistList" style="margin-top:14px"></div>
+    </div>
+  </section>
+
+  <!-- ===== JOURNAL VIEW ===== -->
+  <section class="view" id="view-journal">
+    <div class="card">
+      <div class="flex-between" style="margin-bottom:14px">
+        <h2 class="mb-0"><span class="icon">📓</span> Trading Journal</h2>
+        <button class="btn btn-primary btn-sm" onclick="openJournalModal()">➕ บันทึก</button>
+      </div>
+      <div class="segment">
+        <button class="active" data-jf="all" onclick="filterJournal('all')">ทั้งหมด</button>
+        <button data-jf="win" onclick="filterJournal('win')">ชนะ</button>
+        <button data-jf="loss" onclick="filterJournal('loss')">แพ้</button>
+      </div>
+      <div id="journalList"></div>
+    </div>
+  </section>
+
+  <!-- ===== STATS VIEW ===== -->
+  <section class="view" id="view-stats">
+    <div class="card">
+      <h2><span class="icon">📊</span> Performance</h2>
+      <div class="stats-grid">
+        <div class="stat-box">
+          <div class="label">Total P&L</div>
+          <div class="value mono" id="statTotalPnl">$0</div>
+          <div class="sub" id="statTotalPct">0.00%</div>
+        </div>
+        <div class="stat-box">
+          <div class="label">Win Rate</div>
+          <div class="value mono" id="statWinRate">0%</div>
+          <div class="sub" id="statTrades">0 trades</div>
+        </div>
+        <div class="stat-box">
+          <div class="label">Avg R:R</div>
+          <div class="value mono" id="statAvgRR">—</div>
+          <div class="sub" id="statExpectancy">Exp: $0</div>
+        </div>
+        <div class="stat-box">
+          <div class="label">Max DD</div>
+          <div class="value mono" id="statMaxDD">$0</div>
+          <div class="sub" id="statMaxDDPct">0.00%</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2><span class="icon">📈</span> Equity Curve</h2>
+      <div class="chart-wrap"><canvas id="equityChart"></canvas></div>
+    </div>
+
+    <div class="card">
+      <h2><span class="icon">🎯</span> By Ticker</h2>
+      <div id="byTickerList"></div>
+    </div>
+
+    <div class="card">
+      <h2><span class="icon">⚙️</span> ตั้งค่า / ข้อมูล</h2>
+      <button class="btn btn-block" onclick="openSettings()">⚙️ ตั้งค่า Account</button>
+      <button class="btn btn-block mt-12" onclick="exportData()">⬇️ Export ข้อมูล (JSON)</button>
+      <button class="btn btn-block mt-12" onclick="document.getElementById('importFile').click()">⬆️ Import ข้อมูล</button>
+      <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
+      <button class="btn btn-block mt-12" style="color:var(--red)" onclick="confirmReset()">🗑️ ล้างข้อมูลทั้งหมด</button>
+    </div>
+  </section>
+
+</main>
+
+<!-- ===== BOTTOM NAV ===== -->
+<nav class="bottom-nav">
+  <button class="active" data-view="calc" onclick="switchView('calc')">
+    <span class="nav-icon">🧮</span><span>Calc</span>
+  </button>
+  <button data-view="portfolio" onclick="switchView('portfolio')">
+    <span class="nav-icon">💼</span><span>Portfolio</span>
+  </button>
+  <button data-view="journal" onclick="switchView('journal')">
+    <span class="nav-icon">📓</span><span>Journal</span>
+  </button>
+  <button data-view="stats" onclick="switchView('stats')">
+    <span class="nav-icon">📊</span><span>Stats</span>
+  </button>
+</nav>
+
+<!-- ===== MODALS ===== -->
+<div class="modal-overlay" id="modalOverlay" onclick="if(event.target.id==='modalOverlay')closeModal()">
+  <div class="modal" id="modalBox">
+    <div class="modal-handle"></div>
+    <div id="modalContent"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ============================================================
+// STATE
+// ============================================================
+const LS_KEY = 'trading_helper_v1';
+const DEFAULT_STATE = {
+  settings: { accountSize: 10000, defaultRiskPct: 1, currency: 'USD', finnhubKey: '', autoRefresh: true },
+  positions: [],   // open: {id, ticker, dir, qty, entry, stop, target, openDate, currentPrice, notes}
+  trades: [],      // closed: {id, ticker, dir, qty, entry, exit, openDate, closeDate, fees, notes, plannedR}
+  watchlist: [],   // {id, ticker, targetBuy, targetSell, notes, addedAt}
+  livePrices: {},  // { TICKER: { price, change, changePct, prevClose, ts } }
+  lastRefresh: { positions: null, watchlist: null }
+};
+
+let state = loadState();
+let calcDir = 'long';
+let lastCalc = null;
+let journalFilter = 'all';
+let equityChart = null;
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    if (!raw) return structuredClone(DEFAULT_STATE);
+    const parsed = JSON.parse(raw);
+    return { ...structuredClone(DEFAULT_STATE), ...parsed };
+  } catch (e) { return structuredClone(DEFAULT_STATE); }
+}
+function saveState() { localStorage.setItem(LS_KEY, JSON.stringify(state)); }
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
+
+// ============================================================
+// FORMATTERS
+// ============================================================
+const fmtUSD = (n, decimals = 2) => {
+  if (n == null || isNaN(n)) return '—';
+  const sign = n < 0 ? '-' : '';
+  const abs = Math.abs(n);
+  return sign + '$' + abs.toLocaleString('en-US', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+};
+const fmtPct = (n, decimals = 2) => {
+  if (n == null || isNaN(n)) return '—';
+  return (n >= 0 ? '+' : '') + n.toFixed(decimals) + '%';
+};
+const fmtNum = (n, decimals = 2) => {
+  if (n == null || isNaN(n)) return '—';
+  return n.toLocaleString('en-US', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+};
+const fmtDate = (iso) => {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  return d.toLocaleDateString('th-TH', { day: '2-digit', month: 'short', year: '2-digit' });
+};
+const todayISO = () => new Date().toISOString().slice(0, 10);
+
+// ============================================================
+// VIEW SWITCHING
+// ============================================================
+function switchView(v) {
+  document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
+  document.getElementById('view-' + v).classList.add('active');
+  document.querySelectorAll('.bottom-nav button').forEach(b => b.classList.toggle('active', b.dataset.view === v));
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  if (v === 'portfolio') {
+    renderPositions(); renderWatchlist();
+    if (state.settings.autoRefresh && state.settings.finnhubKey && shouldAutoRefresh()) {
+      refreshPrices('all');
+    }
+  }
+  if (v === 'journal') renderJournal();
+  if (v === 'stats') renderStats();
+}
+
+function shouldAutoRefresh() {
+  const last = Math.max(state.lastRefresh.positions || 0, state.lastRefresh.watchlist || 0);
+  return Date.now() - last > 60_000; // refresh if older than 60s
+}
+
+// ============================================================
+// LIVE PRICES (Finnhub)
+// ============================================================
+async function fetchQuote(symbol) {
+  const key = state.settings.finnhubKey;
+  if (!key) throw new Error('NO_KEY');
+  const url = `https://finnhub.io/api/v1/quote?symbol=${encodeURIComponent(symbol)}&token=${encodeURIComponent(key)}`;
+  const res = await fetch(url);
+  if (res.status === 401 || res.status === 403) throw new Error('BAD_KEY');
+  if (res.status === 429) throw new Error('RATE_LIMIT');
+  if (!res.ok) throw new Error('HTTP_' + res.status);
+  const d = await res.json();
+  if (d.c == null || d.c === 0) throw new Error('NO_DATA');
+  return { price: d.c, change: d.d, changePct: d.dp, prevClose: d.pc, ts: Date.now() };
+}
+
+let refreshing = false;
+async function refreshPrices(scope) {
+  if (refreshing) return;
+  if (!state.settings.finnhubKey) {
+    showToast('⚠️ ต้องตั้งค่า Finnhub API key ก่อน');
+    openSettings();
+    return;
+  }
+  refreshing = true;
+  const symbols = new Set();
+  if (scope === 'positions' || scope === 'all') state.positions.forEach(p => symbols.add(p.ticker));
+  if (scope === 'watchlist' || scope === 'all') state.watchlist.forEach(w => symbols.add(w.ticker));
+  if (!symbols.size) {
+    refreshing = false;
+    showToast('ไม่มี ticker ให้ refresh');
+    return;
+  }
+  setRefreshSpinning(true);
+  let ok = 0, errors = [];
+  for (const sym of symbols) {
+    try {
+      const q = await fetchQuote(sym);
+      state.livePrices[sym] = q;
+      ok++;
+    } catch (e) {
+      errors.push({ sym, code: e.message });
+      if (e.message === 'BAD_KEY' || e.message === 'RATE_LIMIT') break;
+    }
+  }
+  const now = Date.now();
+  if (scope === 'positions' || scope === 'all') state.lastRefresh.positions = now;
+  if (scope === 'watchlist' || scope === 'all') state.lastRefresh.watchlist = now;
+  // sync currentPrice on open positions to live price
+  state.positions.forEach(p => {
+    const lp = state.livePrices[p.ticker];
+    if (lp) p.currentPrice = lp.price;
+  });
+  saveState();
+  renderPositions(); renderWatchlist();
+  setRefreshSpinning(false);
+  refreshing = false;
+  if (errors.length) {
+    const first = errors[0];
+    if (first.code === 'BAD_KEY') showToast('❌ API key ไม่ถูกต้อง');
+    else if (first.code === 'RATE_LIMIT') showToast('⚠️ เกินโควต้า (60/min) — รอสักครู่');
+    else showToast(`⚠️ Refresh ${ok}/${symbols.size} (error: ${errors.map(e=>e.sym).join(', ')})`);
+  } else {
+    showToast(`✅ Refreshed ${ok} symbols`);
+  }
+}
+
+function setRefreshSpinning(on) {
+  ['posRefreshBtn', 'watchRefreshBtn'].forEach(id => {
+    const b = document.getElementById(id);
+    if (b) b.classList.toggle('spin', on);
+  });
+}
+
+function fmtAgo(ts) {
+  if (!ts) return 'never';
+  const sec = Math.floor((Date.now() - ts) / 1000);
+  if (sec < 5) return 'just now';
+  if (sec < 60) return sec + 's ago';
+  if (sec < 3600) return Math.floor(sec / 60) + 'm ago';
+  if (sec < 86400) return Math.floor(sec / 3600) + 'h ago';
+  return Math.floor(sec / 86400) + 'd ago';
+}
+
+function updateRefreshBars() {
+  const pTs = state.lastRefresh.positions;
+  const wTs = state.lastRefresh.watchlist;
+  const pEl = document.getElementById('posLastTs');
+  const wEl = document.getElementById('watchLastTs');
+  if (pEl) pEl.textContent = fmtAgo(pTs);
+  if (wEl) wEl.textContent = fmtAgo(wTs);
+  const fresh = (ts) => ts && (Date.now() - ts < 5 * 60_000);
+  const pd = document.getElementById('posLiveDot');
+  const wd = document.getElementById('watchLiveDot');
+  if (pd) pd.classList.toggle('stale', !fresh(pTs));
+  if (wd) wd.classList.toggle('stale', !fresh(wTs));
+}
+setInterval(updateRefreshBars, 5000);
+
+// ============================================================
+// CALCULATOR
+// ============================================================
+function setDir(dir) {
+  calcDir = dir;
+  document.querySelectorAll('[data-dir]').forEach(b => b.classList.toggle('active', b.dataset.dir === dir));
+}
+
+function calcPosition() {
+  const ticker = document.getElementById('calcTicker').value.trim().toUpperCase();
+  const riskPct = parseFloat(document.getElementById('calcRiskPct').value);
+  const entry = parseFloat(document.getElementById('calcEntry').value);
+  const stop = parseFloat(document.getElementById('calcStop').value);
+  const target = parseFloat(document.getElementById('calcTarget').value);
+  const account = state.settings.accountSize;
+  const out = document.getElementById('calcResult');
+  const openBtn = document.getElementById('calcOpenBtn');
+  openBtn.style.display = 'none';
+
+  if (!entry || !stop || !riskPct) {
+    out.innerHTML = `<div class="result err"><div class="result-row"><div class="label">⚠️ กรอกข้อมูล</div><div class="val">Entry, Stop, Risk % จำเป็น</div></div></div>`;
+    return;
+  }
+
+  // Validate direction
+  if (calcDir === 'long' && stop >= entry) {
+    out.innerHTML = `<div class="result err"><div class="result-row"><div class="label">⚠️ Long</div><div class="val">Stop ต้องต่ำกว่า Entry</div></div></div>`;
+    return;
+  }
+  if (calcDir === 'short' && stop <= entry) {
+    out.innerHTML = `<div class="result err"><div class="result-row"><div class="label">⚠️ Short</div><div class="val">Stop ต้องสูงกว่า Entry</div></div></div>`;
+    return;
+  }
+
+  const riskPerShare = Math.abs(entry - stop);
+  const riskAmount = account * (riskPct / 100);
+  const sharesRaw = riskAmount / riskPerShare;
+  const shares = Math.floor(sharesRaw);
+  const positionSize = shares * entry;
+  const actualRisk = shares * riskPerShare;
+  const positionPct = (positionSize / account) * 100;
+
+  let rrHTML = '';
+  let openableHTML = '';
+  if (target && !isNaN(target)) {
+    if (calcDir === 'long' && target <= entry) {
+      rrHTML = `<div class="result-row"><div class="label">⚠️ Target</div><div class="val neg">ต้องสูงกว่า Entry</div></div>`;
+    } else if (calcDir === 'short' && target >= entry) {
+      rrHTML = `<div class="result-row"><div class="label">⚠️ Target</div><div class="val neg">ต้องต่ำกว่า Entry</div></div>`;
+    } else {
+      const rewardPerShare = Math.abs(target - entry);
+      const totalReward = shares * rewardPerShare;
+      const rr = rewardPerShare / riskPerShare;
+      rrHTML = `
+        <div class="result-row"><div class="label">Reward</div><div class="val pos">${fmtUSD(totalReward)}</div></div>
+        <div class="result-row hero"><div class="label">Risk : Reward</div><div class="val">1 : ${rr.toFixed(2)}</div></div>
+      `;
+    }
+  }
+
+  const warn = positionPct > 50;
+  out.innerHTML = `
+    <div class="result ${warn ? 'warn' : ''}">
+      <div class="result-row hero">
+        <div class="label">📦 จำนวนหุ้น</div>
+        <div class="val mono">${shares.toLocaleString()} shares</div>
+      </div>
+      <div class="result-row"><div class="label">Position size</div><div class="val mono">${fmtUSD(positionSize)} <span class="muted">(${positionPct.toFixed(1)}%)</span></div></div>
+      <div class="result-row"><div class="label">Risk / share</div><div class="val mono">${fmtUSD(riskPerShare)}</div></div>
+      <div class="result-row"><div class="label">Risk amount</div><div class="val mono neg">${fmtUSD(actualRisk)} <span class="muted">(${((actualRisk/account)*100).toFixed(2)}%)</span></div></div>
+      ${rrHTML}
+      ${warn ? '<div class="note">⚠️ Position ใหญ่กว่า 50% ของ account — พิจารณาลดขนาดหรือเพิ่ม stop ใกล้ขึ้น</div>' : ''}
+      ${shares === 0 ? '<div class="note">⚠️ จำนวนหุ้น = 0 — risk amount น้อยเกินสำหรับ stop distance นี้</div>' : ''}
+    </div>
+  `;
+
+  if (shares > 0) {
+    lastCalc = { ticker, dir: calcDir, qty: shares, entry, stop, target: target || null };
+    openBtn.style.display = 'flex';
+  } else {
+    lastCalc = null;
+  }
+}
+
+function openFromCalc() {
+  if (!lastCalc) return;
+  if (!lastCalc.ticker) {
+    showToast('กรุณาใส่ ticker ก่อนเปิด position');
+    document.getElementById('calcTicker').focus();
+    return;
+  }
+  state.positions.push({
+    id: uid(),
+    ticker: lastCalc.ticker,
+    dir: lastCalc.dir,
+    qty: lastCalc.qty,
+    entry: lastCalc.entry,
+    stop: lastCalc.stop,
+    target: lastCalc.target,
+    openDate: todayISO(),
+    currentPrice: lastCalc.entry,
+    notes: ''
+  });
+  saveState();
+  showToast(`✅ เปิด ${lastCalc.ticker} แล้ว`);
+  switchView('portfolio');
+}
+
+// ============================================================
+// POSITIONS
+// ============================================================
+function pnlOf(pos) {
+  const cur = pos.currentPrice ?? pos.entry;
+  const raw = (cur - pos.entry) * pos.qty;
+  const pnl = pos.dir === 'short' ? -raw : raw;
+  const invested = pos.entry * pos.qty;
+  const pct = invested > 0 ? (pnl / invested) * 100 : 0;
+  return { pnl, pct, invested, current: cur * pos.qty };
+}
+
+function renderPositions() {
+  updateRefreshBars();
+  const list = document.getElementById('positionsList');
+  if (!state.positions.length) {
+    list.innerHTML = `<div class="empty"><div class="icon">💼</div><div class="text">ยังไม่มี position เปิดอยู่</div></div>`;
+    document.getElementById('openPnl').textContent = fmtUSD(0);
+    document.getElementById('openPnl').className = 'value mono';
+    document.getElementById('openPnlPct').textContent = '0.00%';
+    document.getElementById('openInvested').textContent = fmtUSD(0);
+    document.getElementById('openCount').textContent = '0 positions';
+    return;
+  }
+  let totalPnl = 0, totalInvested = 0;
+  list.innerHTML = state.positions.map(p => {
+    const r = pnlOf(p);
+    totalPnl += r.pnl;
+    totalInvested += r.invested;
+    const cls = r.pnl >= 0 ? 'pos' : 'neg';
+    const lp = state.livePrices[p.ticker];
+    const curPrice = lp ? lp.price : (r.current / p.qty);
+    const dayChange = lp ? lp.changePct : null;
+    const dayCls = dayChange == null ? '' : (dayChange >= 0 ? 'pos' : 'neg');
+    const liveBadge = lp ? `<span class="live-dot" title="live"></span>` : '';
+    return `
+      <div class="item">
+        <div class="ticker">${p.ticker}</div>
+        <div class="main">
+          <div class="line1">
+            <span class="tag tag-${p.dir}">${p.dir.toUpperCase()}</span>
+            ${p.qty.toLocaleString()} × ${fmtUSD(p.entry)}
+          </div>
+          <div class="line2">
+            ${liveBadge}<span class="live-price">${fmtUSD(curPrice)}</span>
+            ${dayChange != null ? `<span class="live-change ${dayCls}"> ${fmtPct(dayChange)} today</span>` : ''}
+            ${p.stop ? ` · Stop: <span class="mono">${fmtUSD(p.stop)}</span>` : ''}
+            ${p.target ? ` · TP: <span class="mono">${fmtUSD(p.target)}</span>` : ''}
+          </div>
+        </div>
+        <div class="pnl">
+          <div class="amount ${cls}">${fmtUSD(r.pnl)}</div>
+          <div class="pct ${cls}">${fmtPct(r.pct)}</div>
+        </div>
+        <div class="actions" style="flex-direction:column">
+          <button class="btn btn-sm btn-icon" onclick="editPosition('${p.id}')">✏️</button>
+          <button class="btn btn-sm btn-icon btn-success" onclick="closePositionModal('${p.id}')">✓</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+  const account = state.settings.accountSize;
+  const pct = account > 0 ? (totalPnl / account) * 100 : 0;
+  const pnlEl = document.getElementById('openPnl');
+  const pctEl = document.getElementById('openPnlPct');
+  pnlEl.textContent = fmtUSD(totalPnl);
+  pnlEl.className = 'value mono ' + (totalPnl >= 0 ? 'pos' : 'neg');
+  pctEl.textContent = fmtPct(pct) + ' of account';
+  pctEl.className = 'sub ' + (totalPnl >= 0 ? 'pos' : 'neg');
+  document.getElementById('openInvested').textContent = fmtUSD(totalInvested);
+  document.getElementById('openCount').textContent = state.positions.length + ' positions';
+}
+
+function openPositionModal(existing) {
+  const p = existing || { ticker: '', dir: 'long', qty: '', entry: '', stop: '', target: '', currentPrice: '', notes: '', openDate: todayISO() };
+  showModal(`
+    <h3>${existing ? '✏️ แก้ไข Position' : '➕ เพิ่ม Position'}</h3>
+    <div class="field-row">
+      <div class="field">
+        <label>Ticker</label>
+        <input id="pmTicker" class="mono" style="text-transform:uppercase" value="${p.ticker}" placeholder="AAPL">
+      </div>
+      <div class="field">
+        <label>Direction</label>
+        <select id="pmDir">
+          <option value="long" ${p.dir==='long'?'selected':''}>📈 Long</option>
+          <option value="short" ${p.dir==='short'?'selected':''}>📉 Short</option>
+        </select>
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>Quantity</label>
+        <input id="pmQty" type="number" class="mono" step="1" inputmode="numeric" value="${p.qty}" placeholder="100">
+      </div>
+      <div class="field">
+        <label>Entry Price</label>
+        <div class="input-prefix"><span>$</span><input id="pmEntry" type="number" class="mono" step="0.01" inputmode="decimal" value="${p.entry}"></div>
+      </div>
+    </div>
+    <div class="field-row-3">
+      <div class="field">
+        <label>Stop <span class="hint">opt.</span></label>
+        <div class="input-prefix"><span>$</span><input id="pmStop" type="number" class="mono" step="0.01" inputmode="decimal" value="${p.stop ?? ''}"></div>
+      </div>
+      <div class="field">
+        <label>Target <span class="hint">opt.</span></label>
+        <div class="input-prefix"><span>$</span><input id="pmTarget" type="number" class="mono" step="0.01" inputmode="decimal" value="${p.target ?? ''}"></div>
+      </div>
+      <div class="field">
+        <label>Current</label>
+        <div class="input-prefix"><span>$</span><input id="pmCurrent" type="number" class="mono" step="0.01" inputmode="decimal" value="${p.currentPrice ?? p.entry ?? ''}"></div>
+      </div>
+    </div>
+    <div class="field">
+      <label>Open Date</label>
+      <input id="pmOpenDate" type="date" value="${p.openDate || todayISO()}">
+    </div>
+    <div class="field">
+      <label>Notes</label>
+      <textarea id="pmNotes" placeholder="เหตุผลที่เข้า, setup...">${p.notes || ''}</textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost btn-block" onclick="closeModal()">ยกเลิก</button>
+      ${existing ? `<button class="btn btn-danger btn-block" onclick="deletePosition('${existing.id}')">ลบ</button>` : ''}
+      <button class="btn btn-primary btn-block" onclick="savePosition('${existing?.id || ''}')">บันทึก</button>
+    </div>
+  `);
+}
+
+function savePosition(id) {
+  const ticker = document.getElementById('pmTicker').value.trim().toUpperCase();
+  const qty = parseFloat(document.getElementById('pmQty').value);
+  const entry = parseFloat(document.getElementById('pmEntry').value);
+  if (!ticker || !qty || !entry) { showToast('กรุณากรอก ticker, qty, entry'); return; }
+  const data = {
+    ticker, qty, entry,
+    dir: document.getElementById('pmDir').value,
+    stop: parseFloat(document.getElementById('pmStop').value) || null,
+    target: parseFloat(document.getElementById('pmTarget').value) || null,
+    currentPrice: parseFloat(document.getElementById('pmCurrent').value) || entry,
+    openDate: document.getElementById('pmOpenDate').value || todayISO(),
+    notes: document.getElementById('pmNotes').value.trim(),
+  };
+  if (id) {
+    const idx = state.positions.findIndex(p => p.id === id);
+    if (idx >= 0) state.positions[idx] = { ...state.positions[idx], ...data };
+  } else {
+    state.positions.push({ id: uid(), ...data });
+  }
+  saveState(); closeModal(); renderPositions();
+  showToast('✅ บันทึกแล้ว');
+}
+
+function editPosition(id) {
+  const p = state.positions.find(x => x.id === id);
+  if (p) openPositionModal(p);
+}
+
+function deletePosition(id) {
+  if (!confirm('ลบ position นี้?')) return;
+  state.positions = state.positions.filter(p => p.id !== id);
+  saveState(); closeModal(); renderPositions();
+  showToast('🗑️ ลบแล้ว');
+}
+
+function closePositionModal(id) {
+  const p = state.positions.find(x => x.id === id);
+  if (!p) return;
+  showModal(`
+    <h3>✓ ปิด Position — ${p.ticker}</h3>
+    <div class="result" style="margin-bottom:14px">
+      <div class="result-row"><div class="label">Direction</div><div class="val"><span class="tag tag-${p.dir}">${p.dir.toUpperCase()}</span></div></div>
+      <div class="result-row"><div class="label">Qty × Entry</div><div class="val mono">${p.qty} × ${fmtUSD(p.entry)}</div></div>
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>Exit Price</label>
+        <div class="input-prefix"><span>$</span><input id="cpExit" type="number" class="mono" step="0.01" inputmode="decimal" value="${p.currentPrice ?? p.entry}"></div>
+      </div>
+      <div class="field">
+        <label>Close Date</label>
+        <input id="cpDate" type="date" value="${todayISO()}">
+      </div>
+    </div>
+    <div class="field">
+      <label>Fees <span class="hint">opt.</span></label>
+      <div class="input-prefix"><span>$</span><input id="cpFees" type="number" class="mono" step="0.01" inputmode="decimal" value="0"></div>
+    </div>
+    <div class="field">
+      <label>Notes</label>
+      <textarea id="cpNotes" placeholder="สรุปบทเรียน...">${p.notes || ''}</textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost btn-block" onclick="closeModal()">ยกเลิก</button>
+      <button class="btn btn-success btn-block" onclick="confirmClosePosition('${id}')">ปิด & บันทึก</button>
+    </div>
+  `);
+}
+
+function confirmClosePosition(id) {
+  const p = state.positions.find(x => x.id === id);
+  if (!p) return;
+  const exit = parseFloat(document.getElementById('cpExit').value);
+  if (!exit) { showToast('กรุณาใส่ exit price'); return; }
+  const plannedR = p.stop ? Math.abs(p.entry - p.stop) * p.qty : null;
+  state.trades.push({
+    id: uid(),
+    ticker: p.ticker, dir: p.dir, qty: p.qty,
+    entry: p.entry, exit,
+    openDate: p.openDate, closeDate: document.getElementById('cpDate').value || todayISO(),
+    fees: parseFloat(document.getElementById('cpFees').value) || 0,
+    notes: document.getElementById('cpNotes').value.trim(),
+    plannedR
+  });
+  state.positions = state.positions.filter(x => x.id !== id);
+  saveState(); closeModal(); renderPositions();
+  showToast('✅ ปิด position แล้ว');
+}
+
+// ============================================================
+// WATCHLIST
+// ============================================================
+function renderWatchlist() {
+  updateRefreshBars();
+  const list = document.getElementById('watchlistList');
+  if (!state.watchlist.length) {
+    list.innerHTML = `<div class="empty"><div class="icon">👁️</div><div class="text">ยังไม่มีหุ้นใน watchlist</div></div>`;
+    return;
+  }
+  list.innerHTML = state.watchlist.map(w => {
+    const lp = state.livePrices[w.ticker];
+    const cur = lp ? lp.price : null;
+    const dayChange = lp ? lp.changePct : null;
+    const dayCls = dayChange == null ? '' : (dayChange >= 0 ? 'pos' : 'neg');
+    const hitBuy = cur != null && w.targetBuy && cur <= w.targetBuy;
+    const hitSell = cur != null && w.targetSell && cur >= w.targetSell;
+    const hitCls = (hitBuy || hitSell) ? 'target-hit' : '';
+    const livePriceHTML = lp
+      ? `<span class="live-dot"></span><span class="live-price">${fmtUSD(cur)}</span>${dayChange != null ? ` <span class="live-change ${dayCls}">${fmtPct(dayChange)}</span>` : ''}`
+      : `<span class="live-dot stale"></span><span class="muted">no price yet</span>`;
+    const targetsHTML = [
+      w.targetBuy ? `Buy ≤ <span class="mono ${hitBuy ? 'pos' : ''}">${fmtUSD(w.targetBuy)}</span>${cur != null ? ` <span class="muted">(${(((cur - w.targetBuy) / w.targetBuy) * 100).toFixed(1)}%)</span>` : ''}` : '',
+      w.targetSell ? `Sell ≥ <span class="mono ${hitSell ? 'neg' : ''}">${fmtUSD(w.targetSell)}</span>${cur != null ? ` <span class="muted">(${(((cur - w.targetSell) / w.targetSell) * 100).toFixed(1)}%)</span>` : ''}` : ''
+    ].filter(Boolean).join(' · ');
+    return `
+      <div class="item ${hitCls}">
+        <div class="ticker">${w.ticker}</div>
+        <div class="main">
+          <div class="line1">${livePriceHTML}</div>
+          <div class="line2">
+            ${targetsHTML || '<span class="muted">no targets</span>'}
+            ${w.notes ? ` · ${w.notes.slice(0, 50)}${w.notes.length > 50 ? '…' : ''}` : ''}
+          </div>
+        </div>
+        <div class="actions" style="flex-direction:column">
+          <button class="btn btn-sm btn-icon" onclick="editWatch('${w.id}')">✏️</button>
+          <button class="btn btn-sm btn-icon" onclick="deleteWatch('${w.id}')">🗑️</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function openWatchModal(existing) {
+  const w = existing || { ticker: '', targetBuy: '', targetSell: '', notes: '' };
+  showModal(`
+    <h3>${existing ? '✏️ แก้ไข Watchlist' : '➕ เพิ่มเข้า Watchlist'}</h3>
+    <div class="field">
+      <label>Ticker</label>
+      <input id="wmTicker" class="mono" style="text-transform:uppercase" value="${w.ticker}" placeholder="NVDA">
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>Buy Target <span class="hint">opt.</span></label>
+        <div class="input-prefix"><span>$</span><input id="wmBuy" type="number" class="mono" step="0.01" inputmode="decimal" value="${w.targetBuy ?? ''}"></div>
+      </div>
+      <div class="field">
+        <label>Sell Target <span class="hint">opt.</span></label>
+        <div class="input-prefix"><span>$</span><input id="wmSell" type="number" class="mono" step="0.01" inputmode="decimal" value="${w.targetSell ?? ''}"></div>
+      </div>
+    </div>
+    <div class="field">
+      <label>Notes</label>
+      <textarea id="wmNotes" placeholder="thesis, catalyst, setup...">${w.notes || ''}</textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost btn-block" onclick="closeModal()">ยกเลิก</button>
+      <button class="btn btn-primary btn-block" onclick="saveWatch('${existing?.id || ''}')">บันทึก</button>
+    </div>
+  `);
+}
+
+function saveWatch(id) {
+  const ticker = document.getElementById('wmTicker').value.trim().toUpperCase();
+  if (!ticker) { showToast('กรุณาใส่ ticker'); return; }
+  const data = {
+    ticker,
+    targetBuy: parseFloat(document.getElementById('wmBuy').value) || null,
+    targetSell: parseFloat(document.getElementById('wmSell').value) || null,
+    notes: document.getElementById('wmNotes').value.trim(),
+  };
+  if (id) {
+    const idx = state.watchlist.findIndex(w => w.id === id);
+    if (idx >= 0) state.watchlist[idx] = { ...state.watchlist[idx], ...data };
+  } else {
+    state.watchlist.push({ id: uid(), ...data, addedAt: todayISO() });
+  }
+  saveState(); closeModal(); renderWatchlist();
+  showToast('✅ บันทึกแล้ว');
+}
+
+function editWatch(id) {
+  const w = state.watchlist.find(x => x.id === id);
+  if (w) openWatchModal(w);
+}
+
+function deleteWatch(id) {
+  if (!confirm('ลบจาก watchlist?')) return;
+  state.watchlist = state.watchlist.filter(w => w.id !== id);
+  saveState(); renderWatchlist();
+  showToast('🗑️ ลบแล้ว');
+}
+
+// ============================================================
+// JOURNAL
+// ============================================================
+function tradePnL(t) {
+  const raw = (t.exit - t.entry) * t.qty;
+  const gross = t.dir === 'short' ? -raw : raw;
+  const net = gross - (t.fees || 0);
+  const invested = t.entry * t.qty;
+  const pct = invested > 0 ? (net / invested) * 100 : 0;
+  const rMultiple = t.plannedR ? net / t.plannedR : null;
+  return { gross, net, pct, invested, rMultiple };
+}
+
+function filterJournal(f) {
+  journalFilter = f;
+  document.querySelectorAll('[data-jf]').forEach(b => b.classList.toggle('active', b.dataset.jf === f));
+  renderJournal();
+}
+
+function renderJournal() {
+  const list = document.getElementById('journalList');
+  let trades = [...state.trades].sort((a, b) => (b.closeDate || '').localeCompare(a.closeDate || ''));
+  if (journalFilter === 'win') trades = trades.filter(t => tradePnL(t).net > 0);
+  if (journalFilter === 'loss') trades = trades.filter(t => tradePnL(t).net <= 0);
+
+  if (!trades.length) {
+    list.innerHTML = `<div class="empty"><div class="icon">📓</div><div class="text">ยังไม่มี trade ที่บันทึก</div></div>`;
+    return;
+  }
+  list.innerHTML = trades.map(t => {
+    const r = tradePnL(t);
+    const cls = r.net >= 0 ? 'pos' : 'neg';
+    const wlTag = r.net >= 0 ? '<span class="tag tag-win">WIN</span>' : '<span class="tag tag-loss">LOSS</span>';
+    return `
+      <div class="item" onclick="openJournalModal('${t.id}')" style="cursor:pointer">
+        <div class="ticker">${t.ticker}</div>
+        <div class="main">
+          <div class="line1">
+            <span class="tag tag-${t.dir}">${t.dir.toUpperCase()}</span>
+            ${wlTag}
+            ${t.qty} × ${fmtUSD(t.entry)} → ${fmtUSD(t.exit)}
+          </div>
+          <div class="line2">
+            ${fmtDate(t.closeDate)} ${r.rMultiple != null ? ` · ${r.rMultiple >= 0 ? '+' : ''}${r.rMultiple.toFixed(2)}R` : ''}
+            ${t.notes ? ' · ' + t.notes.slice(0, 40) + (t.notes.length > 40 ? '…' : '') : ''}
+          </div>
+        </div>
+        <div class="pnl">
+          <div class="amount ${cls}">${fmtUSD(r.net)}</div>
+          <div class="pct ${cls}">${fmtPct(r.pct)}</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function openJournalModal(id) {
+  const t = id ? state.trades.find(x => x.id === id) : { ticker:'', dir:'long', qty:'', entry:'', exit:'', openDate:todayISO(), closeDate:todayISO(), fees:0, notes:'', plannedR:null };
+  const isEdit = !!id;
+  showModal(`
+    <h3>${isEdit ? '✏️ แก้ไข Trade' : '➕ บันทึก Trade'}</h3>
+    <div class="field-row">
+      <div class="field">
+        <label>Ticker</label>
+        <input id="jmTicker" class="mono" style="text-transform:uppercase" value="${t.ticker}">
+      </div>
+      <div class="field">
+        <label>Direction</label>
+        <select id="jmDir">
+          <option value="long" ${t.dir==='long'?'selected':''}>📈 Long</option>
+          <option value="short" ${t.dir==='short'?'selected':''}>📉 Short</option>
+        </select>
+      </div>
+    </div>
+    <div class="field-row-3">
+      <div class="field">
+        <label>Qty</label>
+        <input id="jmQty" type="number" class="mono" step="1" inputmode="numeric" value="${t.qty}">
+      </div>
+      <div class="field">
+        <label>Entry</label>
+        <div class="input-prefix"><span>$</span><input id="jmEntry" type="number" class="mono" step="0.01" inputmode="decimal" value="${t.entry}"></div>
+      </div>
+      <div class="field">
+        <label>Exit</label>
+        <div class="input-prefix"><span>$</span><input id="jmExit" type="number" class="mono" step="0.01" inputmode="decimal" value="${t.exit}"></div>
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>Open Date</label>
+        <input id="jmOpen" type="date" value="${t.openDate || todayISO()}">
+      </div>
+      <div class="field">
+        <label>Close Date</label>
+        <input id="jmClose" type="date" value="${t.closeDate || todayISO()}">
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>Fees</label>
+        <div class="input-prefix"><span>$</span><input id="jmFees" type="number" class="mono" step="0.01" inputmode="decimal" value="${t.fees || 0}"></div>
+      </div>
+      <div class="field">
+        <label>Planned R <span class="hint">($ risk)</span></label>
+        <div class="input-prefix"><span>$</span><input id="jmR" type="number" class="mono" step="0.01" inputmode="decimal" value="${t.plannedR ?? ''}"></div>
+      </div>
+    </div>
+    <div class="field">
+      <label>Notes</label>
+      <textarea id="jmNotes" placeholder="setup, mistakes, lessons...">${t.notes || ''}</textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost btn-block" onclick="closeModal()">ยกเลิก</button>
+      ${isEdit ? `<button class="btn btn-danger btn-block" onclick="deleteTrade('${id}')">ลบ</button>` : ''}
+      <button class="btn btn-primary btn-block" onclick="saveTrade('${id || ''}')">บันทึก</button>
+    </div>
+  `);
+}
+
+function saveTrade(id) {
+  const ticker = document.getElementById('jmTicker').value.trim().toUpperCase();
+  const qty = parseFloat(document.getElementById('jmQty').value);
+  const entry = parseFloat(document.getElementById('jmEntry').value);
+  const exit = parseFloat(document.getElementById('jmExit').value);
+  if (!ticker || !qty || !entry || !exit) { showToast('กรอก ticker, qty, entry, exit'); return; }
+  const data = {
+    ticker, qty, entry, exit,
+    dir: document.getElementById('jmDir').value,
+    openDate: document.getElementById('jmOpen').value || todayISO(),
+    closeDate: document.getElementById('jmClose').value || todayISO(),
+    fees: parseFloat(document.getElementById('jmFees').value) || 0,
+    plannedR: parseFloat(document.getElementById('jmR').value) || null,
+    notes: document.getElementById('jmNotes').value.trim(),
+  };
+  if (id) {
+    const idx = state.trades.findIndex(t => t.id === id);
+    if (idx >= 0) state.trades[idx] = { ...state.trades[idx], ...data };
+  } else {
+    state.trades.push({ id: uid(), ...data });
+  }
+  saveState(); closeModal(); renderJournal();
+  showToast('✅ บันทึกแล้ว');
+}
+
+function deleteTrade(id) {
+  if (!confirm('ลบ trade นี้?')) return;
+  state.trades = state.trades.filter(t => t.id !== id);
+  saveState(); closeModal(); renderJournal();
+  showToast('🗑️ ลบแล้ว');
+}
+
+// ============================================================
+// STATS
+// ============================================================
+function renderStats() {
+  const trades = [...state.trades].sort((a, b) => (a.closeDate || '').localeCompare(b.closeDate || ''));
+  const account = state.settings.accountSize;
+
+  if (!trades.length) {
+    document.getElementById('statTotalPnl').textContent = '$0';
+    document.getElementById('statTotalPct').textContent = '0.00%';
+    document.getElementById('statWinRate').textContent = '—';
+    document.getElementById('statTrades').textContent = '0 trades';
+    document.getElementById('statAvgRR').textContent = '—';
+    document.getElementById('statExpectancy').textContent = 'Exp: —';
+    document.getElementById('statMaxDD').textContent = '$0';
+    document.getElementById('statMaxDDPct').textContent = '0.00%';
+    document.getElementById('byTickerList').innerHTML = `<div class="empty"><div class="text">ยังไม่มี trade ที่ปิด</div></div>`;
+    drawEquityChart([], []);
+    return;
+  }
+
+  let totalPnl = 0, wins = 0, losses = 0, winSum = 0, lossSum = 0;
+  let rSum = 0, rCount = 0;
+  const equity = [account];
+  const labels = ['Start'];
+  let peak = account, maxDD = 0, maxDDPct = 0;
+
+  trades.forEach(t => {
+    const r = tradePnL(t);
+    totalPnl += r.net;
+    if (r.net > 0) { wins++; winSum += r.net; } else { losses++; lossSum += Math.abs(r.net); }
+    if (r.rMultiple != null) { rSum += r.rMultiple; rCount++; }
+    const eq = account + totalPnl;
+    equity.push(eq);
+    labels.push(fmtDate(t.closeDate));
+    if (eq > peak) peak = eq;
+    const dd = peak - eq;
+    if (dd > maxDD) { maxDD = dd; maxDDPct = peak > 0 ? (dd / peak) * 100 : 0; }
+  });
+
+  const winRate = trades.length > 0 ? (wins / trades.length) * 100 : 0;
+  const avgWin = wins > 0 ? winSum / wins : 0;
+  const avgLoss = losses > 0 ? lossSum / losses : 0;
+  const expectancy = (winRate / 100) * avgWin - ((100 - winRate) / 100) * avgLoss;
+  const avgR = rCount > 0 ? rSum / rCount : null;
+
+  const totalPnlEl = document.getElementById('statTotalPnl');
+  totalPnlEl.textContent = fmtUSD(totalPnl);
+  totalPnlEl.className = 'value mono ' + (totalPnl >= 0 ? 'pos' : 'neg');
+  document.getElementById('statTotalPct').textContent = fmtPct((totalPnl / account) * 100) + ' of account';
+  document.getElementById('statWinRate').textContent = winRate.toFixed(0) + '%';
+  document.getElementById('statTrades').textContent = `${wins}W / ${losses}L (${trades.length})`;
+  document.getElementById('statAvgRR').textContent = avgR != null ? (avgR >= 0 ? '+' : '') + avgR.toFixed(2) + 'R' : '—';
+  document.getElementById('statExpectancy').textContent = 'Exp: ' + fmtUSD(expectancy);
+  document.getElementById('statMaxDD').textContent = fmtUSD(-maxDD);
+  document.getElementById('statMaxDD').className = 'value mono neg';
+  document.getElementById('statMaxDDPct').textContent = '-' + maxDDPct.toFixed(2) + '% peak';
+
+  // By ticker
+  const byT = {};
+  trades.forEach(t => {
+    if (!byT[t.ticker]) byT[t.ticker] = { count: 0, pnl: 0, wins: 0 };
+    const r = tradePnL(t);
+    byT[t.ticker].count++;
+    byT[t.ticker].pnl += r.net;
+    if (r.net > 0) byT[t.ticker].wins++;
+  });
+  const tickers = Object.entries(byT).sort((a, b) => b[1].pnl - a[1].pnl);
+  document.getElementById('byTickerList').innerHTML = tickers.map(([sym, s]) => {
+    const wr = (s.wins / s.count * 100).toFixed(0);
+    const cls = s.pnl >= 0 ? 'pos' : 'neg';
+    return `
+      <div class="item">
+        <div class="ticker">${sym}</div>
+        <div class="main">
+          <div class="line1">${s.count} trades · ${wr}% WR</div>
+          <div class="line2">${s.wins}W / ${s.count - s.wins}L</div>
+        </div>
+        <div class="pnl"><div class="amount ${cls}">${fmtUSD(s.pnl)}</div></div>
+      </div>
+    `;
+  }).join('');
+
+  drawEquityChart(labels, equity);
+}
+
+function drawEquityChart(labels, data) {
+  const ctx = document.getElementById('equityChart');
+  if (!ctx) return;
+  if (equityChart) equityChart.destroy();
+  if (!data.length) data = [state.settings.accountSize];
+  if (!labels.length) labels = ['Start'];
+  const last = data[data.length - 1];
+  const start = data[0];
+  const positive = last >= start;
+  const color = positive ? '#059669' : '#dc2626';
+  const bgGrad = ctx.getContext('2d').createLinearGradient(0, 0, 0, 240);
+  bgGrad.addColorStop(0, color + '40');
+  bgGrad.addColorStop(1, color + '00');
+  equityChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Equity',
+        data,
+        borderColor: color,
+        backgroundColor: bgGrad,
+        fill: true,
+        tension: 0.25,
+        pointRadius: 0,
+        pointHoverRadius: 5,
+        borderWidth: 2.5,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: { legend: { display: false }, tooltip: {
+        callbacks: { label: c => 'Equity: ' + fmtUSD(c.parsed.y) }
+      }},
+      scales: {
+        y: { ticks: { callback: v => '$' + (v / 1000).toFixed(1) + 'k', font: { family: 'JetBrains Mono' } }, grid: { color: '#f1f5f9' } },
+        x: { ticks: { maxTicksLimit: 6, font: { size: 10 } }, grid: { display: false } }
+      }
+    }
+  });
+}
+
+// ============================================================
+// SETTINGS / DATA
+// ============================================================
+function openSettings() {
+  const s = state.settings;
+  showModal(`
+    <h3>⚙️ ตั้งค่า</h3>
+    <div class="field">
+      <label>Account Size</label>
+      <div class="input-prefix"><span>$</span><input id="sAcc" type="number" class="mono" step="100" value="${s.accountSize}"></div>
+    </div>
+    <div class="field">
+      <label>Default Risk %</label>
+      <div class="input-suffix"><input id="sRisk" type="number" class="mono" step="0.1" value="${s.defaultRiskPct}"><span>%</span></div>
+    </div>
+    <div class="field">
+      <label>📡 Finnhub API Key <span class="hint">(สำหรับ real-time prices)</span></label>
+      <input id="sKey" class="mono" placeholder="ใส่ key หรือเว้นไว้ถ้าไม่ใช้" value="${s.finnhubKey || ''}" autocomplete="off">
+      <div style="font-size:12px;color:var(--text2);margin-top:6px;line-height:1.5">
+        ฟรี 60 calls/min — สมัครที่ <a href="https://finnhub.io/register" target="_blank" rel="noopener" style="color:var(--accent);font-weight:600">finnhub.io/register</a> (ไม่ใช้บัตรเครดิต) แล้ว copy API Key มาวางที่นี่<br>
+        <span class="muted">หมายเหตุ: ราคาเป็น real-time สำหรับ US stocks ในตลาดเวลาเปิดทำการ (delay เล็กน้อยนอกเวลา)</span>
+      </div>
+    </div>
+    <div class="field">
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+        <input id="sAuto" type="checkbox" ${s.autoRefresh ? 'checked' : ''} style="width:auto">
+        <span>Auto-refresh เมื่อเปิดแท็บ Portfolio</span>
+      </label>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost btn-block" onclick="closeModal()">ยกเลิก</button>
+      <button class="btn btn-primary btn-block" onclick="saveSettings()">บันทึก</button>
+    </div>
+  `);
+}
+
+function saveSettings() {
+  const acc = parseFloat(document.getElementById('sAcc').value);
+  const risk = parseFloat(document.getElementById('sRisk').value);
+  if (!acc || acc <= 0) { showToast('Account size ต้อง > 0'); return; }
+  state.settings.accountSize = acc;
+  state.settings.defaultRiskPct = risk || 1;
+  state.settings.finnhubKey = document.getElementById('sKey').value.trim();
+  state.settings.autoRefresh = document.getElementById('sAuto').checked;
+  saveState(); closeModal(); updateHeader();
+  document.getElementById('calcRiskPct').value = state.settings.defaultRiskPct;
+  showToast('✅ บันทึกแล้ว');
+}
+
+function updateHeader() {
+  document.getElementById('headerAccount').textContent = fmtUSD(state.settings.accountSize, 0);
+}
+
+function exportData() {
+  const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `trading-helper-${todayISO()}.json`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+  showToast('✅ Export แล้ว');
+}
+
+function importData(ev) {
+  const file = ev.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (!data.settings || !Array.isArray(data.trades)) throw new Error('invalid');
+      if (!confirm('นำเข้าข้อมูลจะแทนที่ข้อมูลเดิม ดำเนินการต่อ?')) return;
+      state = { ...structuredClone(DEFAULT_STATE), ...data };
+      saveState(); updateHeader(); renderAll();
+      showToast('✅ Import สำเร็จ');
+    } catch (err) { showToast('❌ ไฟล์ไม่ถูกต้อง'); }
+  };
+  reader.readAsText(file);
+  ev.target.value = '';
+}
+
+function confirmReset() {
+  if (!confirm('ล้างข้อมูลทั้งหมด (positions, trades, watchlist, settings)?')) return;
+  if (!confirm('แน่ใจ? การกระทำนี้ย้อนกลับไม่ได้')) return;
+  state = structuredClone(DEFAULT_STATE);
+  saveState(); updateHeader(); renderAll();
+  showToast('🗑️ ล้างข้อมูลแล้ว');
+}
+
+function renderAll() {
+  renderPositions(); renderWatchlist(); renderJournal(); renderStats();
+}
+
+// ============================================================
+// MODAL / TOAST
+// ============================================================
+function showModal(html) {
+  document.getElementById('modalContent').innerHTML = html;
+  document.getElementById('modalOverlay').classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('show');
+  document.body.style.overflow = '';
+}
+let toastTimer;
+function showToast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 2200);
+}
+
+// ============================================================
+// INIT
+// ============================================================
+document.getElementById('calcRiskPct').value = state.settings.defaultRiskPct;
+updateHeader();
+renderAll();
+</script>
+</body>
+</html>
