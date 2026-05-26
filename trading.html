@@ -37,6 +37,19 @@
   --shadow: 0 1px 3px rgba(15,23,42,0.06), 0 4px 16px rgba(15,23,42,0.05);
   --shadow-lg: 0 4px 24px rgba(15,23,42,0.10), 0 12px 48px rgba(15,23,42,0.08);
 }
+.live-dot { display: inline-block; width: 7px; height: 7px; background: var(--green); border-radius: 50%; margin-right: 5px; animation: pulse 1.6s ease-in-out infinite; vertical-align: middle; }
+.live-dot.stale { background: var(--text3); animation: none; }
+@keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(0.85); } }
+.refresh-bar { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 12px; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius-sm); margin-bottom: 10px; font-size: 12px; color: var(--text2); }
+.refresh-bar .left { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.refresh-bar .ts { font-family: 'JetBrains Mono', monospace; font-weight: 600; color: var(--text); }
+.refresh-bar button { padding: 6px 12px; font-size: 12px; }
+.refresh-bar button.spin span { display: inline-block; animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.item .live-price { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--text); }
+.item .live-change { font-family: 'JetBrains Mono', monospace; font-size: 11px; margin-top: 1px; }
+.target-hit { background: linear-gradient(135deg, #fffbeb, #fef3c7) !important; border-color: #fbbf24 !important; }
+.target-hit::before { content: '🔔 '; font-size: 14px; }
 * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 html, body { font-family: 'Sarabun', -apple-system, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
 body { padding-bottom: calc(76px + env(safe-area-inset-bottom)); font-size: 15px; line-height: 1.55; }
@@ -436,12 +449,26 @@ body { padding-bottom: calc(76px + env(safe-area-inset-bottom)); font-size: 15px
           <div class="sub" id="openCount">0 positions</div>
         </div>
       </div>
+      <div class="refresh-bar" id="posRefreshBar">
+        <div class="left">
+          <span class="live-dot stale" id="posLiveDot"></span>
+          <span>Last: <span class="ts" id="posLastTs">never</span></span>
+        </div>
+        <button class="btn btn-sm" id="posRefreshBtn" onclick="refreshPrices('positions')"><span>🔄</span> Refresh</button>
+      </div>
       <button class="btn btn-primary btn-block" onclick="openPositionModal()">➕ เพิ่ม Position</button>
       <div id="positionsList" style="margin-top:14px"></div>
     </div>
 
     <div class="card">
       <h2><span class="icon">👁️</span> Watchlist</h2>
+      <div class="refresh-bar" id="watchRefreshBar">
+        <div class="left">
+          <span class="live-dot stale" id="watchLiveDot"></span>
+          <span>Last: <span class="ts" id="watchLastTs">never</span></span>
+        </div>
+        <button class="btn btn-sm" id="watchRefreshBtn" onclick="refreshPrices('watchlist')"><span>🔄</span> Refresh</button>
+      </div>
       <button class="btn btn-primary btn-block" onclick="openWatchModal()">➕ เพิ่มหุ้น</button>
       <div id="watchlistList" style="margin-top:14px"></div>
     </div>
@@ -545,10 +572,12 @@ body { padding-bottom: calc(76px + env(safe-area-inset-bottom)); font-size: 15px
 // ============================================================
 const LS_KEY = 'trading_helper_v1';
 const DEFAULT_STATE = {
-  settings: { accountSize: 10000, defaultRiskPct: 1, currency: 'USD' },
+  settings: { accountSize: 10000, defaultRiskPct: 1, currency: 'USD', finnhubKey: '', autoRefresh: true },
   positions: [],   // open: {id, ticker, dir, qty, entry, stop, target, openDate, currentPrice, notes}
   trades: [],      // closed: {id, ticker, dir, qty, entry, exit, openDate, closeDate, fees, notes, plannedR}
   watchlist: [],   // {id, ticker, targetBuy, targetSell, notes, addedAt}
+  livePrices: {},  // { TICKER: { price, change, changePct, prevClose, ts } }
+  lastRefresh: { positions: null, watchlist: null }
 };
 
 let state = loadState();
@@ -600,10 +629,119 @@ function switchView(v) {
   document.getElementById('view-' + v).classList.add('active');
   document.querySelectorAll('.bottom-nav button').forEach(b => b.classList.toggle('active', b.dataset.view === v));
   window.scrollTo({ top: 0, behavior: 'smooth' });
-  if (v === 'portfolio') { renderPositions(); renderWatchlist(); }
+  if (v === 'portfolio') {
+    renderPositions(); renderWatchlist();
+    if (state.settings.autoRefresh && state.settings.finnhubKey && shouldAutoRefresh()) {
+      refreshPrices('all');
+    }
+  }
   if (v === 'journal') renderJournal();
   if (v === 'stats') renderStats();
 }
+
+function shouldAutoRefresh() {
+  const last = Math.max(state.lastRefresh.positions || 0, state.lastRefresh.watchlist || 0);
+  return Date.now() - last > 60_000; // refresh if older than 60s
+}
+
+// ============================================================
+// LIVE PRICES (Finnhub)
+// ============================================================
+async function fetchQuote(symbol) {
+  const key = state.settings.finnhubKey;
+  if (!key) throw new Error('NO_KEY');
+  const url = `https://finnhub.io/api/v1/quote?symbol=${encodeURIComponent(symbol)}&token=${encodeURIComponent(key)}`;
+  const res = await fetch(url);
+  if (res.status === 401 || res.status === 403) throw new Error('BAD_KEY');
+  if (res.status === 429) throw new Error('RATE_LIMIT');
+  if (!res.ok) throw new Error('HTTP_' + res.status);
+  const d = await res.json();
+  if (d.c == null || d.c === 0) throw new Error('NO_DATA');
+  return { price: d.c, change: d.d, changePct: d.dp, prevClose: d.pc, ts: Date.now() };
+}
+
+let refreshing = false;
+async function refreshPrices(scope) {
+  if (refreshing) return;
+  if (!state.settings.finnhubKey) {
+    showToast('⚠️ ต้องตั้งค่า Finnhub API key ก่อน');
+    openSettings();
+    return;
+  }
+  refreshing = true;
+  const symbols = new Set();
+  if (scope === 'positions' || scope === 'all') state.positions.forEach(p => symbols.add(p.ticker));
+  if (scope === 'watchlist' || scope === 'all') state.watchlist.forEach(w => symbols.add(w.ticker));
+  if (!symbols.size) {
+    refreshing = false;
+    showToast('ไม่มี ticker ให้ refresh');
+    return;
+  }
+  setRefreshSpinning(true);
+  let ok = 0, errors = [];
+  for (const sym of symbols) {
+    try {
+      const q = await fetchQuote(sym);
+      state.livePrices[sym] = q;
+      ok++;
+    } catch (e) {
+      errors.push({ sym, code: e.message });
+      if (e.message === 'BAD_KEY' || e.message === 'RATE_LIMIT') break;
+    }
+  }
+  const now = Date.now();
+  if (scope === 'positions' || scope === 'all') state.lastRefresh.positions = now;
+  if (scope === 'watchlist' || scope === 'all') state.lastRefresh.watchlist = now;
+  // sync currentPrice on open positions to live price
+  state.positions.forEach(p => {
+    const lp = state.livePrices[p.ticker];
+    if (lp) p.currentPrice = lp.price;
+  });
+  saveState();
+  renderPositions(); renderWatchlist();
+  setRefreshSpinning(false);
+  refreshing = false;
+  if (errors.length) {
+    const first = errors[0];
+    if (first.code === 'BAD_KEY') showToast('❌ API key ไม่ถูกต้อง');
+    else if (first.code === 'RATE_LIMIT') showToast('⚠️ เกินโควต้า (60/min) — รอสักครู่');
+    else showToast(`⚠️ Refresh ${ok}/${symbols.size} (error: ${errors.map(e=>e.sym).join(', ')})`);
+  } else {
+    showToast(`✅ Refreshed ${ok} symbols`);
+  }
+}
+
+function setRefreshSpinning(on) {
+  ['posRefreshBtn', 'watchRefreshBtn'].forEach(id => {
+    const b = document.getElementById(id);
+    if (b) b.classList.toggle('spin', on);
+  });
+}
+
+function fmtAgo(ts) {
+  if (!ts) return 'never';
+  const sec = Math.floor((Date.now() - ts) / 1000);
+  if (sec < 5) return 'just now';
+  if (sec < 60) return sec + 's ago';
+  if (sec < 3600) return Math.floor(sec / 60) + 'm ago';
+  if (sec < 86400) return Math.floor(sec / 3600) + 'h ago';
+  return Math.floor(sec / 86400) + 'd ago';
+}
+
+function updateRefreshBars() {
+  const pTs = state.lastRefresh.positions;
+  const wTs = state.lastRefresh.watchlist;
+  const pEl = document.getElementById('posLastTs');
+  const wEl = document.getElementById('watchLastTs');
+  if (pEl) pEl.textContent = fmtAgo(pTs);
+  if (wEl) wEl.textContent = fmtAgo(wTs);
+  const fresh = (ts) => ts && (Date.now() - ts < 5 * 60_000);
+  const pd = document.getElementById('posLiveDot');
+  const wd = document.getElementById('watchLiveDot');
+  if (pd) pd.classList.toggle('stale', !fresh(pTs));
+  if (wd) wd.classList.toggle('stale', !fresh(wTs));
+}
+setInterval(updateRefreshBars, 5000);
 
 // ============================================================
 // CALCULATOR
@@ -726,6 +864,7 @@ function pnlOf(pos) {
 }
 
 function renderPositions() {
+  updateRefreshBars();
   const list = document.getElementById('positionsList');
   if (!state.positions.length) {
     list.innerHTML = `<div class="empty"><div class="icon">💼</div><div class="text">ยังไม่มี position เปิดอยู่</div></div>`;
@@ -742,6 +881,11 @@ function renderPositions() {
     totalPnl += r.pnl;
     totalInvested += r.invested;
     const cls = r.pnl >= 0 ? 'pos' : 'neg';
+    const lp = state.livePrices[p.ticker];
+    const curPrice = lp ? lp.price : (r.current / p.qty);
+    const dayChange = lp ? lp.changePct : null;
+    const dayCls = dayChange == null ? '' : (dayChange >= 0 ? 'pos' : 'neg');
+    const liveBadge = lp ? `<span class="live-dot" title="live"></span>` : '';
     return `
       <div class="item">
         <div class="ticker">${p.ticker}</div>
@@ -751,7 +895,8 @@ function renderPositions() {
             ${p.qty.toLocaleString()} × ${fmtUSD(p.entry)}
           </div>
           <div class="line2">
-            Current: <span class="mono">${fmtUSD(r.current / p.qty)}</span>
+            ${liveBadge}<span class="live-price">${fmtUSD(curPrice)}</span>
+            ${dayChange != null ? `<span class="live-change ${dayCls}"> ${fmtPct(dayChange)} today</span>` : ''}
             ${p.stop ? ` · Stop: <span class="mono">${fmtUSD(p.stop)}</span>` : ''}
             ${p.target ? ` · TP: <span class="mono">${fmtUSD(p.target)}</span>` : ''}
           </div>
@@ -930,29 +1075,44 @@ function confirmClosePosition(id) {
 // WATCHLIST
 // ============================================================
 function renderWatchlist() {
+  updateRefreshBars();
   const list = document.getElementById('watchlistList');
   if (!state.watchlist.length) {
     list.innerHTML = `<div class="empty"><div class="icon">👁️</div><div class="text">ยังไม่มีหุ้นใน watchlist</div></div>`;
     return;
   }
-  list.innerHTML = state.watchlist.map(w => `
-    <div class="item">
-      <div class="ticker">${w.ticker}</div>
-      <div class="main">
-        <div class="line1">${w.notes || '<span class="muted">(no notes)</span>'}</div>
-        <div class="line2">
-          ${w.targetBuy ? `Buy ≤ <span class="mono pos">${fmtUSD(w.targetBuy)}</span>` : ''}
-          ${w.targetBuy && w.targetSell ? ' · ' : ''}
-          ${w.targetSell ? `Sell ≥ <span class="mono neg">${fmtUSD(w.targetSell)}</span>` : ''}
-          ${!w.targetBuy && !w.targetSell ? '<span class="muted">no targets</span>' : ''}
+  list.innerHTML = state.watchlist.map(w => {
+    const lp = state.livePrices[w.ticker];
+    const cur = lp ? lp.price : null;
+    const dayChange = lp ? lp.changePct : null;
+    const dayCls = dayChange == null ? '' : (dayChange >= 0 ? 'pos' : 'neg');
+    const hitBuy = cur != null && w.targetBuy && cur <= w.targetBuy;
+    const hitSell = cur != null && w.targetSell && cur >= w.targetSell;
+    const hitCls = (hitBuy || hitSell) ? 'target-hit' : '';
+    const livePriceHTML = lp
+      ? `<span class="live-dot"></span><span class="live-price">${fmtUSD(cur)}</span>${dayChange != null ? ` <span class="live-change ${dayCls}">${fmtPct(dayChange)}</span>` : ''}`
+      : `<span class="live-dot stale"></span><span class="muted">no price yet</span>`;
+    const targetsHTML = [
+      w.targetBuy ? `Buy ≤ <span class="mono ${hitBuy ? 'pos' : ''}">${fmtUSD(w.targetBuy)}</span>${cur != null ? ` <span class="muted">(${(((cur - w.targetBuy) / w.targetBuy) * 100).toFixed(1)}%)</span>` : ''}` : '',
+      w.targetSell ? `Sell ≥ <span class="mono ${hitSell ? 'neg' : ''}">${fmtUSD(w.targetSell)}</span>${cur != null ? ` <span class="muted">(${(((cur - w.targetSell) / w.targetSell) * 100).toFixed(1)}%)</span>` : ''}` : ''
+    ].filter(Boolean).join(' · ');
+    return `
+      <div class="item ${hitCls}">
+        <div class="ticker">${w.ticker}</div>
+        <div class="main">
+          <div class="line1">${livePriceHTML}</div>
+          <div class="line2">
+            ${targetsHTML || '<span class="muted">no targets</span>'}
+            ${w.notes ? ` · ${w.notes.slice(0, 50)}${w.notes.length > 50 ? '…' : ''}` : ''}
+          </div>
+        </div>
+        <div class="actions" style="flex-direction:column">
+          <button class="btn btn-sm btn-icon" onclick="editWatch('${w.id}')">✏️</button>
+          <button class="btn btn-sm btn-icon" onclick="deleteWatch('${w.id}')">🗑️</button>
         </div>
       </div>
-      <div class="actions" style="flex-direction:column">
-        <button class="btn btn-sm btn-icon" onclick="editWatch('${w.id}')">✏️</button>
-        <button class="btn btn-sm btn-icon" onclick="deleteWatch('${w.id}')">🗑️</button>
-      </div>
-    </div>
-  `).join('');
+    `;
+  }).join('');
 }
 
 function openWatchModal(existing) {
@@ -1311,6 +1471,20 @@ function openSettings() {
       <label>Default Risk %</label>
       <div class="input-suffix"><input id="sRisk" type="number" class="mono" step="0.1" value="${s.defaultRiskPct}"><span>%</span></div>
     </div>
+    <div class="field">
+      <label>📡 Finnhub API Key <span class="hint">(สำหรับ real-time prices)</span></label>
+      <input id="sKey" class="mono" placeholder="ใส่ key หรือเว้นไว้ถ้าไม่ใช้" value="${s.finnhubKey || ''}" autocomplete="off">
+      <div style="font-size:12px;color:var(--text2);margin-top:6px;line-height:1.5">
+        ฟรี 60 calls/min — สมัครที่ <a href="https://finnhub.io/register" target="_blank" rel="noopener" style="color:var(--accent);font-weight:600">finnhub.io/register</a> (ไม่ใช้บัตรเครดิต) แล้ว copy API Key มาวางที่นี่<br>
+        <span class="muted">หมายเหตุ: ราคาเป็น real-time สำหรับ US stocks ในตลาดเวลาเปิดทำการ (delay เล็กน้อยนอกเวลา)</span>
+      </div>
+    </div>
+    <div class="field">
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+        <input id="sAuto" type="checkbox" ${s.autoRefresh ? 'checked' : ''} style="width:auto">
+        <span>Auto-refresh เมื่อเปิดแท็บ Portfolio</span>
+      </label>
+    </div>
     <div class="modal-actions">
       <button class="btn btn-ghost btn-block" onclick="closeModal()">ยกเลิก</button>
       <button class="btn btn-primary btn-block" onclick="saveSettings()">บันทึก</button>
@@ -1324,6 +1498,8 @@ function saveSettings() {
   if (!acc || acc <= 0) { showToast('Account size ต้อง > 0'); return; }
   state.settings.accountSize = acc;
   state.settings.defaultRiskPct = risk || 1;
+  state.settings.finnhubKey = document.getElementById('sKey').value.trim();
+  state.settings.autoRefresh = document.getElementById('sAuto').checked;
   saveState(); closeModal(); updateHeader();
   document.getElementById('calcRiskPct').value = state.settings.defaultRiskPct;
   showToast('✅ บันทึกแล้ว');
