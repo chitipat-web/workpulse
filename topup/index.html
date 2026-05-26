@@ -1486,7 +1486,14 @@ async function submitOrder() {
     });
   } catch(e) {
     console.warn("Firestore save failed:", e);
-    alert("Network error. Please try again.");
+    const code = e.code || "";
+    let msg;
+    if (code === "permission-denied") {
+      msg = "⚠️ ระบบยังไม่พร้อม - กรุณาติดต่อแอดมิน\n(Firestore rules ต้องอนุญาตให้เขียน collection topup_orders)";
+    } else {
+      msg = "เกิดข้อผิดพลาด กรุณาลองใหม่: " + (e.message || e);
+    }
+    alert(msg);
     submitBtn.disabled = false;
     submitBtn.textContent = origLabel;
     return;
