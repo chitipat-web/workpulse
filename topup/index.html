@@ -155,7 +155,7 @@ body {
 .carrier-name { font-size: 13px; font-weight: 600; line-height: 1.2; }
 .carrier-desc { font-size: 11px; color: var(--text-3); }
 
-.amounts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.amounts { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
 .amount {
   border: 1.5px solid var(--border);
   background: var(--surface-2);
@@ -170,7 +170,43 @@ body {
   background: var(--primary);
   color: #fff;
 }
-.amount-baht { font-size: 11px; font-weight: 500; opacity: 0.7; display: block; margin-top: 2px; }
+.package {
+  border: 1.5px solid var(--border);
+  background: var(--surface-2);
+  padding: 12px 10px;
+  border-radius: 12px;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.12s;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 100px;
+}
+.package:hover { border-color: var(--primary); }
+.package.selected {
+  border-color: var(--primary);
+  background: var(--primary-light);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+.pkg-gb {
+  font-size: 24px; font-weight: 800;
+  color: var(--text);
+  line-height: 1; direction: ltr;
+}
+.pkg-unit { font-size: 12px; font-weight: 600; margin-inline-start: 2px; opacity: 0.7; }
+.pkg-days { font-size: 11px; color: var(--text-2); margin-top: 4px; }
+.pkg-tags { font-size: 10px; color: var(--text-3); margin-top: 3px; line-height: 1.3; }
+.pkg-price {
+  font-size: 17px; font-weight: 800;
+  color: var(--primary);
+  margin-top: 6px;
+  border-top: 1px dashed var(--border);
+  padding-top: 6px;
+  direction: ltr;
+}
+.package.selected .pkg-price { color: var(--primary-dark, var(--primary)); }
 
 .custom-amount {
   margin-top: 10px;
@@ -590,6 +626,7 @@ textarea { resize: vertical; min-height: 70px; }
       <div class="summary" id="summary">
         <div class="summary-row"><span class="label" data-i18n="sum_carrier">ค่าย</span><span class="value" id="sum-carrier">—</span></div>
         <div class="summary-row"><span class="label" data-i18n="sum_phone">เบอร์</span><span class="value" id="sum-phone">—</span></div>
+        <div class="summary-row"><span class="label" data-i18n="sum_package">แพ็กเกจ</span><span class="value" id="sum-package">—</span></div>
         <div class="summary-row"><span class="label" data-i18n="sum_payment">ชำระโดย</span><span class="value" id="sum-payment">—</span></div>
         <div class="summary-row summary-total"><span class="label" data-i18n="sum_total">ยอดรวม</span><span class="value" id="sum-total">₪ 0</span></div>
       </div>
@@ -735,6 +772,16 @@ const I18N = {
     slip_required: "กรุณาแนบสลิปการโอนเงินก่อนส่งคำสั่งซื้อ",
     sending: "กำลังส่ง...",
     transfer_first: "กรุณาโอนเงินก่อน แล้วแนบสลิปด้านล่าง",
+    select_carrier_first: "👆 กรุณาเลือกค่ายมือถือก่อน",
+    custom_only: "ค่ายนี้ยังไม่มีแพ็กเกจในระบบ กรอกราคาเองด้านล่าง",
+    days_word: "วัน",
+    unlimited_short: "พูดไม่อั้น",
+    intl_short: "ต่างประเทศ",
+    tag_starter: "เริ่มต้น",
+    tag_kosher: "Kosher",
+    tag_5g: "5G",
+    custom_amount_ph: "หรือกรอกราคาเอง (₪)",
+    sum_package: "แพ็กเกจ",
     bank_title: "รายละเอียดการโอน",
     bit_text: "โอนผ่านแอป Bit ไปยังเบอร์",
     paybox_text: "โอนผ่าน PayBox ไปยังเบอร์",
@@ -821,6 +868,16 @@ const I18N = {
     slip_required: "אנא צרף את הקבלה לפני שליחת ההזמנה",
     sending: "שולח...",
     transfer_first: "בצע את התשלום וצרף את הקבלה למטה",
+    select_carrier_first: "👆 בחר חברה תחילה",
+    custom_only: "אין חבילות במערכת לחברה זו - הזן סכום למטה",
+    days_word: "ימים",
+    unlimited_short: "ללא הגבלה",
+    intl_short: "לחו״ל",
+    tag_starter: "מתחילים",
+    tag_kosher: "כשר",
+    tag_5g: "5G",
+    custom_amount_ph: "או הזן סכום אחר (₪)",
+    sum_package: "חבילה",
     bank_title: "פרטי תשלום",
     bit_text: "העבר ב-Bit למספר",
     paybox_text: "העבר ב-PayBox למספר",
@@ -907,6 +964,16 @@ const I18N = {
     slip_required: "Please attach the payment receipt before submitting",
     sending: "Sending...",
     transfer_first: "Make the payment and attach the receipt below",
+    select_carrier_first: "👆 Please select a carrier first",
+    custom_only: "No packages in system for this carrier - enter a custom amount below",
+    days_word: "days",
+    unlimited_short: "Unlimited",
+    intl_short: "intl",
+    tag_starter: "Starter",
+    tag_kosher: "Kosher",
+    tag_5g: "5G",
+    custom_amount_ph: "Or enter a custom amount (₪)",
+    sum_package: "Package",
     bank_title: "Payment details",
     bit_text: "Transfer via Bit to",
     paybox_text: "Transfer via PayBox to",
@@ -951,6 +1018,59 @@ const CARRIERS = [
 ];
 
 const AMOUNTS = [20, 30, 50, 75, 100, 150, 200, 250, 300];
+
+// Per-carrier prepaid packages. Prices/packages from carrier websites (May 2026).
+// Customer is shown the carrier's packages after selecting a carrier; price may vary.
+const PACKAGES = {
+  bigtalk: [
+    { id: "bt-30",  gb: 350,  price: 30,  days: 30, unl: true },
+    { id: "bt-80",  gb: 550,  price: 80,  days: 30, unl: true, intl: 80 },
+    { id: "bt-150", gb: 1000, price: 150, days: 30, unl: true, intl: 150 }
+  ],
+  talkgo: [
+    { id: "tg-30", gb: 225,  price: 30, days: 30, unl: true, intl: 30 },
+    { id: "tg-50", gb: 500,  price: 50, days: 30, unl: true, intl: 50 },
+    { id: "tg-70", gb: 1000, price: 70, days: 30, unl: true, intl: 70 }
+  ],
+  tokman: [
+    { id: "tk-49", gb: 3,    price: 49, days: 7,  unl: true, tag: "starter" },
+    { id: "tk-69", gb: 350,  price: 69, days: 30, unl: true },
+    { id: "tk-79", gb: 400,  price: 79, days: 30, unl: true, intl: 50 },
+    { id: "tk-99", gb: 500,  price: 99, days: 30, unl: true }
+  ],
+  "012": [
+    { id: "12-79", gb: 54,  price: 79, days: 30, unl: true },
+    { id: "12-85", gb: 150, price: 85, days: 30, unl: true },
+    { id: "12-95", gb: 75,  price: 95, days: 30, unl: true, intl: 50 }
+  ],
+  "019": [
+    { id: "19-32", gb: 100, price: 32, days: 30, unl: true, intl: 10 },
+    { id: "19-41", gb: 200, price: 41, days: 30, unl: true, intl: 30 },
+    { id: "19-50", gb: 500, price: 50, days: 30, unl: true, intl: 50 }
+  ],
+  hotalk: [
+    { id: "ht-39", gb: 20,  price: 39.90, days: 30, unl: true, tag: "kosher" },
+    { id: "ht-69", gb: 250, price: 69.90, days: 30, unl: true, intl: 35 },
+    { id: "ht-79", gb: 400, price: 79.90, days: 30, unl: true, intl: 50, tag: "5g" },
+    { id: "ht-99", gb: 600, price: 99.90, days: 30, unl: true, intl: 55, tag: "5g" }
+  ],
+  golan: [
+    { id: "gl-30", gb: 100, price: 30, days: 30, unl: true },
+    { id: "gl-40", gb: 200, price: 40, days: 30, unl: true },
+    { id: "gl-50", gb: 500, price: 50, days: 30, unl: true },
+    { id: "gl-99", gb: 1000, price: 99, days: 30, unl: true, intl: 50 }
+  ],
+  ramilevy: [
+    { id: "rl-30", gb: 80,  price: 30, days: 30, unl: true },
+    { id: "rl-50", gb: 120, price: 50, days: 30, unl: true },
+    { id: "rl-80", gb: 250, price: 80, days: 30, unl: true, intl: 30 }
+  ],
+  sky: [
+    { id: "sk-35", gb: 20,  price: 35, days: 30, unl: true },
+    { id: "sk-50", gb: 130, price: 50, days: 30, unl: true },
+    { id: "sk-70", gb: 300, price: 70, days: 30, unl: true }
+  ]
+};
 
 const PAYMENTS = [
   { id: "bit",     icon: "💚", label: { th: "Bit",     he: "ביט",       en: "Bit"     } },
@@ -1014,6 +1134,7 @@ let state = {
   lang: localStorage.getItem("tu_lang") || "th",
   carrier: null,
   amount: null,
+  packageId: null,
   payment: null,
   slipDataUrl: null
 };
@@ -1043,7 +1164,7 @@ function setLang(lang) {
   renderBankInfo();
   $("#custName").placeholder = lang === "he" ? "שם מלא" : (lang === "en" ? "Full name" : "ชื่อ-นามสกุล");
   $("#custContact").placeholder = lang === "he" ? "0501234567" : (lang === "en" ? "0501234567 or LINE ID" : "0501234567 หรือ LINE ID");
-  $("#customAmount").placeholder = lang === "he" ? "או הזן סכום אחר" : (lang === "en" ? "Or enter custom amount" : "หรือกรอกจำนวนเอง");
+  $("#customAmount").placeholder = t("custom_amount_ph");
   $("#contactWA").href = "https://wa.me/" + settings.adminWA;
 }
 
@@ -1058,7 +1179,15 @@ function renderCarriers() {
       <div>
         <div class="carrier-name">${c.name[state.lang]}</div>
       </div>`;
-    el.onclick = () => { state.carrier = c.id; renderCarriers(); renderSummary(); };
+    el.onclick = () => {
+      state.carrier = c.id;
+      state.packageId = null;
+      state.amount = null;
+      $("#customAmount").value = "";
+      renderCarriers();
+      renderAmounts();
+      renderSummary();
+    };
     root.appendChild(el);
   });
 }
@@ -1066,12 +1195,30 @@ function renderCarriers() {
 function renderAmounts() {
   const root = $("#amounts");
   root.innerHTML = "";
-  AMOUNTS.forEach(a => {
+  if (!state.carrier) {
+    root.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:18px;color:var(--text-3);font-size:13px">${t("select_carrier_first")}</div>`;
+    return;
+  }
+  const pkgs = PACKAGES[state.carrier] || [];
+  if (!pkgs.length) {
+    root.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:18px;color:var(--text-3);font-size:13px">${t("custom_only")}</div>`;
+    return;
+  }
+  pkgs.forEach(p => {
     const el = document.createElement("div");
-    el.className = "amount" + (state.amount === a ? " selected" : "");
-    el.innerHTML = `₪${a}`;
+    el.className = "package" + (state.packageId === p.id ? " selected" : "");
+    const tags = [];
+    if (p.unl) tags.push(t("unlimited_short"));
+    if (p.intl) tags.push(`+₪${p.intl} ${t("intl_short")}`);
+    if (p.tag) tags.push(t("tag_" + p.tag));
+    el.innerHTML = `
+      <div class="pkg-gb">${p.gb}<span class="pkg-unit">GB</span></div>
+      <div class="pkg-days">${p.days} ${t("days_word")}</div>
+      ${tags.length ? `<div class="pkg-tags">${tags.join(" · ")}</div>` : ""}
+      <div class="pkg-price">₪${p.price}</div>`;
     el.onclick = () => {
-      state.amount = a;
+      state.packageId = p.id;
+      state.amount = p.price;
       $("#customAmount").value = "";
       renderAmounts();
       renderSummary();
@@ -1138,8 +1285,10 @@ function getAmount() {
 function renderSummary() {
   const c = CARRIERS.find(x => x.id === state.carrier);
   const p = PAYMENTS.find(x => x.id === state.payment);
+  const pkg = state.packageId && state.carrier ? (PACKAGES[state.carrier] || []).find(x => x.id === state.packageId) : null;
   $("#sum-carrier").textContent = c ? c.name[state.lang] : "—";
   $("#sum-phone").textContent = $("#phone").value ? "+972 " + $("#phone").value : "—";
+  $("#sum-package").textContent = pkg ? `${pkg.gb}GB · ${pkg.days}${t("days_word")[0]||"d"}` : (getAmount() ? "Custom" : "—");
   $("#sum-payment").textContent = p ? p.label[state.lang] : "—";
   const amount = getAmount();
   $("#sum-total").textContent = amount ? "₪ " + amount : "₪ 0";
@@ -1171,7 +1320,7 @@ function renderHistory() {
       <div class="h-icon" style="background:${c ? c.color : "#94a3b8"}1a; color:${c ? c.color : "#475569"}">${c ? c.abbr : "?"}</div>
       <div class="h-main">
         <div class="h-title">${c ? c.name[state.lang] : "?"} · +972 ${h.phone}</div>
-        <div class="h-sub">${dateStr} · ${p ? p.label[state.lang] : ""}</div>
+        <div class="h-sub">${h.packageDesc && h.packageDesc !== "custom" ? h.packageDesc + " · " : ""}${dateStr}</div>
         <span class="h-status ${status}" data-status-pill>${t("status_" + status)}</span>
       </div>
       <div class="h-amount">₪${h.amount}</div>`;
@@ -1224,6 +1373,7 @@ $("#phone").addEventListener("input", (e) => {
 });
 $("#customAmount").addEventListener("input", () => {
   state.amount = null;
+  state.packageId = null;
   renderAmounts();
   renderSummary();
 });
@@ -1245,7 +1395,7 @@ $("#slipFile").addEventListener("change", (e) => {
 $("#submitBtn").onclick = submitOrder;
 $("#clearBtn").onclick = () => {
   if (confirm(t("confirm_clear"))) {
-    state.carrier = null; state.amount = null; state.payment = null; state.slipDataUrl = null;
+    state.carrier = null; state.amount = null; state.packageId = null; state.payment = null; state.slipDataUrl = null;
     $("#phone").value = ""; $("#customAmount").value = "";
     $("#custName").value = ""; $("#custContact").value = ""; $("#custNote").value = "";
     $("#slipPlaceholder").innerHTML = `<div class="icon">📎</div><div class="txt">${t("slip_hint")}</div>`;
@@ -1272,6 +1422,7 @@ function validate() {
 function buildOrder() {
   const c = CARRIERS.find(x => x.id === state.carrier);
   const p = PAYMENTS.find(x => x.id === state.payment);
+  const pkg = state.packageId ? (PACKAGES[state.carrier] || []).find(x => x.id === state.packageId) : null;
   return {
     id: "T" + Date.now().toString(36).toUpperCase(),
     time: new Date().toISOString(),
@@ -1279,6 +1430,8 @@ function buildOrder() {
     carrierName: c.name[state.lang],
     phone: $("#phone").value.replace(/\D/g, ""),
     amount: getAmount(),
+    packageId: state.packageId || null,
+    packageDesc: pkg ? `${pkg.gb}GB / ${pkg.days}d${pkg.intl ? " +₪" + pkg.intl + " intl" : ""}${pkg.tag ? " (" + pkg.tag + ")" : ""}` : "custom",
     payment: state.payment,
     paymentName: p.label[state.lang],
     name: $("#custName").value.trim(),
@@ -1395,6 +1548,7 @@ function renderTracking(o) {
     <div class="row id"><span class="lbl">${t("tr_order")}</span><span class="val">${o.id}</span></div>
     <div class="row"><span class="lbl">${t("tr_to")}</span><span class="val">+972 ${o.phone}</span></div>
     <div class="row"><span class="lbl">${t("sum_carrier")}</span><span class="val">${c ? c.name[state.lang] : "—"}</span></div>
+    ${o.packageDesc && o.packageDesc !== "custom" ? `<div class="row"><span class="lbl">${t("sum_package")}</span><span class="val">${o.packageDesc}</span></div>` : ""}
     <div class="row"><span class="lbl">${t("tr_amount")}</span><span class="val">₪${o.amount}</span></div>
     <div class="row"><span class="lbl">${t("tr_paid_by")}</span><span class="val">${p ? p.label[state.lang] : "—"}</span></div>
   `;

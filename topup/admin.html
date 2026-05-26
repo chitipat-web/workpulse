@@ -831,6 +831,7 @@ function renderOrder(o) {
             </div>
           </div>
           <div class="order-meta">
+            ${o.packageDesc && o.packageDesc !== "custom" ? `<span style="color:var(--primary);font-weight:600">📶 ${escapeHtml(o.packageDesc)}</span>` : ""}
             <span>👤 ${escapeHtml(o.name || "—")}</span>
             <span>💳 ${payment ? payment.label[state.lang] : "—"}</span>
             <span>🕐 ${fmtDate(o.time)}</span>
