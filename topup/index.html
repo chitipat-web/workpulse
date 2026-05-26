@@ -4,8 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="theme-color" content="#1e40af">
-<meta name="description" content="บริการเติมเงินโทรศัพท์มือถือในอิสราเอล - Phone top-up service in Israel">
-<title>เติมเงินอิสราเอล | Top-Up Israel | טעינת אשראי</title>
+<meta name="description" content="บริการเติมเน็ตมือถือในอิสราเอล - Mobile data service in Israel">
+<title>เติมเน็ตอิสราเอล | Mobile Data Israel | טעינת גלישה</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;900&family=Sarabun:wght@400;500;700&family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
@@ -495,8 +495,8 @@ textarea { resize: vertical; min-height: 70px; }
     <div class="brand">
       <div class="brand-mark">📱</div>
       <div>
-        <div class="brand-name" data-i18n="brand">เติมเงินอิสราเอล</div>
-        <div class="brand-sub" data-i18n="brand_sub">Top-Up Service</div>
+        <div class="brand-name" data-i18n="brand">เติมเน็ตอิสราเอล</div>
+        <div class="brand-sub" data-i18n="brand_sub">Mobile Data Service</div>
       </div>
     </div>
     <div class="lang-switch">
@@ -507,12 +507,12 @@ textarea { resize: vertical; min-height: 70px; }
   </header>
 
   <section class="hero">
-    <h1 data-i18n="hero_title">เติมเงินมือถือทุกค่าย ในอิสราเอล</h1>
+    <h1 data-i18n="hero_title">เติมเน็ตมือถือทุกค่าย ในอิสราเอล</h1>
     <p data-i18n="hero_sub">รวดเร็ว ปลอดภัย โอนเงินผ่าน Bit / PayBox / ธนาคาร</p>
   </section>
 
   <nav class="tabs">
-    <button class="tab active" data-tab="order" data-i18n="tab_order">สั่งเติมเงิน</button>
+    <button class="tab active" data-tab="order" data-i18n="tab_order">สั่งเติมเน็ต</button>
     <button class="tab" data-tab="history" data-i18n="tab_history">ประวัติ</button>
     <button class="tab" data-tab="howto" data-i18n="tab_howto">วิธีใช้</button>
   </nav>
@@ -537,7 +537,7 @@ textarea { resize: vertical; min-height: 70px; }
     </div>
 
     <div class="card">
-      <h2><span class="num">3</span><span data-i18n="step_amount">เลือกจำนวนเงิน (₪)</span></h2>
+      <h2><span class="num">3</span><span data-i18n="step_amount">เลือกแพ็กเกจเน็ต (₪)</span></h2>
       <div class="amounts" id="amounts"></div>
       <div class="custom-amount">
         <input type="number" id="customAmount" placeholder="หรือกรอกจำนวนเอง" min="10" max="2000">
@@ -613,7 +613,7 @@ textarea { resize: vertical; min-height: 70px; }
         <li data-i18n="howto_4">โอนเงินตามรายละเอียดที่แสดง แล้วแนบสลิป</li>
         <li data-i18n="howto_5">กรอกชื่อและเบอร์ติดต่อ แล้วกดส่งคำสั่งซื้อ</li>
         <li data-i18n="howto_6">ระบบจะเปิด WhatsApp พร้อมข้อความที่จัดรูปแบบให้แล้ว ส่งให้แอดมินได้ทันที</li>
-        <li data-i18n="howto_7">รอแอดมินยืนยันและเติมเงินให้ภายใน 5-15 นาที</li>
+        <li data-i18n="howto_7">รอแอดมินยืนยันและเติมเน็ตให้ภายใน 5-15 นาที</li>
       </ol>
     </div>
 
@@ -677,16 +677,16 @@ textarea { resize: vertical; min-height: 70px; }
 // ---------- i18n ----------
 const I18N = {
   th: {
-    brand: "เติมเงินอิสราเอล",
-    brand_sub: "บริการเติมเงินมือถือ",
-    hero_title: "เติมเงินมือถือทุกค่าย ในอิสราเอล",
+    brand: "เติมเน็ตอิสราเอล",
+    brand_sub: "บริการเติมเน็ตมือถือ",
+    hero_title: "เติมเน็ตมือถือทุกค่าย ในอิสราเอล",
     hero_sub: "รวดเร็ว ปลอดภัย โอนเงินผ่าน Bit / PayBox / ธนาคาร",
-    tab_order: "สั่งเติมเงิน",
+    tab_order: "สั่งเติมเน็ต",
     tab_history: "ประวัติ",
     tab_howto: "วิธีใช้",
     step_carrier: "เลือกค่ายมือถือ",
     step_phone: "เบอร์โทรที่ต้องการเติม",
-    step_amount: "เลือกจำนวนเงิน (₪)",
+    step_amount: "เลือกแพ็กเกจเน็ต (₪)",
     step_payment: "วิธีการชำระเงิน",
     step_contact: "ข้อมูลผู้สั่ง",
     phone_hint: "กรอกเบอร์โดยไม่ต้องใส่ 0 ตัวแรก",
@@ -705,8 +705,8 @@ const I18N = {
     howto_3: "เลือกวิธีชำระเงิน (Bit, PayBox, โอนธนาคาร)",
     howto_4: "โอนเงินตามรายละเอียดที่แสดง แล้วแนบสลิป",
     howto_5: "กรอกชื่อและเบอร์ติดต่อ แล้วกดยืนยันคำสั่งซื้อ",
-    howto_6: "ดูสถานะคำสั่งซื้อในหน้าจอ - จะอัปเดตทันทีเมื่อแอดมินตรวจสอบและเติมเงินให้",
-    howto_7: "รอแอดมินยืนยันและเติมเงินให้ภายใน 5-15 นาที (ไม่ต้องเปิด WhatsApp)",
+    howto_6: "ดูสถานะคำสั่งซื้อในหน้าจอ - จะอัปเดตทันทีเมื่อแอดมินตรวจสอบและเติมเน็ตให้",
+    howto_7: "รอแอดมินยืนยันและเติมเน็ตให้ภายใน 5-15 นาที (ไม่ต้องเปิด WhatsApp)",
     contact_title: "ติดต่อแอดมิน",
     contact_wa: "WhatsApp แอดมิน",
     contact_line: "LINE @topup-il",
@@ -717,8 +717,8 @@ const I18N = {
     track_pending_title: "กำลังตรวจสอบการโอน",
     track_pending_desc: "แอดมินกำลังตรวจสอบสลิปของคุณ คาดว่าใช้เวลา 5-15 นาที",
     track_paid_title: "ยืนยันการโอนแล้ว",
-    track_paid_desc: "กำลังดำเนินการเติมเงินให้คุณ...",
-    track_completed_title: "เติมเงินสำเร็จ! 🎉",
+    track_paid_desc: "กำลังดำเนินการเติมเน็ตให้คุณ...",
+    track_completed_title: "เติมเน็ตสำเร็จ! 🎉",
     track_completed_desc: "เงินถูกเติมเข้าเบอร์ของคุณเรียบร้อยแล้ว ขอบคุณที่ใช้บริการ",
     track_cancelled_title: "คำสั่งซื้อถูกยกเลิก",
     track_cancelled_desc: "กรุณาติดต่อแอดมินเพื่อสอบถามเพิ่มเติม",
@@ -751,10 +751,10 @@ const I18N = {
     validation_name: "กรุณากรอกชื่อผู้สั่ง",
     validation_contact: "กรุณากรอกเบอร์ติดต่อ",
     confirm_clear: "ล้างข้อมูลทั้งหมด?",
-    msg_order: "🛒 *คำสั่งซื้อเติมเงิน*",
+    msg_order: "🛒 *คำสั่งซื้อเติมเน็ต*",
     msg_carrier: "📡 ค่าย",
     msg_phone: "📱 เบอร์",
-    msg_amount: "💰 จำนวน",
+    msg_amount: "📶 แพ็กเกจ",
     msg_payment: "💳 ชำระโดย",
     msg_name: "👤 ชื่อ",
     msg_contact: "📞 ติดต่อ",
@@ -763,16 +763,16 @@ const I18N = {
     msg_ref: "🔖 รหัสคำสั่ง"
   },
   he: {
-    brand: "טעינת אשראי",
+    brand: "טעינת גלישה",
     brand_sub: "שירות טעינת סלולר",
-    hero_title: "טעינת אשראי לכל הרשתות בישראל",
+    hero_title: "טעינת גלישה לכל הרשתות בישראל",
     hero_sub: "מהיר ובטוח - תשלום ב-Bit / PayBox / העברה בנקאית",
     tab_order: "הזמן טעינה",
     tab_history: "היסטוריה",
     tab_howto: "איך זה עובד",
     step_carrier: "בחר חברת סלולר",
     step_phone: "מספר טלפון לטעינה",
-    step_amount: "בחר סכום (₪)",
+    step_amount: "בחר חבילת גלישה (₪)",
     step_payment: "אמצעי תשלום",
     step_contact: "פרטי המזמין",
     phone_hint: "הזן את המספר ללא ה-0 הראשון",
@@ -803,12 +803,12 @@ const I18N = {
     track_pending_title: "מאמתים את התשלום",
     track_pending_desc: "המנהל בודק את הקבלה שלך - בדרך כלל 5-15 דקות",
     track_paid_title: "התשלום אושר",
-    track_paid_desc: "טוענים את האשראי לטלפון שלך...",
+    track_paid_desc: "טוענים את חבילת הגלישה שלך...",
     track_completed_title: "הטעינה הושלמה! 🎉",
-    track_completed_desc: "האשראי נטען בהצלחה למספר שלך. תודה רבה!",
+    track_completed_desc: "חבילת הגלישה נטענה בהצלחה למספר שלך. תודה רבה!",
     track_cancelled_title: "ההזמנה בוטלה",
     track_cancelled_desc: "אנא צור קשר עם המנהל לפרטים נוספים",
-    track_help: "לא קיבלת אשראי?",
+    track_help: "לא קיבלת חבילה?",
     track_help_link: "צור קשר עם המנהל",
     step1: "שליחה", step2: "אימות", step3: "טעינה", step4: "הושלם",
     tr_order: "מס׳ הזמנה", tr_to: "מספר", tr_amount: "סכום", tr_paid_by: "תשלום",
@@ -837,10 +837,10 @@ const I18N = {
     validation_name: "אנא הזן שם",
     validation_contact: "אנא הזן טלפון ליצירת קשר",
     confirm_clear: "לנקות את כל הנתונים?",
-    msg_order: "🛒 *הזמנת טעינת אשראי*",
+    msg_order: "🛒 *הזמנת חבילת גלישה*",
     msg_carrier: "📡 חברה",
     msg_phone: "📱 מספר",
-    msg_amount: "💰 סכום",
+    msg_amount: "📶 חבילה",
     msg_payment: "💳 תשלום",
     msg_name: "👤 שם",
     msg_contact: "📞 קשר",
@@ -849,16 +849,16 @@ const I18N = {
     msg_ref: "🔖 מס׳ הזמנה"
   },
   en: {
-    brand: "Top-Up Israel",
-    brand_sub: "Mobile credit service",
-    hero_title: "Phone top-up for all carriers in Israel",
+    brand: "Mobile Data Israel",
+    brand_sub: "Mobile data service",
+    hero_title: "Mobile data packages for all carriers in Israel",
     hero_sub: "Fast and secure - pay via Bit / PayBox / Bank transfer",
-    tab_order: "Order top-up",
+    tab_order: "Order data",
     tab_history: "History",
     tab_howto: "How it works",
     step_carrier: "Select carrier",
     step_phone: "Phone number to recharge",
-    step_amount: "Choose amount (₪)",
+    step_amount: "Choose data package (₪)",
     step_payment: "Payment method",
     step_contact: "Your details",
     phone_hint: "Enter the number without leading 0",
@@ -873,12 +873,12 @@ const I18N = {
     submit_btn: "Confirm order",
     howto_title: "How to use",
     howto_1: "Select your carrier and phone number",
-    howto_2: "Choose the top-up amount (₪)",
+    howto_2: "Choose a data package (₪)",
     howto_3: "Choose a payment method (Bit, PayBox, bank transfer)",
     howto_4: "Make the payment and attach the receipt",
     howto_5: "Fill in your name and contact, then confirm the order",
     howto_6: "Track the order status on screen - it updates instantly when the admin verifies and tops up",
-    howto_7: "Top-up is processed within 5-15 minutes (no need to open WhatsApp)",
+    howto_7: "Data package is activated within 5-15 minutes (no need to open WhatsApp)",
     contact_title: "Contact admin",
     contact_wa: "WhatsApp admin",
     contact_line: "LINE @topup-il",
@@ -889,12 +889,12 @@ const I18N = {
     track_pending_title: "Verifying payment",
     track_pending_desc: "The admin is checking your receipt - usually 5-15 minutes",
     track_paid_title: "Payment confirmed",
-    track_paid_desc: "Loading credit to your phone...",
-    track_completed_title: "Top-up completed! 🎉",
-    track_completed_desc: "Credit has been added to your number. Thank you!",
+    track_paid_desc: "Activating your data package...",
+    track_completed_title: "Data package activated! 🎉",
+    track_completed_desc: "The data package has been activated on your number. Thank you!",
     track_cancelled_title: "Order cancelled",
     track_cancelled_desc: "Please contact the admin for more information",
-    track_help: "Didn't get credit?",
+    track_help: "Didn't get the package?",
     track_help_link: "Contact admin",
     step1: "Submit", step2: "Verify", step3: "Loading", step4: "Done",
     tr_order: "Order ID", tr_to: "Number", tr_amount: "Amount", tr_paid_by: "Payment",
@@ -923,10 +923,10 @@ const I18N = {
     validation_name: "Please enter your name",
     validation_contact: "Please enter your contact",
     confirm_clear: "Clear all fields?",
-    msg_order: "🛒 *Top-up order*",
+    msg_order: "🛒 *Data package order*",
     msg_carrier: "📡 Carrier",
     msg_phone: "📱 Number",
-    msg_amount: "💰 Amount",
+    msg_amount: "📶 Package",
     msg_payment: "💳 Payment",
     msg_name: "👤 Name",
     msg_contact: "📞 Contact",
@@ -966,7 +966,7 @@ const DEFAULTS = {
   bankName: "Bank Hapoalim",
   bankAccount: "12-345-678901",
   bankBranch: "001",
-  bankHolder: "Top-Up Israel Ltd."
+  bankHolder: "Mobile Data Israel Ltd."
 };
 
 // ---------- Firebase ----------
