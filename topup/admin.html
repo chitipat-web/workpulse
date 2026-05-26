@@ -331,6 +331,7 @@ body {
     <input class="pin-input" id="pinInput" type="password" inputmode="numeric" maxlength="6" placeholder="••••">
     <button class="btn btn-primary" id="loginBtn" style="width:100%;justify-content:center;padding:12px" data-i18n="login_btn">เข้าสู่ระบบ</button>
     <p style="margin-top:14px;font-size:11px" data-i18n="login_hint">PIN เริ่มต้น: 1234 (เปลี่ยนได้ในหน้าตั้งค่า)</p>
+    <div id="fbStatus" style="margin-top:10px;font-size:11px;color:var(--text-3)"></div>
   </div>
 </div>
 
@@ -619,11 +620,22 @@ function toast(msg) {
   toast._t = setTimeout(() => el.classList.remove("show"), 1500);
 }
 
-// ---------- Firebase ----------
-if (!firebase.apps.length) firebase.initializeApp(FB_CONFIG);
-const db = firebase.firestore();
+// ---------- Firebase (resilient init) ----------
+let db = null;
+let fbError = null;
+try {
+  if (!firebase.apps.length) firebase.initializeApp(FB_CONFIG);
+  db = firebase.firestore();
+} catch (e) {
+  fbError = e.message || String(e);
+  console.error("Firebase init failed:", e);
+}
 
 function startListener() {
+  if (!db) {
+    toast("Firebase ไม่พร้อม - กรุณาตรวจสอบ Firestore rules");
+    return;
+  }
   db.collection("topup_orders")
     .orderBy("time", "desc")
     .limit(500)
@@ -632,11 +644,12 @@ function startListener() {
       render();
     }, (err) => {
       console.error("Listener error:", err);
-      toast("Firebase error: " + err.message);
+      toast("Firestore: " + err.message);
     });
 }
 
 async function updateOrder(id, patch) {
+  if (!db) return toast("Firebase ไม่พร้อม");
   try {
     await db.collection("topup_orders").doc(id).update(patch);
     toast(t("saved"));
@@ -646,6 +659,7 @@ async function updateOrder(id, patch) {
 }
 
 async function deleteOrder(id) {
+  if (!db) return toast("Firebase ไม่พร้อม");
   try {
     await db.collection("topup_orders").doc(id).delete();
     toast(t("saved"));
@@ -976,6 +990,27 @@ $("#refreshBtn").onclick = () => location.reload();
 // ---------- Init ----------
 setLang(state.lang);
 checkAuth();
+
+// Show Firebase status on login screen so we can debug if login flow breaks
+(function showFbStatus() {
+  const el = document.getElementById("fbStatus");
+  if (!el) return;
+  if (fbError) {
+    el.innerHTML = `⚠️ Firebase init failed:<br><code style="font-size:10px">${fbError}</code>`;
+    el.style.color = "var(--danger)";
+  } else if (!db) {
+    el.textContent = "⚠️ Firebase ไม่พร้อม";
+    el.style.color = "var(--warn)";
+  } else {
+    // Try a tiny read to verify rules
+    db.collection("topup_orders").limit(1).get()
+      .then(() => { el.textContent = "✓ Firebase connected"; el.style.color = "var(--success)"; })
+      .catch((e) => {
+        el.innerHTML = `⚠️ Firestore rules block access:<br><code style="font-size:10px">${e.code || e.message}</code>`;
+        el.style.color = "var(--danger)";
+      });
+  }
+})();
 </script>
 </body>
 </html>
