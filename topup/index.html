@@ -1,0 +1,1123 @@
+<!DOCTYPE html>
+<html lang="th" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#1e40af">
+<meta name="description" content="บริการเติมเงินโทรศัพท์มือถือในอิสราเอล - Phone top-up service in Israel">
+<title>เติมเงินอิสราเอล | Top-Up Israel | טעינת אשראי</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;900&family=Sarabun:wght@400;500;700&family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f8fafc;
+  --surface: #ffffff;
+  --surface-2: #f1f5f9;
+  --border: #e2e8f0;
+  --text: #0f172a;
+  --text-2: #475569;
+  --text-3: #94a3b8;
+  --primary: #1e40af;
+  --primary-light: #dbeafe;
+  --primary-hover: #1e3a8a;
+  --accent: #0891b2;
+  --success: #16a34a;
+  --success-light: #dcfce7;
+  --warn: #d97706;
+  --warn-light: #fef3c7;
+  --danger: #dc2626;
+  --danger-light: #fee2e2;
+  --radius: 14px;
+  --radius-lg: 20px;
+  --shadow: 0 1px 2px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.06);
+  --shadow-lg: 0 10px 30px rgba(0,0,0,0.10);
+  --font: 'Sarabun', 'Inter', system-ui, sans-serif;
+}
+html[lang="he"] { --font: 'Heebo', system-ui, sans-serif; }
+html[lang="en"] { --font: 'Inter', system-ui, sans-serif; }
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  font-size: 16px;
+  line-height: 1.5;
+}
+[dir="rtl"] { text-align: right; }
+
+.app { max-width: 720px; margin: 0 auto; padding: 0 0 120px; min-height: 100%; }
+
+.topbar {
+  position: sticky; top: 0; z-index: 50;
+  background: linear-gradient(135deg, #1e40af 0%, #0891b2 100%);
+  color: #fff;
+  padding: 14px 18px;
+  display: flex; align-items: center; gap: 12px;
+  box-shadow: var(--shadow);
+}
+.brand { display: flex; align-items: center; gap: 10px; flex: 1; }
+.brand-mark {
+  width: 38px; height: 38px; border-radius: 10px;
+  background: rgba(255,255,255,0.18);
+  display: grid; place-items: center; font-size: 20px;
+  backdrop-filter: blur(8px);
+}
+.brand-name { font-weight: 700; font-size: 16px; line-height: 1.1; }
+.brand-sub { font-size: 11px; opacity: 0.85; }
+
+.lang-switch { display: flex; gap: 4px; background: rgba(0,0,0,0.18); padding: 4px; border-radius: 999px; }
+.lang-switch button {
+  border: 0; background: transparent; color: #fff;
+  font-size: 12px; padding: 6px 10px; border-radius: 999px;
+  cursor: pointer; font-weight: 600; font-family: inherit;
+}
+.lang-switch button.active { background: #fff; color: var(--primary); }
+
+.hero {
+  background: linear-gradient(135deg, #1e40af 0%, #0891b2 100%);
+  color: #fff; padding: 8px 22px 32px;
+  border-bottom-left-radius: 32px; border-bottom-right-radius: 32px;
+  position: relative; overflow: hidden;
+}
+.hero::before {
+  content: ""; position: absolute; right: -40px; top: -40px;
+  width: 180px; height: 180px; border-radius: 50%;
+  background: rgba(255,255,255,0.08);
+}
+.hero::after {
+  content: ""; position: absolute; left: -30px; bottom: -50px;
+  width: 140px; height: 140px; border-radius: 50%;
+  background: rgba(255,255,255,0.06);
+}
+.hero h1 { font-size: 24px; font-weight: 700; margin-bottom: 6px; position: relative; }
+.hero p { opacity: 0.9; font-size: 14px; position: relative; }
+
+.tabs {
+  display: flex; gap: 6px; padding: 14px 18px 0;
+  position: sticky; top: 66px; z-index: 40;
+  background: var(--bg);
+}
+.tab {
+  flex: 1; border: 0; background: var(--surface);
+  padding: 12px 8px; border-radius: 12px;
+  font-family: inherit; font-size: 14px; font-weight: 600;
+  color: var(--text-2); cursor: pointer;
+  border: 1.5px solid var(--border);
+  transition: all 0.15s;
+}
+.tab.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+
+.panel { padding: 16px 18px; display: none; }
+.panel.active { display: block; }
+
+.card {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  padding: 18px;
+  box-shadow: var(--shadow);
+  margin-bottom: 14px;
+}
+.card h2 {
+  font-size: 15px; font-weight: 700; margin-bottom: 12px;
+  color: var(--text); display: flex; align-items: center; gap: 8px;
+}
+.card h2 .num {
+  width: 22px; height: 22px; border-radius: 50%;
+  background: var(--primary); color: #fff;
+  display: grid; place-items: center; font-size: 12px;
+}
+
+.carriers { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+.carrier {
+  border: 1.5px solid var(--border);
+  background: var(--surface-2);
+  padding: 12px 10px; border-radius: 12px;
+  cursor: pointer; display: flex; align-items: center; gap: 10px;
+  transition: all 0.12s;
+}
+.carrier:hover { border-color: var(--primary); }
+.carrier.selected {
+  border-color: var(--primary);
+  background: var(--primary-light);
+}
+.carrier-logo {
+  width: 36px; height: 36px; border-radius: 9px;
+  display: grid; place-items: center;
+  font-weight: 800; font-size: 13px; color: #fff;
+  flex-shrink: 0;
+}
+.carrier-name { font-size: 13px; font-weight: 600; line-height: 1.2; }
+.carrier-desc { font-size: 11px; color: var(--text-3); }
+
+.amounts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.amount {
+  border: 1.5px solid var(--border);
+  background: var(--surface-2);
+  padding: 14px 8px; border-radius: 12px;
+  cursor: pointer; text-align: center;
+  font-weight: 700; font-size: 16px;
+  transition: all 0.12s;
+}
+.amount:hover { border-color: var(--primary); }
+.amount.selected {
+  border-color: var(--primary);
+  background: var(--primary);
+  color: #fff;
+}
+.amount-baht { font-size: 11px; font-weight: 500; opacity: 0.7; display: block; margin-top: 2px; }
+
+.custom-amount {
+  margin-top: 10px;
+  display: flex; align-items: center; gap: 8px;
+}
+
+.form-group { margin-bottom: 14px; }
+.form-group:last-child { margin-bottom: 0; }
+label.field-label {
+  display: block; font-size: 13px; font-weight: 600;
+  color: var(--text-2); margin-bottom: 6px;
+}
+label.field-label .required { color: var(--danger); }
+
+input, textarea, select {
+  width: 100%;
+  border: 1.5px solid var(--border);
+  background: var(--surface);
+  padding: 12px 14px;
+  border-radius: 12px;
+  font-family: inherit; font-size: 15px;
+  color: var(--text);
+  transition: border-color 0.12s;
+}
+input:focus, textarea:focus, select:focus {
+  outline: none; border-color: var(--primary);
+}
+textarea { resize: vertical; min-height: 70px; }
+
+.phone-input { display: flex; gap: 8px; }
+.phone-input .prefix {
+  flex: 0 0 auto;
+  background: var(--surface-2);
+  border: 1.5px solid var(--border);
+  padding: 12px 14px;
+  border-radius: 12px;
+  font-weight: 700;
+  display: flex; align-items: center;
+  font-size: 15px;
+}
+.phone-input input { flex: 1; }
+
+.payment-methods { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+.pay-method {
+  border: 1.5px solid var(--border);
+  background: var(--surface-2);
+  padding: 10px 12px; border-radius: 12px;
+  cursor: pointer; display: flex; align-items: center; gap: 8px;
+  font-size: 13px; font-weight: 600;
+  transition: all 0.12s;
+}
+.pay-method.selected {
+  border-color: var(--primary);
+  background: var(--primary-light);
+}
+.pay-icon {
+  width: 28px; height: 28px; border-radius: 7px;
+  display: grid; place-items: center; font-size: 16px;
+  background: #fff;
+}
+
+.summary {
+  background: linear-gradient(135deg, #f0f9ff, #ede9fe);
+  border-radius: var(--radius);
+  padding: 14px; margin-top: 10px;
+  border: 1px dashed var(--primary);
+}
+.summary-row {
+  display: flex; justify-content: space-between;
+  padding: 4px 0; font-size: 14px;
+}
+.summary-row .label { color: var(--text-2); }
+.summary-row .value { font-weight: 600; }
+.summary-total {
+  border-top: 1px solid var(--border);
+  margin-top: 8px; padding-top: 8px;
+  font-size: 17px;
+}
+.summary-total .value { color: var(--primary); font-weight: 800; font-size: 19px; }
+
+.actions {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  background: var(--surface);
+  padding: 14px 18px calc(14px + env(safe-area-inset-bottom));
+  border-top: 1px solid var(--border);
+  box-shadow: 0 -4px 16px rgba(0,0,0,0.04);
+  z-index: 30;
+}
+.actions-inner { max-width: 720px; margin: 0 auto; display: flex; gap: 8px; }
+
+.btn {
+  flex: 1;
+  border: 0; padding: 14px 18px;
+  border-radius: 12px;
+  font-family: inherit; font-size: 15px; font-weight: 700;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  transition: all 0.12s;
+}
+.btn-primary {
+  background: var(--primary); color: #fff;
+}
+.btn-primary:hover { background: var(--primary-hover); }
+.btn-primary:disabled {
+  background: var(--text-3); cursor: not-allowed;
+}
+.btn-wa {
+  background: #25d366; color: #fff;
+}
+.btn-ghost {
+  background: var(--surface-2); color: var(--text);
+  border: 1.5px solid var(--border);
+}
+
+.history-item {
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 14px;
+  margin-bottom: 10px;
+  border: 1.5px solid var(--border);
+  display: flex; gap: 12px; align-items: flex-start;
+}
+.history-item .h-icon {
+  width: 42px; height: 42px; border-radius: 10px;
+  display: grid; place-items: center; font-size: 20px;
+  flex-shrink: 0;
+  background: var(--primary-light); color: var(--primary);
+}
+.history-item .h-main { flex: 1; min-width: 0; }
+.history-item .h-title { font-weight: 700; font-size: 14px; margin-bottom: 2px; }
+.history-item .h-sub { font-size: 12px; color: var(--text-2); }
+.history-item .h-amount {
+  font-weight: 800; color: var(--primary);
+  font-size: 15px; white-space: nowrap;
+}
+.h-status {
+  display: inline-block; font-size: 11px; font-weight: 600;
+  padding: 2px 8px; border-radius: 999px;
+  margin-top: 4px;
+}
+.h-status.pending { background: var(--warn-light); color: var(--warn); }
+.h-status.done { background: var(--success-light); color: var(--success); }
+
+.empty {
+  text-align: center; padding: 50px 20px;
+  color: var(--text-3);
+}
+.empty .ico { font-size: 56px; margin-bottom: 10px; }
+.empty .msg { font-size: 14px; }
+
+.modal-backdrop {
+  position: fixed; inset: 0; background: rgba(15,23,42,0.6);
+  z-index: 100; display: none;
+  align-items: center; justify-content: center;
+  padding: 20px;
+}
+.modal-backdrop.show { display: flex; }
+.modal {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  max-width: 480px; width: 100%;
+  padding: 22px;
+  max-height: 85vh; overflow-y: auto;
+  box-shadow: var(--shadow-lg);
+}
+.modal h3 {
+  font-size: 18px; margin-bottom: 6px;
+  display: flex; align-items: center; gap: 10px;
+}
+.modal .check {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: var(--success); color: #fff;
+  display: grid; place-items: center;
+}
+.modal p { font-size: 14px; color: var(--text-2); margin-bottom: 14px; }
+
+.info-banner {
+  background: var(--warn-light); color: #854d0e;
+  border-radius: 12px; padding: 12px 14px;
+  font-size: 13px; margin-bottom: 14px;
+  display: flex; gap: 10px; align-items: flex-start;
+}
+
+.uploader {
+  border: 2px dashed var(--border);
+  border-radius: 12px; padding: 16px;
+  text-align: center; cursor: pointer;
+  background: var(--surface-2);
+  transition: all 0.12s;
+}
+.uploader:hover { border-color: var(--primary); }
+.uploader.has-file { padding: 6px; border-style: solid; }
+.uploader input { display: none; }
+.uploader .icon { font-size: 28px; margin-bottom: 4px; }
+.uploader .txt { font-size: 13px; color: var(--text-2); }
+.uploader img { max-width: 100%; border-radius: 8px; display: block; }
+
+.bank-info {
+  background: #fef9c3;
+  border-radius: 12px; padding: 14px;
+  font-size: 13px; line-height: 1.7;
+  border: 1px solid #fde68a;
+}
+.bank-info b { color: var(--text); }
+.bank-info .copy-row {
+  display: flex; justify-content: space-between;
+  align-items: center; gap: 8px;
+  padding: 4px 0;
+}
+.copy-btn {
+  border: 0; background: var(--primary); color: #fff;
+  padding: 4px 10px; border-radius: 6px;
+  font-size: 11px; font-weight: 600;
+  cursor: pointer; font-family: inherit;
+}
+
+@media (max-width: 380px) {
+  .carriers, .payment-methods { grid-template-columns: 1fr; }
+  .amounts { grid-template-columns: repeat(2, 1fr); }
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-mark">📱</div>
+      <div>
+        <div class="brand-name" data-i18n="brand">เติมเงินอิสราเอล</div>
+        <div class="brand-sub" data-i18n="brand_sub">Top-Up Service</div>
+      </div>
+    </div>
+    <div class="lang-switch">
+      <button data-lang="th">ไทย</button>
+      <button data-lang="he">עב</button>
+      <button data-lang="en">EN</button>
+    </div>
+  </header>
+
+  <section class="hero">
+    <h1 data-i18n="hero_title">เติมเงินมือถือทุกค่าย ในอิสราเอล</h1>
+    <p data-i18n="hero_sub">รวดเร็ว ปลอดภัย โอนเงินผ่าน Bit / PayBox / ธนาคาร</p>
+  </section>
+
+  <nav class="tabs">
+    <button class="tab active" data-tab="order" data-i18n="tab_order">สั่งเติมเงิน</button>
+    <button class="tab" data-tab="history" data-i18n="tab_history">ประวัติ</button>
+    <button class="tab" data-tab="howto" data-i18n="tab_howto">วิธีใช้</button>
+  </nav>
+
+  <!-- ORDER PANEL -->
+  <section class="panel active" id="panel-order">
+
+    <div class="card">
+      <h2><span class="num">1</span><span data-i18n="step_carrier">เลือกค่ายมือถือ</span></h2>
+      <div class="carriers" id="carriers"></div>
+    </div>
+
+    <div class="card">
+      <h2><span class="num">2</span><span data-i18n="step_phone">เบอร์โทรที่ต้องการเติม</span></h2>
+      <div class="form-group">
+        <div class="phone-input">
+          <div class="prefix">+972</div>
+          <input type="tel" id="phone" inputmode="numeric" placeholder="50-123-4567" maxlength="12">
+        </div>
+        <small style="display:block;margin-top:6px;color:var(--text-3);font-size:12px" data-i18n="phone_hint">กรอกเบอร์โดยไม่ต้องใส่ 0 ตัวแรก</small>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2><span class="num">3</span><span data-i18n="step_amount">เลือกจำนวนเงิน (₪)</span></h2>
+      <div class="amounts" id="amounts"></div>
+      <div class="custom-amount">
+        <input type="number" id="customAmount" placeholder="หรือกรอกจำนวนเอง" min="10" max="2000">
+      </div>
+    </div>
+
+    <div class="card">
+      <h2><span class="num">4</span><span data-i18n="step_payment">วิธีการชำระเงิน</span></h2>
+      <div class="payment-methods" id="paymentMethods"></div>
+
+      <div id="bankInfoBox" style="margin-top: 12px; display: none;">
+        <div class="bank-info" id="bankInfo"></div>
+      </div>
+
+      <div class="form-group" style="margin-top: 14px;">
+        <label class="field-label" data-i18n="slip_label">แนบหลักฐานการโอน (ไม่บังคับ)</label>
+        <label class="uploader" id="slipUploader">
+          <input type="file" id="slipFile" accept="image/*">
+          <div id="slipPlaceholder">
+            <div class="icon">📎</div>
+            <div class="txt" data-i18n="slip_hint">แตะเพื่อแนบสลิปโอนเงิน</div>
+          </div>
+        </label>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2><span class="num">5</span><span data-i18n="step_contact">ข้อมูลผู้สั่ง</span></h2>
+      <div class="form-group">
+        <label class="field-label"><span data-i18n="your_name">ชื่อผู้สั่ง</span> <span class="required">*</span></label>
+        <input type="text" id="custName" placeholder="ชื่อ-นามสกุล">
+      </div>
+      <div class="form-group">
+        <label class="field-label"><span data-i18n="your_contact">เบอร์ติดต่อ / LINE / WhatsApp</span> <span class="required">*</span></label>
+        <input type="text" id="custContact" placeholder="0501234567 หรือ LINE ID">
+      </div>
+      <div class="form-group">
+        <label class="field-label" data-i18n="note_label">หมายเหตุเพิ่มเติม</label>
+        <textarea id="custNote" placeholder=""></textarea>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2 data-i18n="summary_title">สรุปคำสั่งซื้อ</h2>
+      <div class="summary" id="summary">
+        <div class="summary-row"><span class="label" data-i18n="sum_carrier">ค่าย</span><span class="value" id="sum-carrier">—</span></div>
+        <div class="summary-row"><span class="label" data-i18n="sum_phone">เบอร์</span><span class="value" id="sum-phone">—</span></div>
+        <div class="summary-row"><span class="label" data-i18n="sum_payment">ชำระโดย</span><span class="value" id="sum-payment">—</span></div>
+        <div class="summary-row summary-total"><span class="label" data-i18n="sum_total">ยอดรวม</span><span class="value" id="sum-total">₪ 0</span></div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- HISTORY PANEL -->
+  <section class="panel" id="panel-history">
+    <div id="historyList"></div>
+  </section>
+
+  <!-- HOW TO PANEL -->
+  <section class="panel" id="panel-howto">
+    <div class="card">
+      <h2 data-i18n="howto_title">วิธีใช้บริการ</h2>
+      <ol style="padding-inline-start: 22px; line-height: 2; color: var(--text-2); font-size: 14px;">
+        <li data-i18n="howto_1">เลือกค่ายมือถือและเบอร์ที่ต้องการเติม</li>
+        <li data-i18n="howto_2">เลือกจำนวนเงินที่ต้องการเติม (₪)</li>
+        <li data-i18n="howto_3">เลือกวิธีชำระเงิน (Bit, PayBox, โอนธนาคาร)</li>
+        <li data-i18n="howto_4">โอนเงินตามรายละเอียดที่แสดง แล้วแนบสลิป</li>
+        <li data-i18n="howto_5">กรอกชื่อและเบอร์ติดต่อ แล้วกดส่งคำสั่งซื้อ</li>
+        <li data-i18n="howto_6">ระบบจะเปิด WhatsApp พร้อมข้อความที่จัดรูปแบบให้แล้ว ส่งให้แอดมินได้ทันที</li>
+        <li data-i18n="howto_7">รอแอดมินยืนยันและเติมเงินให้ภายใน 5-15 นาที</li>
+      </ol>
+    </div>
+
+    <div class="card">
+      <h2 data-i18n="contact_title">ติดต่อแอดมิน</h2>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <a class="btn btn-wa" id="contactWA" style="text-decoration:none" target="_blank" rel="noopener">
+          <span>💬</span> <span data-i18n="contact_wa">WhatsApp แอดมิน</span>
+        </a>
+        <a class="btn btn-ghost" id="contactLine" style="text-decoration:none" target="_blank" rel="noopener">
+          <span>📲</span> <span data-i18n="contact_line">LINE @topup-il</span>
+        </a>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2 data-i18n="settings_title">ตั้งค่าผู้ดูแล</h2>
+      <p style="font-size:12px;color:var(--text-3);margin-bottom:10px" data-i18n="settings_hint">แอดมินสามารถเปลี่ยนเบอร์ WhatsApp ปลายทางได้ที่นี่ (เก็บไว้ในเครื่องเท่านั้น)</p>
+      <div class="form-group">
+        <label class="field-label">WhatsApp (+countrycode number)</label>
+        <input type="text" id="adminWA" placeholder="972501234567">
+      </div>
+      <button class="btn btn-primary" id="saveSettings" style="width:auto;padding:10px 18px" data-i18n="save_btn">บันทึก</button>
+    </div>
+  </section>
+
+  <div class="actions" id="bottomActions">
+    <button class="btn btn-ghost" id="clearBtn" data-i18n="clear_btn">ล้าง</button>
+    <button class="btn btn-primary" id="submitBtn" data-i18n="submit_btn">ส่งคำสั่งซื้อผ่าน WhatsApp</button>
+  </div>
+
+</div>
+
+<!-- Modal -->
+<div class="modal-backdrop" id="modal">
+  <div class="modal">
+    <h3>
+      <span class="check">✓</span>
+      <span data-i18n="modal_title">บันทึกคำสั่งซื้อแล้ว</span>
+    </h3>
+    <p data-i18n="modal_desc">กรุณาส่งข้อความผ่าน WhatsApp ให้แอดมินเพื่อยืนยันคำสั่งซื้อ</p>
+    <div style="display:flex;gap:8px;flex-direction:column">
+      <a class="btn btn-wa" id="modalWA" target="_blank" rel="noopener" style="text-decoration:none">
+        <span>💬</span> <span data-i18n="modal_send">เปิด WhatsApp</span>
+      </a>
+      <button class="btn btn-ghost" id="modalCopy" data-i18n="modal_copy">คัดลอกข้อความ</button>
+      <button class="btn btn-ghost" id="modalClose" data-i18n="modal_close">ปิด</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ---------- i18n ----------
+const I18N = {
+  th: {
+    brand: "เติมเงินอิสราเอล",
+    brand_sub: "บริการเติมเงินมือถือ",
+    hero_title: "เติมเงินมือถือทุกค่าย ในอิสราเอล",
+    hero_sub: "รวดเร็ว ปลอดภัย โอนเงินผ่าน Bit / PayBox / ธนาคาร",
+    tab_order: "สั่งเติมเงิน",
+    tab_history: "ประวัติ",
+    tab_howto: "วิธีใช้",
+    step_carrier: "เลือกค่ายมือถือ",
+    step_phone: "เบอร์โทรที่ต้องการเติม",
+    step_amount: "เลือกจำนวนเงิน (₪)",
+    step_payment: "วิธีการชำระเงิน",
+    step_contact: "ข้อมูลผู้สั่ง",
+    phone_hint: "กรอกเบอร์โดยไม่ต้องใส่ 0 ตัวแรก",
+    slip_label: "แนบหลักฐานการโอน (ไม่บังคับ)",
+    slip_hint: "แตะเพื่อแนบสลิปโอนเงิน",
+    your_name: "ชื่อผู้สั่ง",
+    your_contact: "เบอร์ติดต่อ / LINE / WhatsApp",
+    note_label: "หมายเหตุเพิ่มเติม",
+    summary_title: "สรุปคำสั่งซื้อ",
+    sum_carrier: "ค่าย", sum_phone: "เบอร์", sum_payment: "ชำระโดย", sum_total: "ยอดรวม",
+    clear_btn: "ล้าง",
+    submit_btn: "ส่งคำสั่งซื้อผ่าน WhatsApp",
+    howto_title: "วิธีใช้บริการ",
+    howto_1: "เลือกค่ายมือถือและเบอร์ที่ต้องการเติม",
+    howto_2: "เลือกจำนวนเงินที่ต้องการเติม (₪)",
+    howto_3: "เลือกวิธีชำระเงิน (Bit, PayBox, โอนธนาคาร)",
+    howto_4: "โอนเงินตามรายละเอียดที่แสดง แล้วแนบสลิป",
+    howto_5: "กรอกชื่อและเบอร์ติดต่อ แล้วกดส่งคำสั่งซื้อ",
+    howto_6: "ระบบจะเปิด WhatsApp พร้อมข้อความที่จัดรูปแบบให้แล้ว ส่งให้แอดมินได้ทันที",
+    howto_7: "รอแอดมินยืนยันและเติมเงินให้ภายใน 5-15 นาที",
+    contact_title: "ติดต่อแอดมิน",
+    contact_wa: "WhatsApp แอดมิน",
+    contact_line: "LINE @topup-il",
+    settings_title: "ตั้งค่าผู้ดูแล",
+    settings_hint: "แอดมินสามารถเปลี่ยนเบอร์ WhatsApp ปลายทางได้ที่นี่ (เก็บไว้ในเครื่องเท่านั้น)",
+    save_btn: "บันทึก",
+    modal_title: "บันทึกคำสั่งซื้อแล้ว",
+    modal_desc: "กรุณาส่งข้อความผ่าน WhatsApp ให้แอดมินเพื่อยืนยันคำสั่งซื้อ",
+    modal_send: "เปิด WhatsApp",
+    modal_copy: "คัดลอกข้อความ",
+    modal_close: "ปิด",
+    empty_history: "ยังไม่มีประวัติคำสั่งซื้อ",
+    status_pending: "รอดำเนินการ",
+    status_done: "เติมแล้ว",
+    bank_title: "รายละเอียดการโอน",
+    bit_text: "โอนผ่านแอป Bit ไปยังเบอร์",
+    paybox_text: "โอนผ่าน PayBox ไปยังเบอร์",
+    cash_text: "นัดรับเงินสด กรุณาติดต่อแอดมิน",
+    bank_account: "เลขบัญชี",
+    bank_branch: "สาขา",
+    bank_name: "ชื่อบัญชี",
+    copy: "คัดลอก",
+    copied: "คัดลอกแล้ว",
+    validation_carrier: "กรุณาเลือกค่ายมือถือ",
+    validation_phone: "กรุณากรอกเบอร์ที่ถูกต้อง (9-10 หลัก)",
+    validation_amount: "กรุณาเลือกหรือกรอกจำนวนเงิน",
+    validation_payment: "กรุณาเลือกวิธีชำระเงิน",
+    validation_name: "กรุณากรอกชื่อผู้สั่ง",
+    validation_contact: "กรุณากรอกเบอร์ติดต่อ",
+    confirm_clear: "ล้างข้อมูลทั้งหมด?",
+    msg_order: "🛒 *คำสั่งซื้อเติมเงิน*",
+    msg_carrier: "📡 ค่าย",
+    msg_phone: "📱 เบอร์",
+    msg_amount: "💰 จำนวน",
+    msg_payment: "💳 ชำระโดย",
+    msg_name: "👤 ชื่อ",
+    msg_contact: "📞 ติดต่อ",
+    msg_note: "📝 หมายเหตุ",
+    msg_time: "🕐 เวลา",
+    msg_ref: "🔖 รหัสคำสั่ง"
+  },
+  he: {
+    brand: "טעינת אשראי",
+    brand_sub: "שירות טעינת סלולר",
+    hero_title: "טעינת אשראי לכל הרשתות בישראל",
+    hero_sub: "מהיר ובטוח - תשלום ב-Bit / PayBox / העברה בנקאית",
+    tab_order: "הזמן טעינה",
+    tab_history: "היסטוריה",
+    tab_howto: "איך זה עובד",
+    step_carrier: "בחר חברת סלולר",
+    step_phone: "מספר טלפון לטעינה",
+    step_amount: "בחר סכום (₪)",
+    step_payment: "אמצעי תשלום",
+    step_contact: "פרטי המזמין",
+    phone_hint: "הזן את המספר ללא ה-0 הראשון",
+    slip_label: "צרף קבלת תשלום (לא חובה)",
+    slip_hint: "לחץ לצירוף קבלה",
+    your_name: "שם מלא",
+    your_contact: "טלפון / LINE / WhatsApp",
+    note_label: "הערות נוספות",
+    summary_title: "סיכום הזמנה",
+    sum_carrier: "חברה", sum_phone: "מספר", sum_payment: "תשלום", sum_total: "סך הכל",
+    clear_btn: "נקה",
+    submit_btn: "שלח הזמנה ב-WhatsApp",
+    howto_title: "איך להשתמש בשירות",
+    howto_1: "בחר חברת סלולר ומספר טלפון לטעינה",
+    howto_2: "בחר את סכום הטעינה (₪)",
+    howto_3: "בחר אמצעי תשלום (Bit, PayBox, העברה בנקאית)",
+    howto_4: "בצע את התשלום וצרף את הקבלה",
+    howto_5: "הזן שם וטלפון ולחץ לשליחת ההזמנה",
+    howto_6: "המערכת תפתח את WhatsApp עם הודעה מוכנה לשליחה למנהל",
+    howto_7: "ההזמנה תטופל תוך 5-15 דקות",
+    contact_title: "צור קשר עם המנהל",
+    contact_wa: "WhatsApp מנהל",
+    contact_line: "LINE @topup-il",
+    settings_title: "הגדרות מנהל",
+    settings_hint: "המנהל יכול לעדכן מספר WhatsApp כאן (נשמר מקומית בלבד)",
+    save_btn: "שמור",
+    modal_title: "ההזמנה נשמרה",
+    modal_desc: "אנא שלח את ההודעה ב-WhatsApp לאישור ההזמנה",
+    modal_send: "פתח WhatsApp",
+    modal_copy: "העתק הודעה",
+    modal_close: "סגור",
+    empty_history: "אין הזמנות עדיין",
+    status_pending: "ממתין",
+    status_done: "טעון",
+    bank_title: "פרטי תשלום",
+    bit_text: "העבר ב-Bit למספר",
+    paybox_text: "העבר ב-PayBox למספר",
+    cash_text: "תשלום במזומן - צור קשר עם המנהל",
+    bank_account: "מספר חשבון",
+    bank_branch: "סניף",
+    bank_name: "שם בעל החשבון",
+    copy: "העתק",
+    copied: "הועתק",
+    validation_carrier: "אנא בחר חברת סלולר",
+    validation_phone: "אנא הזן מספר תקין (9-10 ספרות)",
+    validation_amount: "אנא בחר או הזן סכום",
+    validation_payment: "אנא בחר אמצעי תשלום",
+    validation_name: "אנא הזן שם",
+    validation_contact: "אנא הזן טלפון ליצירת קשר",
+    confirm_clear: "לנקות את כל הנתונים?",
+    msg_order: "🛒 *הזמנת טעינת אשראי*",
+    msg_carrier: "📡 חברה",
+    msg_phone: "📱 מספר",
+    msg_amount: "💰 סכום",
+    msg_payment: "💳 תשלום",
+    msg_name: "👤 שם",
+    msg_contact: "📞 קשר",
+    msg_note: "📝 הערות",
+    msg_time: "🕐 זמן",
+    msg_ref: "🔖 מס׳ הזמנה"
+  },
+  en: {
+    brand: "Top-Up Israel",
+    brand_sub: "Mobile credit service",
+    hero_title: "Phone top-up for all carriers in Israel",
+    hero_sub: "Fast and secure - pay via Bit / PayBox / Bank transfer",
+    tab_order: "Order top-up",
+    tab_history: "History",
+    tab_howto: "How it works",
+    step_carrier: "Select carrier",
+    step_phone: "Phone number to recharge",
+    step_amount: "Choose amount (₪)",
+    step_payment: "Payment method",
+    step_contact: "Your details",
+    phone_hint: "Enter the number without leading 0",
+    slip_label: "Attach payment receipt (optional)",
+    slip_hint: "Tap to attach a receipt",
+    your_name: "Full name",
+    your_contact: "Phone / LINE / WhatsApp",
+    note_label: "Additional notes",
+    summary_title: "Order summary",
+    sum_carrier: "Carrier", sum_phone: "Number", sum_payment: "Payment", sum_total: "Total",
+    clear_btn: "Clear",
+    submit_btn: "Send order via WhatsApp",
+    howto_title: "How to use",
+    howto_1: "Select your carrier and phone number",
+    howto_2: "Choose the top-up amount (₪)",
+    howto_3: "Choose a payment method (Bit, PayBox, bank transfer)",
+    howto_4: "Make the payment and attach the receipt",
+    howto_5: "Fill in your name and contact, then submit",
+    howto_6: "WhatsApp will open with a pre-formatted message — send it to the admin",
+    howto_7: "Top-up is processed within 5-15 minutes after confirmation",
+    contact_title: "Contact admin",
+    contact_wa: "WhatsApp admin",
+    contact_line: "LINE @topup-il",
+    settings_title: "Admin settings",
+    settings_hint: "Admins can change the WhatsApp number here (stored locally only)",
+    save_btn: "Save",
+    modal_title: "Order saved",
+    modal_desc: "Please send the message via WhatsApp to confirm your order",
+    modal_send: "Open WhatsApp",
+    modal_copy: "Copy message",
+    modal_close: "Close",
+    empty_history: "No orders yet",
+    status_pending: "Pending",
+    status_done: "Completed",
+    bank_title: "Payment details",
+    bit_text: "Transfer via Bit to",
+    paybox_text: "Transfer via PayBox to",
+    cash_text: "Cash payment - contact the admin",
+    bank_account: "Account",
+    bank_branch: "Branch",
+    bank_name: "Account name",
+    copy: "Copy",
+    copied: "Copied",
+    validation_carrier: "Please select a carrier",
+    validation_phone: "Please enter a valid number (9-10 digits)",
+    validation_amount: "Please select or enter an amount",
+    validation_payment: "Please select a payment method",
+    validation_name: "Please enter your name",
+    validation_contact: "Please enter your contact",
+    confirm_clear: "Clear all fields?",
+    msg_order: "🛒 *Top-up order*",
+    msg_carrier: "📡 Carrier",
+    msg_phone: "📱 Number",
+    msg_amount: "💰 Amount",
+    msg_payment: "💳 Payment",
+    msg_name: "👤 Name",
+    msg_contact: "📞 Contact",
+    msg_note: "📝 Notes",
+    msg_time: "🕐 Time",
+    msg_ref: "🔖 Reference"
+  }
+};
+
+// ---------- Data ----------
+const CARRIERS = [
+  { id: "cellcom",  name: { th: "Cellcom",  he: "סלקום",   en: "Cellcom"  }, color: "#e30613", abbr: "C"  },
+  { id: "partner",  name: { th: "Partner",  he: "פרטנר",  en: "Partner"  }, color: "#41b6e6", abbr: "P"  },
+  { id: "pelephone",name: { th: "Pelephone",he: "פלאפון", en: "Pelephone"}, color: "#0033a0", abbr: "פ" },
+  { id: "hot",      name: { th: "HOT Mobile",he:"הוט מובייל",en:"HOT Mobile"},color:"#e4002b",abbr:"H" },
+  { id: "golan",    name: { th: "Golan",    he: "גולן",    en: "Golan"    }, color: "#00854a", abbr: "G"  },
+  { id: "ramilevy", name: { th: "Rami Levy",he: "רמי לוי", en: "Rami Levy"}, color: "#ed1c24", abbr: "R"  },
+  { id: "019",      name: { th: "019 Mobile",he:"019 מובייל",en:"019 Mobile"},color:"#ff6900",abbr:"19" },
+  { id: "we4g",     name: { th: "We4G",     he: "We4G",   en: "We4G"     }, color: "#8c1d40", abbr: "W"  }
+];
+
+const AMOUNTS = [20, 30, 50, 75, 100, 150, 200, 250, 300];
+
+const PAYMENTS = [
+  { id: "bit",     icon: "💚", label: { th: "Bit",     he: "ביט",       en: "Bit"     } },
+  { id: "paybox",  icon: "💜", label: { th: "PayBox",  he: "פייבוקס",   en: "PayBox"  } },
+  { id: "bank",    icon: "🏦", label: { th: "โอนธนาคาร",he: "העברה בנקאית", en: "Bank transfer" } },
+  { id: "cash",    icon: "💵", label: { th: "เงินสด",   he: "מזומן",     en: "Cash"    } }
+];
+
+const DEFAULTS = {
+  adminWA: "972500000000", // placeholder - admin to configure
+  bitNumber: "050-000-0000",
+  payboxNumber: "050-000-0000",
+  bankName: "Bank Hapoalim",
+  bankAccount: "12-345-678901",
+  bankBranch: "001",
+  bankHolder: "Top-Up Israel Ltd."
+};
+
+// ---------- State ----------
+let state = {
+  lang: localStorage.getItem("tu_lang") || "th",
+  carrier: null,
+  amount: null,
+  payment: null,
+  slipDataUrl: null
+};
+
+let settings = JSON.parse(localStorage.getItem("tu_settings") || "null") || { ...DEFAULTS };
+let history = JSON.parse(localStorage.getItem("tu_history") || "[]");
+
+const $ = (s, p=document) => p.querySelector(s);
+const $$ = (s, p=document) => Array.from(p.querySelectorAll(s));
+const t = (k) => I18N[state.lang][k] || k;
+
+// ---------- Render ----------
+function setLang(lang) {
+  state.lang = lang;
+  localStorage.setItem("tu_lang", lang);
+  document.documentElement.lang = lang;
+  document.documentElement.dir = lang === "he" ? "rtl" : "ltr";
+  $$(".lang-switch button").forEach(b => b.classList.toggle("active", b.dataset.lang === lang));
+  $$("[data-i18n]").forEach(el => {
+    const k = el.dataset.i18n;
+    if (I18N[lang][k]) el.textContent = I18N[lang][k];
+  });
+  renderCarriers();
+  renderPayments();
+  renderSummary();
+  renderHistory();
+  renderBankInfo();
+  $("#custName").placeholder = lang === "he" ? "שם מלא" : (lang === "en" ? "Full name" : "ชื่อ-นามสกุล");
+  $("#custContact").placeholder = lang === "he" ? "0501234567" : (lang === "en" ? "0501234567 or LINE ID" : "0501234567 หรือ LINE ID");
+  $("#customAmount").placeholder = lang === "he" ? "או הזן סכום אחר" : (lang === "en" ? "Or enter custom amount" : "หรือกรอกจำนวนเอง");
+  $("#contactWA").href = "https://wa.me/" + settings.adminWA;
+}
+
+function renderCarriers() {
+  const root = $("#carriers");
+  root.innerHTML = "";
+  CARRIERS.forEach(c => {
+    const el = document.createElement("div");
+    el.className = "carrier" + (state.carrier === c.id ? " selected" : "");
+    el.innerHTML = `
+      <div class="carrier-logo" style="background:${c.color}">${c.abbr}</div>
+      <div>
+        <div class="carrier-name">${c.name[state.lang]}</div>
+      </div>`;
+    el.onclick = () => { state.carrier = c.id; renderCarriers(); renderSummary(); };
+    root.appendChild(el);
+  });
+}
+
+function renderAmounts() {
+  const root = $("#amounts");
+  root.innerHTML = "";
+  AMOUNTS.forEach(a => {
+    const el = document.createElement("div");
+    el.className = "amount" + (state.amount === a ? " selected" : "");
+    el.innerHTML = `₪${a}`;
+    el.onclick = () => {
+      state.amount = a;
+      $("#customAmount").value = "";
+      renderAmounts();
+      renderSummary();
+    };
+    root.appendChild(el);
+  });
+}
+
+function renderPayments() {
+  const root = $("#paymentMethods");
+  root.innerHTML = "";
+  PAYMENTS.forEach(p => {
+    const el = document.createElement("div");
+    el.className = "pay-method" + (state.payment === p.id ? " selected" : "");
+    el.innerHTML = `<div class="pay-icon">${p.icon}</div><div>${p.label[state.lang]}</div>`;
+    el.onclick = () => { state.payment = p.id; renderPayments(); renderBankInfo(); renderSummary(); };
+    root.appendChild(el);
+  });
+}
+
+function renderBankInfo() {
+  const box = $("#bankInfoBox");
+  const info = $("#bankInfo");
+  if (!state.payment) { box.style.display = "none"; return; }
+  box.style.display = "block";
+
+  const copyRow = (label, value) => `
+    <div class="copy-row">
+      <span><b>${label}:</b> ${value}</span>
+      <button class="copy-btn" data-copy="${value}">${t("copy")}</button>
+    </div>`;
+
+  let html = `<b>${t("bank_title")}</b><br>`;
+  if (state.payment === "bit") {
+    html += copyRow(t("bit_text"), settings.bitNumber);
+  } else if (state.payment === "paybox") {
+    html += copyRow(t("paybox_text"), settings.payboxNumber);
+  } else if (state.payment === "bank") {
+    html += `<b>${settings.bankName}</b>`;
+    html += copyRow(t("bank_account"), settings.bankAccount);
+    html += copyRow(t("bank_branch"), settings.bankBranch);
+    html += copyRow(t("bank_name"), settings.bankHolder);
+  } else if (state.payment === "cash") {
+    html += t("cash_text");
+  }
+  info.innerHTML = html;
+
+  $$("#bankInfo .copy-btn").forEach(btn => {
+    btn.onclick = (e) => {
+      e.preventDefault();
+      navigator.clipboard.writeText(btn.dataset.copy);
+      const orig = btn.textContent;
+      btn.textContent = t("copied");
+      setTimeout(() => btn.textContent = orig, 1200);
+    };
+  });
+}
+
+function getAmount() {
+  const c = parseInt($("#customAmount").value, 10);
+  return c > 0 ? c : state.amount;
+}
+
+function renderSummary() {
+  const c = CARRIERS.find(x => x.id === state.carrier);
+  const p = PAYMENTS.find(x => x.id === state.payment);
+  $("#sum-carrier").textContent = c ? c.name[state.lang] : "—";
+  $("#sum-phone").textContent = $("#phone").value ? "+972 " + $("#phone").value : "—";
+  $("#sum-payment").textContent = p ? p.label[state.lang] : "—";
+  const amount = getAmount();
+  $("#sum-total").textContent = amount ? "₪ " + amount : "₪ 0";
+}
+
+function renderHistory() {
+  const root = $("#historyList");
+  if (!history.length) {
+    root.innerHTML = `<div class="empty"><div class="ico">📋</div><div class="msg">${t("empty_history")}</div></div>`;
+    return;
+  }
+  root.innerHTML = "";
+  history.slice().reverse().forEach(h => {
+    const c = CARRIERS.find(x => x.id === h.carrier);
+    const p = PAYMENTS.find(x => x.id === h.payment);
+    const d = new Date(h.time);
+    const dateStr = d.toLocaleString(state.lang === "he" ? "he-IL" : (state.lang === "en" ? "en-US" : "th-TH"));
+    const el = document.createElement("div");
+    el.className = "history-item";
+    el.innerHTML = `
+      <div class="h-icon" style="background:${c ? c.color : "#94a3b8"}1a; color:${c ? c.color : "#475569"}">${c ? c.abbr : "?"}</div>
+      <div class="h-main">
+        <div class="h-title">${c ? c.name[state.lang] : "?"} · +972 ${h.phone}</div>
+        <div class="h-sub">${dateStr} · ${p ? p.label[state.lang] : ""}</div>
+        <span class="h-status ${h.status || "pending"}">${t("status_" + (h.status || "pending"))}</span>
+      </div>
+      <div class="h-amount">₪${h.amount}</div>`;
+    root.appendChild(el);
+  });
+}
+
+// ---------- Tabs ----------
+$$(".tab").forEach(t => {
+  t.onclick = () => {
+    $$(".tab").forEach(x => x.classList.remove("active"));
+    $$(".panel").forEach(x => x.classList.remove("active"));
+    t.classList.add("active");
+    $("#panel-" + t.dataset.tab).classList.add("active");
+    $("#bottomActions").style.display = t.dataset.tab === "order" ? "block" : "none";
+    if (t.dataset.tab === "history") renderHistory();
+  };
+});
+
+// ---------- Lang buttons ----------
+$$(".lang-switch button").forEach(b => {
+  b.onclick = () => setLang(b.dataset.lang);
+});
+
+// ---------- Inputs ----------
+$("#phone").addEventListener("input", (e) => {
+  e.target.value = e.target.value.replace(/[^0-9]/g, "").slice(0, 10);
+  renderSummary();
+});
+$("#customAmount").addEventListener("input", () => {
+  state.amount = null;
+  renderAmounts();
+  renderSummary();
+});
+
+// ---------- Slip uploader ----------
+$("#slipFile").addEventListener("change", (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    state.slipDataUrl = ev.target.result;
+    $("#slipUploader").classList.add("has-file");
+    $("#slipPlaceholder").innerHTML = `<img src="${state.slipDataUrl}" alt="slip">`;
+  };
+  reader.readAsDataURL(file);
+});
+
+// ---------- Submit ----------
+$("#submitBtn").onclick = submitOrder;
+$("#clearBtn").onclick = () => {
+  if (confirm(t("confirm_clear"))) {
+    state.carrier = null; state.amount = null; state.payment = null; state.slipDataUrl = null;
+    $("#phone").value = ""; $("#customAmount").value = "";
+    $("#custName").value = ""; $("#custContact").value = ""; $("#custNote").value = "";
+    $("#slipPlaceholder").innerHTML = `<div class="icon">📎</div><div class="txt">${t("slip_hint")}</div>`;
+    $("#slipUploader").classList.remove("has-file");
+    renderCarriers(); renderAmounts(); renderPayments(); renderBankInfo(); renderSummary();
+  }
+};
+
+function validate() {
+  const phone = $("#phone").value.replace(/\D/g, "");
+  const name = $("#custName").value.trim();
+  const contact = $("#custContact").value.trim();
+  const amount = getAmount();
+  if (!state.carrier) return t("validation_carrier");
+  if (phone.length < 9 || phone.length > 10) return t("validation_phone");
+  if (!amount || amount < 10) return t("validation_amount");
+  if (!state.payment) return t("validation_payment");
+  if (!name) return t("validation_name");
+  if (!contact) return t("validation_contact");
+  return null;
+}
+
+function buildOrder() {
+  const c = CARRIERS.find(x => x.id === state.carrier);
+  const p = PAYMENTS.find(x => x.id === state.payment);
+  return {
+    id: "T" + Date.now().toString(36).toUpperCase(),
+    time: new Date().toISOString(),
+    carrier: state.carrier,
+    carrierName: c.name[state.lang],
+    phone: $("#phone").value.replace(/\D/g, ""),
+    amount: getAmount(),
+    payment: state.payment,
+    paymentName: p.label[state.lang],
+    name: $("#custName").value.trim(),
+    contact: $("#custContact").value.trim(),
+    note: $("#custNote").value.trim(),
+    status: "pending"
+  };
+}
+
+function buildMessage(o) {
+  const time = new Date(o.time).toLocaleString(state.lang === "he" ? "he-IL" : (state.lang === "en" ? "en-US" : "th-TH"));
+  const lines = [
+    t("msg_order"),
+    "",
+    `${t("msg_ref")}: \`${o.id}\``,
+    `${t("msg_carrier")}: ${o.carrierName}`,
+    `${t("msg_phone")}: +972 ${o.phone}`,
+    `${t("msg_amount")}: ₪${o.amount}`,
+    `${t("msg_payment")}: ${o.paymentName}`,
+    "",
+    `${t("msg_name")}: ${o.name}`,
+    `${t("msg_contact")}: ${o.contact}`
+  ];
+  if (o.note) lines.push(`${t("msg_note")}: ${o.note}`);
+  lines.push("", `${t("msg_time")}: ${time}`);
+  return lines.join("\n");
+}
+
+function submitOrder() {
+  const err = validate();
+  if (err) { alert(err); return; }
+  const order = buildOrder();
+  history.push(order);
+  localStorage.setItem("tu_history", JSON.stringify(history));
+  const msg = buildMessage(order);
+  const waUrl = `https://wa.me/${settings.adminWA}?text=${encodeURIComponent(msg)}`;
+  $("#modalWA").href = waUrl;
+  $("#modalCopy").onclick = () => {
+    navigator.clipboard.writeText(msg);
+    $("#modalCopy").textContent = t("copied");
+    setTimeout(() => $("#modalCopy").textContent = t("modal_copy"), 1500);
+  };
+  $("#modal").classList.add("show");
+}
+
+$("#modalClose").onclick = () => $("#modal").classList.remove("show");
+$("#modal").onclick = (e) => { if (e.target.id === "modal") $("#modal").classList.remove("show"); };
+
+// ---------- Admin settings ----------
+$("#adminWA").value = settings.adminWA;
+$("#saveSettings").onclick = () => {
+  settings.adminWA = $("#adminWA").value.replace(/\D/g, "");
+  localStorage.setItem("tu_settings", JSON.stringify(settings));
+  $("#contactWA").href = "https://wa.me/" + settings.adminWA;
+  $("#saveSettings").textContent = t("copied");
+  setTimeout(() => $("#saveSettings").textContent = t("save_btn"), 1200);
+};
+
+// ---------- Init ----------
+$("#contactLine").href = "https://line.me/R/ti/p/@topup-il";
+setLang(state.lang);
+renderAmounts();
+renderHistory();
+</script>
+</body>
+</html>
