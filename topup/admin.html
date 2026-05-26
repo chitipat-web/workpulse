@@ -1,0 +1,981 @@
+<!DOCTYPE html>
+<html lang="th" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0f172a">
+<title>Admin · เติมเงินอิสราเอล</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;900&family=Sarabun:wght@400;500;700&family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/firebase@9.23.0/compat/app.js"></script>
+<script src="https://unpkg.com/firebase@9.23.0/compat/firestore.js"></script>
+<style>
+:root {
+  --bg: #0f172a;
+  --surface: #1e293b;
+  --surface-2: #334155;
+  --border: #334155;
+  --text: #f1f5f9;
+  --text-2: #cbd5e1;
+  --text-3: #94a3b8;
+  --primary: #3b82f6;
+  --primary-hover: #2563eb;
+  --success: #22c55e;
+  --success-bg: rgba(34,197,94,0.15);
+  --warn: #f59e0b;
+  --warn-bg: rgba(245,158,11,0.15);
+  --danger: #ef4444;
+  --danger-bg: rgba(239,68,68,0.15);
+  --accent: #8b5cf6;
+  --accent-bg: rgba(139,92,246,0.15);
+  --radius: 12px;
+  --radius-lg: 16px;
+  --font: 'Sarabun', 'Inter', system-ui, sans-serif;
+}
+html[lang="he"] { --font: 'Heebo', system-ui, sans-serif; }
+html[lang="en"] { --font: 'Inter', system-ui, sans-serif; }
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  font-size: 15px;
+}
+
+.app { max-width: 1100px; margin: 0 auto; padding: 0 16px 80px; }
+
+.topbar {
+  position: sticky; top: 0; z-index: 30;
+  background: var(--bg);
+  padding: 14px 0;
+  display: flex; align-items: center; gap: 12px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 16px;
+}
+.brand { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; }
+.brand-mark {
+  width: 36px; height: 36px; border-radius: 9px;
+  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+  display: grid; place-items: center; font-size: 18px;
+}
+.brand-name { font-weight: 700; font-size: 15px; }
+.brand-sub { font-size: 11px; color: var(--text-3); }
+
+.lang-switch { display: flex; gap: 2px; background: var(--surface); padding: 3px; border-radius: 999px; }
+.lang-switch button {
+  border: 0; background: transparent; color: var(--text-2);
+  font-size: 11px; padding: 5px 9px; border-radius: 999px;
+  cursor: pointer; font-weight: 600; font-family: inherit;
+}
+.lang-switch button.active { background: var(--primary); color: #fff; }
+
+.btn {
+  border: 0; padding: 9px 14px;
+  border-radius: 10px;
+  font-family: inherit; font-size: 13px; font-weight: 600;
+  cursor: pointer;
+  display: inline-flex; align-items: center; gap: 6px;
+  transition: all 0.12s;
+  background: var(--surface); color: var(--text);
+}
+.btn:hover { background: var(--surface-2); }
+.btn-primary { background: var(--primary); color: #fff; }
+.btn-primary:hover { background: var(--primary-hover); }
+.btn-success { background: var(--success); color: #fff; }
+.btn-warn { background: var(--warn); color: #fff; }
+.btn-danger { background: var(--danger); color: #fff; }
+.btn-ghost { background: transparent; border: 1px solid var(--border); }
+.btn-sm { padding: 6px 10px; font-size: 12px; }
+.btn-icon { padding: 8px; }
+
+/* ----- Login ----- */
+.login {
+  position: fixed; inset: 0;
+  background: var(--bg);
+  display: grid; place-items: center;
+  z-index: 100;
+  padding: 20px;
+}
+.login.hidden { display: none; }
+.login-card {
+  background: var(--surface);
+  padding: 28px;
+  border-radius: 20px;
+  max-width: 360px; width: 100%;
+  text-align: center;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+}
+.login-card h1 { font-size: 20px; margin-bottom: 6px; }
+.login-card p { color: var(--text-3); font-size: 13px; margin-bottom: 18px; }
+.pin-input {
+  width: 100%;
+  text-align: center;
+  font-size: 24px;
+  letter-spacing: 8px;
+  background: var(--surface-2);
+  border: 1.5px solid var(--border);
+  color: var(--text);
+  padding: 14px;
+  border-radius: 12px;
+  font-family: inherit;
+  margin-bottom: 12px;
+}
+.pin-input:focus { outline: none; border-color: var(--primary); }
+
+/* ----- Stats ----- */
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.stat {
+  background: var(--surface);
+  padding: 14px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+}
+.stat-label { font-size: 11px; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+.stat-value { font-size: 22px; font-weight: 800; }
+.stat-value.profit { color: var(--success); }
+.stat-value.revenue { color: var(--primary); }
+.stat-value.cost { color: var(--warn); }
+.stat-sub { font-size: 11px; color: var(--text-3); margin-top: 2px; }
+
+/* ----- Filters ----- */
+.filters {
+  display: flex; gap: 6px; margin-bottom: 14px;
+  overflow-x: auto; padding-bottom: 4px;
+  scrollbar-width: thin;
+}
+.filter {
+  flex-shrink: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text-2);
+  padding: 8px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-family: inherit; font-size: 13px; font-weight: 600;
+  display: flex; align-items: center; gap: 6px;
+}
+.filter.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+.filter .count {
+  background: rgba(255,255,255,0.2);
+  padding: 1px 6px; border-radius: 999px;
+  font-size: 11px;
+}
+.filter:not(.active) .count { background: var(--surface-2); color: var(--text-2); }
+
+/* ----- Order card ----- */
+.order {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  margin-bottom: 10px;
+  overflow: hidden;
+}
+.order-head {
+  padding: 14px; display: flex; gap: 12px; align-items: flex-start;
+  cursor: pointer;
+}
+.order-logo {
+  width: 44px; height: 44px; border-radius: 11px;
+  display: grid; place-items: center;
+  font-weight: 800; font-size: 13px; color: #fff;
+  flex-shrink: 0;
+}
+.order-info { flex: 1; min-width: 0; }
+.order-row { display: flex; align-items: center; gap: 8px; justify-content: space-between; }
+.order-title { font-weight: 700; font-size: 15px; }
+.order-phone {
+  font-family: 'Inter', monospace;
+  font-size: 14px;
+  color: var(--text-2);
+  margin-top: 1px;
+}
+.order-meta { font-size: 11px; color: var(--text-3); margin-top: 4px; display: flex; gap: 10px; flex-wrap: wrap; }
+.order-amount {
+  font-weight: 800; font-size: 18px;
+  color: var(--text);
+  white-space: nowrap;
+}
+.status {
+  display: inline-block;
+  font-size: 10px; font-weight: 700; letter-spacing: 0.5px;
+  padding: 3px 8px; border-radius: 999px;
+  text-transform: uppercase;
+}
+.status.pending  { background: var(--warn-bg);   color: var(--warn); }
+.status.paid     { background: var(--accent-bg); color: var(--accent); }
+.status.completed{ background: var(--success-bg);color: var(--success); }
+.status.cancelled{ background: var(--danger-bg); color: var(--danger); }
+
+.order-body {
+  border-top: 1px solid var(--border);
+  padding: 14px;
+  display: none;
+  background: rgba(0,0,0,0.15);
+}
+.order.expanded .order-body { display: block; }
+
+.order-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.field {
+  background: var(--surface-2);
+  padding: 8px 10px;
+  border-radius: 8px;
+}
+.field-label { font-size: 10px; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.5px; }
+.field-value { font-size: 13px; font-weight: 600; margin-top: 2px; word-break: break-word; }
+
+.cost-input {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  color: var(--text);
+  font-family: inherit; font-size: 14px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  width: 100%;
+}
+.cost-input:focus { outline: none; border-color: var(--primary); }
+
+.actions-row {
+  display: flex; flex-wrap: wrap; gap: 6px;
+  margin-top: 10px;
+}
+
+.slip-thumb {
+  max-width: 200px; max-height: 200px;
+  border-radius: 8px; cursor: zoom-in;
+  margin-top: 6px;
+  display: block;
+}
+
+.empty {
+  text-align: center; padding: 60px 20px;
+  color: var(--text-3);
+}
+.empty-ico { font-size: 64px; margin-bottom: 10px; opacity: 0.5; }
+
+/* ----- Toast ----- */
+.toast {
+  position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+  background: var(--surface-2); color: var(--text);
+  padding: 10px 18px;
+  border-radius: 999px;
+  font-size: 13px; font-weight: 600;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  opacity: 0; transition: opacity 0.2s;
+  z-index: 200;
+  pointer-events: none;
+}
+.toast.show { opacity: 1; }
+
+/* ----- Modal (slip viewer) ----- */
+.viewer {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.92);
+  display: none; align-items: center; justify-content: center;
+  z-index: 150; padding: 20px;
+  cursor: zoom-out;
+}
+.viewer.show { display: flex; }
+.viewer img { max-width: 100%; max-height: 100%; border-radius: 8px; }
+
+/* ----- Toolbar ----- */
+.toolbar {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  padding: 12px;
+  margin-bottom: 14px;
+  display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+}
+.toolbar .search {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-family: inherit; font-size: 13px;
+  flex: 1; min-width: 140px;
+}
+.toolbar .search:focus { outline: none; border-color: var(--primary); }
+
+[dir="rtl"] { text-align: right; }
+
+@media (max-width: 540px) {
+  .stat-value { font-size: 18px; }
+  .order-amount { font-size: 16px; }
+  .actions-row .btn-sm span.lbl { display: none; }
+  .actions-row .btn-sm { padding: 8px 10px; }
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="login" id="loginScreen">
+  <div class="login-card">
+    <div style="font-size:42px;margin-bottom:8px">🔐</div>
+    <h1 data-i18n="login_title">Admin Login</h1>
+    <p data-i18n="login_desc">กรอก PIN เพื่อเข้าระบบ</p>
+    <input class="pin-input" id="pinInput" type="password" inputmode="numeric" maxlength="6" placeholder="••••">
+    <button class="btn btn-primary" id="loginBtn" style="width:100%;justify-content:center;padding:12px" data-i18n="login_btn">เข้าสู่ระบบ</button>
+    <p style="margin-top:14px;font-size:11px" data-i18n="login_hint">PIN เริ่มต้น: 1234 (เปลี่ยนได้ในหน้าตั้งค่า)</p>
+  </div>
+</div>
+
+<div class="app">
+
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-mark">⚡</div>
+      <div>
+        <div class="brand-name" data-i18n="brand">Admin Dashboard</div>
+        <div class="brand-sub" data-i18n="brand_sub">เติมเงินอิสราเอล · Live orders</div>
+      </div>
+    </div>
+    <div class="lang-switch">
+      <button data-lang="th">ไทย</button>
+      <button data-lang="he">עב</button>
+      <button data-lang="en">EN</button>
+    </div>
+    <button class="btn btn-icon" id="settingsBtn" title="Settings">⚙️</button>
+  </header>
+
+  <!-- STATS -->
+  <div class="stats" id="stats">
+    <div class="stat">
+      <div class="stat-label" data-i18n="stat_today">วันนี้</div>
+      <div class="stat-value revenue" id="stat-today-revenue">₪0</div>
+      <div class="stat-sub" id="stat-today-count">0 ออเดอร์</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label" data-i18n="stat_profit_today">กำไรวันนี้</div>
+      <div class="stat-value profit" id="stat-today-profit">₪0</div>
+      <div class="stat-sub" id="stat-today-cost">ต้นทุน ₪0</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label" data-i18n="stat_month">เดือนนี้</div>
+      <div class="stat-value revenue" id="stat-month-revenue">₪0</div>
+      <div class="stat-sub" id="stat-month-count">0 ออเดอร์</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label" data-i18n="stat_profit_month">กำไรเดือนนี้</div>
+      <div class="stat-value profit" id="stat-month-profit">₪0</div>
+      <div class="stat-sub" id="stat-pending-count">รอดำเนินการ 0</div>
+    </div>
+  </div>
+
+  <!-- TOOLBAR -->
+  <div class="toolbar">
+    <input type="search" class="search" id="searchInput" placeholder="ค้นหาเบอร์, ชื่อ, รหัสคำสั่ง...">
+    <a class="btn btn-primary" id="topsimBtn" target="_blank" rel="noopener" href="https://www.topsim.co.il/">
+      🔗 <span data-i18n="open_topsim">เปิด topsim</span>
+    </a>
+    <button class="btn btn-ghost" id="refreshBtn">🔄 <span data-i18n="refresh">รีเฟรช</span></button>
+  </div>
+
+  <!-- FILTERS -->
+  <div class="filters" id="filters">
+    <button class="filter active" data-status="all"><span data-i18n="f_all">ทั้งหมด</span> <span class="count" id="c-all">0</span></button>
+    <button class="filter" data-status="pending"><span data-i18n="f_pending">รอโอน</span> <span class="count" id="c-pending">0</span></button>
+    <button class="filter" data-status="paid"><span data-i18n="f_paid">โอนแล้ว</span> <span class="count" id="c-paid">0</span></button>
+    <button class="filter" data-status="completed"><span data-i18n="f_completed">เติมเสร็จ</span> <span class="count" id="c-completed">0</span></button>
+    <button class="filter" data-status="cancelled"><span data-i18n="f_cancelled">ยกเลิก</span> <span class="count" id="c-cancelled">0</span></button>
+  </div>
+
+  <!-- ORDERS -->
+  <div id="ordersList"></div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+<div class="viewer" id="viewer"><img id="viewerImg" alt=""></div>
+
+<!-- Settings modal -->
+<div class="viewer" id="settingsModal" style="background:rgba(0,0,0,0.7);cursor:default">
+  <div style="background:var(--surface);max-width:420px;width:100%;padding:24px;border-radius:20px;max-height:85vh;overflow-y:auto">
+    <h2 style="font-size:18px;margin-bottom:14px" data-i18n="settings_title">ตั้งค่า Admin</h2>
+    <div style="margin-bottom:14px">
+      <label style="display:block;font-size:12px;color:var(--text-3);margin-bottom:6px" data-i18n="settings_pin">เปลี่ยน PIN (4-6 หลัก)</label>
+      <input class="cost-input" id="newPin" type="password" inputmode="numeric" maxlength="6" placeholder="PIN ใหม่">
+    </div>
+    <div style="margin-bottom:14px">
+      <label style="display:block;font-size:12px;color:var(--text-3);margin-bottom:6px" data-i18n="settings_wa">WhatsApp Admin (สำหรับติดต่อลูกค้ากลับ)</label>
+      <input class="cost-input" id="settingsWA" placeholder="972501234567">
+    </div>
+    <div style="display:flex;gap:8px;margin-top:18px">
+      <button class="btn btn-ghost" id="settingsCancel" style="flex:1;justify-content:center" data-i18n="cancel">ยกเลิก</button>
+      <button class="btn btn-primary" id="settingsSave" style="flex:1;justify-content:center" data-i18n="save">บันทึก</button>
+    </div>
+    <button class="btn btn-danger" id="logoutBtn" style="width:100%;margin-top:14px;justify-content:center" data-i18n="logout">ออกจากระบบ</button>
+  </div>
+</div>
+
+<script>
+// ---------- i18n ----------
+const I18N = {
+  th: {
+    brand: "Admin Dashboard",
+    brand_sub: "เติมเงินอิสราเอล · Live",
+    login_title: "เข้าสู่ระบบแอดมิน",
+    login_desc: "กรอก PIN เพื่อเข้าระบบ",
+    login_btn: "เข้าสู่ระบบ",
+    login_hint: "PIN เริ่มต้น: 1234 (เปลี่ยนได้ในหน้าตั้งค่า)",
+    login_wrong: "PIN ไม่ถูกต้อง",
+    stat_today: "วันนี้",
+    stat_month: "เดือนนี้",
+    stat_profit_today: "กำไรวันนี้",
+    stat_profit_month: "กำไรเดือนนี้",
+    n_orders: "ออเดอร์",
+    cost_label: "ต้นทุน",
+    pending_label: "รอดำเนินการ",
+    f_all: "ทั้งหมด", f_pending: "รอโอน", f_paid: "โอนแล้ว", f_completed: "เติมเสร็จ", f_cancelled: "ยกเลิก",
+    open_topsim: "เปิด topsim",
+    refresh: "รีเฟรช",
+    search_ph: "ค้นหาเบอร์, ชื่อ, รหัสคำสั่ง...",
+    empty_msg: "ยังไม่มีออเดอร์",
+    empty_filter: "ไม่มีออเดอร์ในหมวดนี้",
+    fld_carrier: "ค่าย", fld_phone: "เบอร์", fld_amount: "ยอดขาย", fld_payment: "วิธีจ่าย",
+    fld_name: "ชื่อลูกค้า", fld_contact: "ติดต่อ", fld_note: "หมายเหตุ", fld_time: "เวลา", fld_id: "รหัส",
+    fld_cost: "ต้นทุนจริง (₪)", fld_profit: "กำไร",
+    cost_ph: "เช่น 100",
+    act_paid: "ทำเครื่องหมายว่าโอนแล้ว",
+    act_complete: "เติมเสร็จ",
+    act_cancel: "ยกเลิก",
+    act_reopen: "เปิดใหม่",
+    act_open_topsim: "เปิด topsim + คัดลอกเบอร์",
+    act_copy_phone: "คัดลอกเบอร์",
+    act_wa_customer: "WhatsApp ลูกค้า",
+    act_view_slip: "ดูสลิป",
+    act_delete: "ลบออเดอร์",
+    status_pending: "รอโอน", status_paid: "โอนแล้ว", status_completed: "เติมเสร็จ", status_cancelled: "ยกเลิก",
+    copied: "คัดลอกแล้ว",
+    confirm_delete: "ลบออเดอร์นี้?",
+    confirm_cancel: "ยกเลิกออเดอร์นี้?",
+    settings_title: "ตั้งค่า Admin",
+    settings_pin: "เปลี่ยน PIN (4-6 หลัก)",
+    settings_wa: "WhatsApp Admin",
+    save: "บันทึก", cancel: "ยกเลิก", logout: "ออกจากระบบ",
+    saved: "บันทึกแล้ว"
+  },
+  he: {
+    brand: "פאנל מנהל",
+    brand_sub: "טעינת אשראי · בזמן אמת",
+    login_title: "כניסת מנהל",
+    login_desc: "הזן PIN לכניסה",
+    login_btn: "כניסה",
+    login_hint: "PIN ראשוני: 1234",
+    login_wrong: "PIN שגוי",
+    stat_today: "היום",
+    stat_month: "החודש",
+    stat_profit_today: "רווח היום",
+    stat_profit_month: "רווח החודש",
+    n_orders: "הזמנות",
+    cost_label: "עלות",
+    pending_label: "ממתינים",
+    f_all: "הכל", f_pending: "ממתין לתשלום", f_paid: "שולם", f_completed: "טעון", f_cancelled: "בוטל",
+    open_topsim: "פתח topsim",
+    refresh: "רענן",
+    search_ph: "חיפוש מספר, שם, מס׳ הזמנה...",
+    empty_msg: "אין הזמנות עדיין",
+    empty_filter: "אין הזמנות בקטגוריה זו",
+    fld_carrier: "חברה", fld_phone: "מספר", fld_amount: "מכירה", fld_payment: "תשלום",
+    fld_name: "שם", fld_contact: "קשר", fld_note: "הערות", fld_time: "זמן", fld_id: "מס׳",
+    fld_cost: "עלות בפועל (₪)", fld_profit: "רווח",
+    cost_ph: "למשל 100",
+    act_paid: "סמן כשולם",
+    act_complete: "טעון",
+    act_cancel: "בטל",
+    act_reopen: "פתח מחדש",
+    act_open_topsim: "פתח topsim + העתק מספר",
+    act_copy_phone: "העתק מספר",
+    act_wa_customer: "WhatsApp ללקוח",
+    act_view_slip: "צפה בקבלה",
+    act_delete: "מחק",
+    status_pending: "ממתין", status_paid: "שולם", status_completed: "טעון", status_cancelled: "בוטל",
+    copied: "הועתק",
+    confirm_delete: "למחוק הזמנה זו?",
+    confirm_cancel: "לבטל הזמנה זו?",
+    settings_title: "הגדרות מנהל",
+    settings_pin: "החלף PIN (4-6 ספרות)",
+    settings_wa: "WhatsApp מנהל",
+    save: "שמור", cancel: "בטל", logout: "התנתק",
+    saved: "נשמר"
+  },
+  en: {
+    brand: "Admin Dashboard",
+    brand_sub: "Top-Up Israel · Live",
+    login_title: "Admin Login",
+    login_desc: "Enter PIN to continue",
+    login_btn: "Sign in",
+    login_hint: "Default PIN: 1234 (change in settings)",
+    login_wrong: "Wrong PIN",
+    stat_today: "Today",
+    stat_month: "This month",
+    stat_profit_today: "Profit today",
+    stat_profit_month: "Profit (month)",
+    n_orders: "orders",
+    cost_label: "Cost",
+    pending_label: "Pending",
+    f_all: "All", f_pending: "Pending pay", f_paid: "Paid", f_completed: "Completed", f_cancelled: "Cancelled",
+    open_topsim: "Open topsim",
+    refresh: "Refresh",
+    search_ph: "Search phone, name, order ID...",
+    empty_msg: "No orders yet",
+    empty_filter: "No orders in this category",
+    fld_carrier: "Carrier", fld_phone: "Phone", fld_amount: "Sale", fld_payment: "Payment",
+    fld_name: "Name", fld_contact: "Contact", fld_note: "Notes", fld_time: "Time", fld_id: "ID",
+    fld_cost: "Actual cost (₪)", fld_profit: "Profit",
+    cost_ph: "e.g. 100",
+    act_paid: "Mark as paid",
+    act_complete: "Mark completed",
+    act_cancel: "Cancel",
+    act_reopen: "Reopen",
+    act_open_topsim: "Open topsim + copy phone",
+    act_copy_phone: "Copy phone",
+    act_wa_customer: "WhatsApp customer",
+    act_view_slip: "View receipt",
+    act_delete: "Delete",
+    status_pending: "Pending", status_paid: "Paid", status_completed: "Completed", status_cancelled: "Cancelled",
+    copied: "Copied",
+    confirm_delete: "Delete this order?",
+    confirm_cancel: "Cancel this order?",
+    settings_title: "Admin Settings",
+    settings_pin: "Change PIN (4-6 digits)",
+    settings_wa: "Admin WhatsApp",
+    save: "Save", cancel: "Cancel", logout: "Logout",
+    saved: "Saved"
+  }
+};
+
+// Must match the customer-facing site
+const CARRIERS = [
+  { id: "bigtalk",  name: { th: "Partner Bigtalk", he: "פרטנר Bigtalk", en: "Partner Bigtalk" }, color: "#ff8200", abbr: "BT" },
+  { id: "talkgo",   name: { th: "Talk & Go",       he: "Talk&Go",       en: "Talk & Go"       }, color: "#0098db", abbr: "TG" },
+  { id: "tokman",   name: { th: "Cellcom Tokman",  he: "סלקום טוקמן",   en: "Cellcom Tokman"  }, color: "#7b2cbf", abbr: "טק" },
+  { id: "012",      name: { th: "012 Mobile",      he: "012 mobile",    en: "012 Mobile"      }, color: "#f5b500", abbr: "012" },
+  { id: "019",      name: { th: "019 Mobile",      he: "019 mobile",    en: "019 Mobile"      }, color: "#e4002b", abbr: "019" },
+  { id: "hotalk",   name: { th: "HOT Mobile HOTALK",he: "הוט מובייל HOTALK", en: "HOT HOTALK" }, color: "#231f20", abbr: "HT" },
+  { id: "golan",    name: { th: "Golan Telecom",   he: "גולן טלקום",    en: "Golan Telecom"   }, color: "#c8102e", abbr: "G"  },
+  { id: "ramilevy", name: { th: "Rami Levy",       he: "רמי לוי",       en: "Rami Levy"       }, color: "#e91e63", abbr: "RL" },
+  { id: "sky",      name: { th: "Sky Mobile",      he: "Sky",           en: "Sky Mobile"      }, color: "#41b6e6", abbr: "SKY" }
+];
+
+const PAYMENTS = [
+  { id: "bit",     icon: "💚", label: { th: "Bit",     he: "ביט",       en: "Bit"     } },
+  { id: "paybox",  icon: "💜", label: { th: "PayBox",  he: "פייבוקס",   en: "PayBox"  } },
+  { id: "bank",    icon: "🏦", label: { th: "โอนธนาคาร", he: "העברה בנקאית", en: "Bank transfer" } },
+  { id: "cash",    icon: "💵", label: { th: "เงินสด",   he: "מזומן",     en: "Cash"    } }
+];
+
+const FB_CONFIG = {
+  apiKey:"AIzaSyCh7phsliIRMPScGcoS4eGBDkohSOrKdIg",
+  authDomain:"workpulse-1c177.firebaseapp.com",
+  projectId:"workpulse-1c177",
+  storageBucket:"workpulse-1c177.firebasestorage.app",
+  messagingSenderId:"763680675092",
+  appId:"1:763680675092:web:1ba1fff65f9133b38a5e01"
+};
+
+// ---------- State ----------
+let state = {
+  lang: localStorage.getItem("tu_admin_lang") || "th",
+  filter: "all",
+  search: "",
+  orders: [],
+  expanded: new Set()
+};
+let adminSettings = JSON.parse(localStorage.getItem("tu_admin") || "null") || {
+  pinHash: hashStr("1234"),
+  adminWA: "972500000000"
+};
+
+function hashStr(s) {
+  let h = 0;
+  for (let i = 0; i < s.length; i++) h = ((h << 5) - h) + s.charCodeAt(i), h |= 0;
+  return String(h);
+}
+
+const $ = (s, p=document) => p.querySelector(s);
+const $$ = (s, p=document) => Array.from(p.querySelectorAll(s));
+const t = (k) => I18N[state.lang][k] || k;
+
+function toast(msg) {
+  const el = $("#toast");
+  el.textContent = msg;
+  el.classList.add("show");
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => el.classList.remove("show"), 1500);
+}
+
+// ---------- Firebase ----------
+if (!firebase.apps.length) firebase.initializeApp(FB_CONFIG);
+const db = firebase.firestore();
+
+function startListener() {
+  db.collection("topup_orders")
+    .orderBy("time", "desc")
+    .limit(500)
+    .onSnapshot((snap) => {
+      state.orders = snap.docs.map(d => ({ _id: d.id, ...d.data() }));
+      render();
+    }, (err) => {
+      console.error("Listener error:", err);
+      toast("Firebase error: " + err.message);
+    });
+}
+
+async function updateOrder(id, patch) {
+  try {
+    await db.collection("topup_orders").doc(id).update(patch);
+    toast(t("saved"));
+  } catch (e) {
+    toast("Error: " + e.message);
+  }
+}
+
+async function deleteOrder(id) {
+  try {
+    await db.collection("topup_orders").doc(id).delete();
+    toast(t("saved"));
+  } catch (e) {
+    toast("Error: " + e.message);
+  }
+}
+
+// ---------- Login ----------
+function checkAuth() {
+  const ok = sessionStorage.getItem("tu_admin_auth") === "1";
+  if (ok) {
+    $("#loginScreen").classList.add("hidden");
+    startListener();
+  } else {
+    $("#loginScreen").classList.remove("hidden");
+    setTimeout(() => $("#pinInput").focus(), 100);
+  }
+}
+
+$("#loginBtn").onclick = doLogin;
+$("#pinInput").addEventListener("keydown", (e) => { if (e.key === "Enter") doLogin(); });
+
+function doLogin() {
+  const pin = $("#pinInput").value;
+  if (hashStr(pin) === adminSettings.pinHash) {
+    sessionStorage.setItem("tu_admin_auth", "1");
+    $("#pinInput").value = "";
+    checkAuth();
+  } else {
+    toast(t("login_wrong"));
+    $("#pinInput").value = "";
+    $("#pinInput").style.borderColor = "var(--danger)";
+    setTimeout(() => $("#pinInput").style.borderColor = "", 800);
+  }
+}
+
+// ---------- Lang ----------
+function setLang(lang) {
+  state.lang = lang;
+  localStorage.setItem("tu_admin_lang", lang);
+  document.documentElement.lang = lang;
+  document.documentElement.dir = lang === "he" ? "rtl" : "ltr";
+  $$(".lang-switch button").forEach(b => b.classList.toggle("active", b.dataset.lang === lang));
+  $$("[data-i18n]").forEach(el => {
+    const k = el.dataset.i18n;
+    if (I18N[lang][k]) el.textContent = I18N[lang][k];
+  });
+  $("#searchInput").placeholder = t("search_ph");
+  $("#newPin").placeholder = "PIN";
+  render();
+}
+$$(".lang-switch button").forEach(b => b.onclick = () => setLang(b.dataset.lang));
+
+// ---------- Filters ----------
+$$("#filters .filter").forEach(f => {
+  f.onclick = () => {
+    $$("#filters .filter").forEach(x => x.classList.remove("active"));
+    f.classList.add("active");
+    state.filter = f.dataset.status;
+    render();
+  };
+});
+
+$("#searchInput").addEventListener("input", (e) => {
+  state.search = e.target.value.toLowerCase().trim();
+  render();
+});
+
+// ---------- Render ----------
+function fmtDate(iso) {
+  if (!iso) return "—";
+  const d = new Date(iso);
+  return d.toLocaleString(state.lang === "he" ? "he-IL" : (state.lang === "en" ? "en-US" : "th-TH"), {
+    day: "2-digit", month: "2-digit", year: "2-digit",
+    hour: "2-digit", minute: "2-digit"
+  });
+}
+
+function isSameDay(iso, ref) {
+  const d = new Date(iso);
+  return d.getFullYear() === ref.getFullYear() && d.getMonth() === ref.getMonth() && d.getDate() === ref.getDate();
+}
+function isSameMonth(iso, ref) {
+  const d = new Date(iso);
+  return d.getFullYear() === ref.getFullYear() && d.getMonth() === ref.getMonth();
+}
+
+function computeStats() {
+  const now = new Date();
+  let todayRev=0, todayCost=0, todayCount=0;
+  let monthRev=0, monthCost=0, monthCount=0;
+  let pending=0;
+  state.orders.forEach(o => {
+    if (o.status === "cancelled") return;
+    const cost = Number(o.cost) || 0;
+    if (isSameDay(o.time, now)) {
+      todayRev += o.amount; todayCost += cost; todayCount++;
+    }
+    if (isSameMonth(o.time, now)) {
+      monthRev += o.amount; monthCost += cost; monthCount++;
+    }
+    if (o.status === "pending" || o.status === "paid") pending++;
+  });
+  return { todayRev, todayCost, todayCount, monthRev, monthCost, monthCount, pending };
+}
+
+function updateStats() {
+  const s = computeStats();
+  $("#stat-today-revenue").textContent = "₪" + s.todayRev;
+  $("#stat-today-count").textContent = s.todayCount + " " + t("n_orders");
+  $("#stat-today-profit").textContent = "₪" + (s.todayRev - s.todayCost);
+  $("#stat-today-cost").textContent = t("cost_label") + " ₪" + s.todayCost;
+  $("#stat-month-revenue").textContent = "₪" + s.monthRev;
+  $("#stat-month-count").textContent = s.monthCount + " " + t("n_orders");
+  $("#stat-month-profit").textContent = "₪" + (s.monthRev - s.monthCost);
+  $("#stat-pending-count").textContent = t("pending_label") + " " + s.pending;
+}
+
+function updateCounts() {
+  const counts = { all: state.orders.length, pending: 0, paid: 0, completed: 0, cancelled: 0 };
+  state.orders.forEach(o => {
+    const s = o.status || "pending";
+    if (counts[s] !== undefined) counts[s]++;
+  });
+  Object.entries(counts).forEach(([k, v]) => {
+    const el = $("#c-" + k);
+    if (el) el.textContent = v;
+  });
+}
+
+function filteredOrders() {
+  return state.orders.filter(o => {
+    const status = o.status || "pending";
+    if (state.filter !== "all" && status !== state.filter) return false;
+    if (state.search) {
+      const hay = [o.phone, o.name, o.contact, o.id, o.carrierName].filter(Boolean).join(" ").toLowerCase();
+      if (!hay.includes(state.search)) return false;
+    }
+    return true;
+  });
+}
+
+function renderOrder(o) {
+  const carrier = CARRIERS.find(c => c.id === o.carrier);
+  const payment = PAYMENTS.find(p => p.id === o.payment);
+  const status = o.status || "pending";
+  const isExpanded = state.expanded.has(o._id);
+  const profit = o.cost ? (o.amount - Number(o.cost)) : null;
+
+  const fullPhone = "972" + (o.phone || "").replace(/^0/, "");
+  const waCustomerUrl = "https://wa.me/" + fullPhone;
+
+  return `
+    <div class="order ${isExpanded ? 'expanded' : ''}" data-id="${o._id}">
+      <div class="order-head" data-toggle>
+        <div class="order-logo" style="background:${carrier ? carrier.color : '#475569'}">
+          ${carrier ? carrier.abbr : '?'}
+        </div>
+        <div class="order-info">
+          <div class="order-row">
+            <div>
+              <div class="order-title">${carrier ? carrier.name[state.lang] : '?'}</div>
+              <div class="order-phone">+972 ${o.phone}</div>
+            </div>
+            <div style="text-align:end">
+              <div class="order-amount">₪${o.amount}</div>
+              <span class="status ${status}">${t("status_" + status)}</span>
+            </div>
+          </div>
+          <div class="order-meta">
+            <span>👤 ${escapeHtml(o.name || "—")}</span>
+            <span>💳 ${payment ? payment.label[state.lang] : "—"}</span>
+            <span>🕐 ${fmtDate(o.time)}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="order-body">
+        <div class="order-grid">
+          <div class="field"><div class="field-label">${t("fld_id")}</div><div class="field-value">${o.id}</div></div>
+          <div class="field"><div class="field-label">${t("fld_contact")}</div><div class="field-value">${escapeHtml(o.contact || "—")}</div></div>
+          ${o.note ? `<div class="field" style="grid-column:1/-1"><div class="field-label">${t("fld_note")}</div><div class="field-value">${escapeHtml(o.note)}</div></div>` : ""}
+          <div class="field">
+            <div class="field-label">${t("fld_cost")}</div>
+            <input class="cost-input" type="number" min="0" step="0.5" data-cost placeholder="${t("cost_ph")}" value="${o.cost ?? ""}">
+          </div>
+          <div class="field">
+            <div class="field-label">${t("fld_profit")}</div>
+            <div class="field-value" style="color:${profit !== null && profit >= 0 ? 'var(--success)' : 'var(--danger)'}">
+              ${profit !== null ? "₪" + profit : "—"}
+            </div>
+          </div>
+        </div>
+
+        ${o.slipDataUrl ? `<img class="slip-thumb" data-slip src="${o.slipDataUrl}" alt="slip">` : ""}
+
+        <div class="actions-row">
+          <button class="btn btn-primary btn-sm" data-action="topsim" title="${t('act_open_topsim')}">
+            🔗 <span class="lbl">topsim + copy</span>
+          </button>
+          <button class="btn btn-sm" data-action="copy" title="${t('act_copy_phone')}">
+            📋 <span class="lbl">${t("act_copy_phone")}</span>
+          </button>
+          <a class="btn btn-sm" style="background:#25d366;color:#fff;text-decoration:none" href="${waCustomerUrl}" target="_blank" rel="noopener">
+            💬 <span class="lbl">${t("act_wa_customer")}</span>
+          </a>
+          ${status === "pending" ? `<button class="btn btn-warn btn-sm" data-action="paid">💰 <span class="lbl">${t("act_paid")}</span></button>` : ""}
+          ${status === "paid" || status === "pending" ? `<button class="btn btn-success btn-sm" data-action="complete">✓ <span class="lbl">${t("act_complete")}</span></button>` : ""}
+          ${status !== "cancelled" && status !== "completed" ? `<button class="btn btn-ghost btn-sm" data-action="cancel">✕ <span class="lbl">${t("act_cancel")}</span></button>` : ""}
+          ${status === "completed" || status === "cancelled" ? `<button class="btn btn-ghost btn-sm" data-action="reopen">↩ <span class="lbl">${t("act_reopen")}</span></button>` : ""}
+          <button class="btn btn-ghost btn-sm" data-action="delete" style="margin-inline-start:auto;color:var(--danger)">🗑</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function escapeHtml(s) {
+  if (!s) return "";
+  return String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
+}
+
+function render() {
+  updateStats();
+  updateCounts();
+  const list = filteredOrders();
+  const root = $("#ordersList");
+  if (!list.length) {
+    const msg = state.orders.length === 0 ? t("empty_msg") : t("empty_filter");
+    root.innerHTML = `<div class="empty"><div class="empty-ico">📭</div><div>${msg}</div></div>`;
+    return;
+  }
+  root.innerHTML = list.map(renderOrder).join("");
+  // Bind handlers
+  $$("#ordersList .order").forEach(el => {
+    const id = el.dataset.id;
+    const order = state.orders.find(o => o._id === id);
+    el.querySelector("[data-toggle]").onclick = (e) => {
+      if (e.target.closest("button, input, a, img")) return;
+      if (state.expanded.has(id)) state.expanded.delete(id);
+      else state.expanded.add(id);
+      el.classList.toggle("expanded");
+    };
+    const costInput = el.querySelector("[data-cost]");
+    if (costInput) {
+      costInput.onblur = () => {
+        const v = costInput.value === "" ? null : Number(costInput.value);
+        if (v !== (order.cost ?? null)) updateOrder(id, { cost: v });
+      };
+    }
+    const slip = el.querySelector("[data-slip]");
+    if (slip) slip.onclick = () => openViewer(slip.src);
+
+    el.querySelectorAll("[data-action]").forEach(btn => {
+      btn.onclick = (e) => {
+        e.stopPropagation();
+        handleAction(order, btn.dataset.action);
+      };
+    });
+  });
+}
+
+function handleAction(order, action) {
+  const id = order._id;
+  const fullPhone = "+972 " + order.phone;
+  switch (action) {
+    case "topsim":
+      navigator.clipboard.writeText(order.phone);
+      toast(t("copied") + " · " + order.phone);
+      window.open("https://www.topsim.co.il/", "_blank", "noopener");
+      break;
+    case "copy":
+      navigator.clipboard.writeText(fullPhone);
+      toast(t("copied") + " · " + fullPhone);
+      break;
+    case "paid":
+      updateOrder(id, { status: "paid" });
+      break;
+    case "complete":
+      updateOrder(id, { status: "completed", completedAt: new Date().toISOString() });
+      break;
+    case "cancel":
+      if (confirm(t("confirm_cancel"))) updateOrder(id, { status: "cancelled" });
+      break;
+    case "reopen":
+      updateOrder(id, { status: "pending" });
+      break;
+    case "delete":
+      if (confirm(t("confirm_delete"))) deleteOrder(id);
+      break;
+  }
+}
+
+function openViewer(src) {
+  $("#viewerImg").src = src;
+  $("#viewer").classList.add("show");
+}
+$("#viewer").onclick = () => $("#viewer").classList.remove("show");
+
+// ---------- Settings ----------
+$("#settingsBtn").onclick = () => {
+  $("#newPin").value = "";
+  $("#settingsWA").value = adminSettings.adminWA;
+  $("#settingsModal").style.display = "flex";
+};
+$("#settingsCancel").onclick = () => $("#settingsModal").style.display = "none";
+$("#settingsSave").onclick = () => {
+  const newPin = $("#newPin").value;
+  const wa = $("#settingsWA").value.replace(/\D/g, "");
+  if (newPin && (newPin.length < 4 || newPin.length > 6)) {
+    toast("PIN: 4-6 digits"); return;
+  }
+  if (newPin) adminSettings.pinHash = hashStr(newPin);
+  if (wa) adminSettings.adminWA = wa;
+  localStorage.setItem("tu_admin", JSON.stringify(adminSettings));
+  $("#settingsModal").style.display = "none";
+  toast(t("saved"));
+};
+$("#logoutBtn").onclick = () => {
+  sessionStorage.removeItem("tu_admin_auth");
+  $("#settingsModal").style.display = "none";
+  checkAuth();
+};
+
+$("#refreshBtn").onclick = () => location.reload();
+
+// ---------- Init ----------
+setLang(state.lang);
+checkAuth();
+</script>
+</body>
+</html>

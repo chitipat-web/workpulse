@@ -9,6 +9,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;900&family=Sarabun:wght@400;500;700&family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/firebase@9.23.0/compat/app.js"></script>
+<script src="https://unpkg.com/firebase@9.23.0/compat/firestore.js"></script>
 <style>
 :root {
   --bg: #f8fafc;
@@ -785,15 +787,17 @@ const I18N = {
 };
 
 // ---------- Data ----------
+// Carriers matching topsim.co.il (prepaid brands used by foreign workers)
 const CARRIERS = [
-  { id: "cellcom",  name: { th: "Cellcom",  he: "סלקום",   en: "Cellcom"  }, color: "#e30613", abbr: "C"  },
-  { id: "partner",  name: { th: "Partner",  he: "פרטנר",  en: "Partner"  }, color: "#41b6e6", abbr: "P"  },
-  { id: "pelephone",name: { th: "Pelephone",he: "פלאפון", en: "Pelephone"}, color: "#0033a0", abbr: "פ" },
-  { id: "hot",      name: { th: "HOT Mobile",he:"הוט מובייל",en:"HOT Mobile"},color:"#e4002b",abbr:"H" },
-  { id: "golan",    name: { th: "Golan",    he: "גולן",    en: "Golan"    }, color: "#00854a", abbr: "G"  },
-  { id: "ramilevy", name: { th: "Rami Levy",he: "רמי לוי", en: "Rami Levy"}, color: "#ed1c24", abbr: "R"  },
-  { id: "019",      name: { th: "019 Mobile",he:"019 מובייל",en:"019 Mobile"},color:"#ff6900",abbr:"19" },
-  { id: "we4g",     name: { th: "We4G",     he: "We4G",   en: "We4G"     }, color: "#8c1d40", abbr: "W"  }
+  { id: "bigtalk",  name: { th: "Partner Bigtalk", he: "פרטנר Bigtalk", en: "Partner Bigtalk" }, color: "#ff8200", abbr: "BT" },
+  { id: "talkgo",   name: { th: "Talk & Go",       he: "Talk&Go",       en: "Talk & Go"       }, color: "#0098db", abbr: "TG" },
+  { id: "tokman",   name: { th: "Cellcom Tokman",  he: "סלקום טוקמן",   en: "Cellcom Tokman"  }, color: "#7b2cbf", abbr: "טק" },
+  { id: "012",      name: { th: "012 Mobile",      he: "012 mobile",    en: "012 Mobile"      }, color: "#f5b500", abbr: "012" },
+  { id: "019",      name: { th: "019 Mobile",      he: "019 mobile",    en: "019 Mobile"      }, color: "#e4002b", abbr: "019" },
+  { id: "hotalk",   name: { th: "HOT Mobile HOTALK",he: "הוט מובייל HOTALK", en: "HOT HOTALK" }, color: "#231f20", abbr: "HT" },
+  { id: "golan",    name: { th: "Golan Telecom",   he: "גולן טלקום",    en: "Golan Telecom"   }, color: "#c8102e", abbr: "G"  },
+  { id: "ramilevy", name: { th: "Rami Levy",       he: "רמי לוי",       en: "Rami Levy"       }, color: "#e91e63", abbr: "RL" },
+  { id: "sky",      name: { th: "Sky Mobile",      he: "Sky",           en: "Sky Mobile"      }, color: "#41b6e6", abbr: "SKY" }
 ];
 
 const AMOUNTS = [20, 30, 50, 75, 100, 150, 200, 250, 300];
@@ -814,6 +818,46 @@ const DEFAULTS = {
   bankBranch: "001",
   bankHolder: "Top-Up Israel Ltd."
 };
+
+// ---------- Firebase ----------
+const FB_CONFIG = {
+  apiKey:"AIzaSyCh7phsliIRMPScGcoS4eGBDkohSOrKdIg",
+  authDomain:"workpulse-1c177.firebaseapp.com",
+  projectId:"workpulse-1c177",
+  storageBucket:"workpulse-1c177.firebasestorage.app",
+  messagingSenderId:"763680675092",
+  appId:"1:763680675092:web:1ba1fff65f9133b38a5e01"
+};
+let _db = null;
+function db() {
+  if (_db) return _db;
+  try {
+    if (!firebase.apps.length) firebase.initializeApp(FB_CONFIG);
+    _db = firebase.firestore();
+    return _db;
+  } catch(e) {
+    console.warn("Firebase init failed:", e);
+    return null;
+  }
+}
+
+// Compress an image data URL to a smaller JPEG (max 1024px) to fit Firestore 1MB limit
+function compressImage(dataUrl, maxSize = 1024, quality = 0.7) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      let w = img.width, h = img.height;
+      if (w > h && w > maxSize) { h = h * (maxSize / w); w = maxSize; }
+      else if (h > maxSize) { w = w * (maxSize / h); h = maxSize; }
+      const canvas = document.createElement("canvas");
+      canvas.width = w; canvas.height = h;
+      canvas.getContext("2d").drawImage(img, 0, 0, w, h);
+      resolve(canvas.toDataURL("image/jpeg", quality));
+    };
+    img.onerror = () => resolve(null);
+    img.src = dataUrl;
+  });
+}
 
 // ---------- State ----------
 let state = {
@@ -1083,12 +1127,36 @@ function buildMessage(o) {
   return lines.join("\n");
 }
 
-function submitOrder() {
+async function submitOrder() {
   const err = validate();
   if (err) { alert(err); return; }
+  const submitBtn = $("#submitBtn");
+  submitBtn.disabled = true;
+
   const order = buildOrder();
   history.push(order);
   localStorage.setItem("tu_history", JSON.stringify(history));
+
+  // Upload to Firestore (best effort - don't block on failure)
+  try {
+    const fb = db();
+    if (fb) {
+      let slipUrl = null;
+      if (state.slipDataUrl) {
+        slipUrl = await compressImage(state.slipDataUrl);
+      }
+      await fb.collection("topup_orders").doc(order.id).set({
+        ...order,
+        slipDataUrl: slipUrl,
+        cost: null,
+        adminNote: "",
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+    }
+  } catch(e) {
+    console.warn("Firestore save failed:", e);
+  }
+
   const msg = buildMessage(order);
   const waUrl = `https://wa.me/${settings.adminWA}?text=${encodeURIComponent(msg)}`;
   $("#modalWA").href = waUrl;
@@ -1098,6 +1166,7 @@ function submitOrder() {
     setTimeout(() => $("#modalCopy").textContent = t("modal_copy"), 1500);
   };
   $("#modal").classList.add("show");
+  submitBtn.disabled = false;
 }
 
 $("#modalClose").onclick = () => $("#modal").classList.remove("show");
