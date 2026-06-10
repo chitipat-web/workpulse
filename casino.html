@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0f1923">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Lucky Lala Casino">
+<title>Lucky Lala — สล็อต & เกมไพ่ (เล่นฟรี)</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=Prompt:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0f1923;
+  --bg2: #16222e;
+  --surface: #1c2b3a;
+  --surface2: #243748;
+  --border: #2e4458;
+  --gold: #f5c542;
+  --gold-dark: #c99b1e;
+  --green: #2ecc71;
+  --red: #e74c3c;
+  --text: #f0f4f8;
+  --text2: #8fa6b8;
+  --radius: 16px;
+}
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+body {
+  font-family:'Sarabun',sans-serif;
+  background: radial-gradient(ellipse at top, #1a2c3d 0%, var(--bg) 60%);
+  color:var(--text);
+  min-height:100vh;
+}
+h1,h2,h3 { font-family:'Prompt',sans-serif; }
+button { font-family:'Prompt',sans-serif; cursor:pointer; border:none; }
+button:disabled { opacity:.4; cursor:not-allowed; }
+
+/* ===== HEADER ===== */
+header {
+  position:sticky; top:0; z-index:50;
+  background:rgba(15,25,35,.92); backdrop-filter:blur(8px);
+  border-bottom:1px solid var(--border);
+  padding:12px 16px;
+  display:flex; align-items:center; justify-content:space-between; gap:12px;
+}
+.logo { display:flex; align-items:center; gap:10px; font-family:'Prompt'; font-weight:700; font-size:18px; }
+.logo .chip-icon { font-size:24px; }
+.logo small { display:block; font-size:10px; font-weight:400; color:var(--text2); }
+.balance {
+  display:flex; align-items:center; gap:8px;
+  background:var(--surface); border:1px solid var(--gold-dark);
+  border-radius:999px; padding:8px 14px;
+  font-family:'Prompt'; font-weight:600; font-size:15px;
+}
+.balance .coin { font-size:18px; }
+.balance.flash-win { animation:flashGreen .6s; }
+.balance.flash-lose { animation:flashRed .6s; }
+@keyframes flashGreen { 0%,100%{background:var(--surface)} 50%{background:#14532d} }
+@keyframes flashRed { 0%,100%{background:var(--surface)} 50%{background:#7f1d1d} }
+
+.fun-banner {
+  background:linear-gradient(90deg,#3b2f0a,#5c4a10,#3b2f0a);
+  color:var(--gold); text-align:center;
+  font-size:12px; padding:6px 12px; letter-spacing:.3px;
+}
+
+/* ===== LOBBY ===== */
+main { max-width:560px; margin:0 auto; padding:20px 16px 60px; }
+.lobby-title { text-align:center; margin:12px 0 4px; font-size:26px;
+  background:linear-gradient(135deg,#f5c542,#fff3c4,#f5c542);
+  -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
+.lobby-sub { text-align:center; color:var(--text2); font-size:14px; margin-bottom:24px; }
+.game-grid { display:grid; gap:16px; }
+.game-card {
+  display:flex; align-items:center; gap:16px;
+  background:linear-gradient(135deg,var(--surface),var(--surface2));
+  border:1px solid var(--border); border-radius:var(--radius);
+  padding:20px; width:100%; text-align:left; color:var(--text);
+  transition:transform .15s, border-color .15s;
+}
+.game-card:active { transform:scale(.97); }
+.game-card:hover { border-color:var(--gold-dark); }
+.game-card .emoji { font-size:44px; }
+.game-card h3 { font-size:18px; margin-bottom:4px; }
+.game-card p { font-size:13px; color:var(--text2); }
+.game-card .arrow { margin-left:auto; color:var(--gold); font-size:20px; }
+
+/* ===== GAME SCREENS ===== */
+.screen { display:none; }
+.screen.active { display:block; animation:fadeIn .25s ease; }
+@keyframes fadeIn { from{opacity:0; transform:translateY(8px)} to{opacity:1; transform:none} }
+.back-btn {
+  background:var(--surface); color:var(--text2);
+  border:1px solid var(--border); border-radius:10px;
+  padding:8px 16px; font-size:14px; margin-bottom:16px;
+}
+.game-title { text-align:center; font-size:22px; margin-bottom:16px; color:var(--gold); }
+
+/* ===== BET BAR ===== */
+.bet-bar {
+  display:flex; align-items:center; justify-content:center; gap:8px;
+  margin:16px 0; flex-wrap:wrap;
+}
+.bet-bar .label { font-size:13px; color:var(--text2); width:100%; text-align:center; }
+.bet-chip {
+  background:var(--surface); color:var(--text);
+  border:2px solid var(--border); border-radius:999px;
+  padding:8px 16px; font-size:14px; font-weight:600;
+}
+.bet-chip.selected { border-color:var(--gold); color:var(--gold); background:#2a2410; }
+
+/* ===== SLOT ===== */
+.slot-machine {
+  background:linear-gradient(180deg,#2a1a3e,#1c1230);
+  border:3px solid var(--gold-dark); border-radius:20px;
+  padding:24px 16px; box-shadow:0 0 40px rgba(245,197,66,.12), inset 0 0 30px rgba(0,0,0,.4);
+}
+.reels { display:flex; justify-content:center; gap:10px; }
+.reel {
+  width:90px; height:110px; overflow:hidden;
+  background:linear-gradient(180deg,#0a0a14,#141428,#0a0a14);
+  border:2px solid #3d3d6b; border-radius:12px;
+  position:relative;
+}
+.reel::before, .reel::after {
+  content:''; position:absolute; left:0; right:0; height:24px; z-index:2; pointer-events:none;
+}
+.reel::before { top:0; background:linear-gradient(180deg,rgba(0,0,0,.8),transparent); }
+.reel::after { bottom:0; background:linear-gradient(0deg,rgba(0,0,0,.8),transparent); }
+.reel-strip { display:flex; flex-direction:column; transition:none; }
+.reel-strip .sym {
+  height:110px; display:flex; align-items:center; justify-content:center;
+  font-size:56px; flex-shrink:0;
+}
+.reel.spinning .reel-strip { animation:reelSpin .12s linear infinite; }
+@keyframes reelSpin { from{transform:translateY(0)} to{transform:translateY(-110px)} }
+.slot-msg { text-align:center; min-height:48px; margin-top:16px; font-family:'Prompt'; font-size:16px; }
+.slot-msg .big-win { color:var(--gold); font-size:22px; font-weight:700; animation:pulse 1s infinite; }
+.slot-msg .win { color:var(--green); font-weight:600; }
+.slot-msg .lose { color:var(--text2); }
+@keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.08)} }
+.spin-btn {
+  display:block; width:100%; max-width:280px; margin:8px auto 0;
+  background:linear-gradient(135deg,#f5c542,#e09c1a);
+  color:#3a2a00; font-size:18px; font-weight:700;
+  padding:16px; border-radius:14px;
+  box-shadow:0 4px 0 #9a7110;
+  transition:transform .1s;
+}
+.spin-btn:active:not(:disabled) { transform:translateY(3px); box-shadow:0 1px 0 #9a7110; }
+.paytable { margin-top:20px; background:var(--surface); border-radius:12px; padding:14px 16px; border:1px solid var(--border); }
+.paytable h4 { font-family:'Prompt'; font-size:13px; color:var(--text2); margin-bottom:8px; }
+.paytable .row { display:flex; justify-content:space-between; font-size:14px; padding:3px 0; }
+.paytable .row b { color:var(--gold); }
+
+/* ===== CARDS ===== */
+.table-felt {
+  background:radial-gradient(ellipse at center,#14532d,#0b3d20);
+  border:3px solid #7a5c1e; border-radius:20px;
+  padding:20px 14px; min-height:300px;
+  box-shadow:inset 0 0 50px rgba(0,0,0,.45);
+}
+.hand-label { font-size:13px; color:#bbf7d0; margin-bottom:6px; display:flex; align-items:center; gap:8px; }
+.hand-score {
+  background:rgba(0,0,0,.45); border-radius:999px; padding:2px 10px;
+  font-family:'Prompt'; font-weight:600; font-size:13px; color:#fff;
+}
+.cards-row { display:flex; gap:8px; min-height:86px; margin-bottom:18px; flex-wrap:wrap; }
+.pcard {
+  width:60px; height:84px; border-radius:8px;
+  background:#fdfdf8; color:#111;
+  display:flex; flex-direction:column; justify-content:space-between;
+  padding:6px; font-family:'Prompt'; font-weight:700;
+  box-shadow:0 2px 6px rgba(0,0,0,.4);
+  animation:dealIn .3s ease;
+}
+@keyframes dealIn { from{opacity:0; transform:translateY(-16px) rotate(-6deg)} to{opacity:1; transform:none} }
+.pcard.red { color:#c0392b; }
+.pcard .corner { font-size:14px; line-height:1.1; }
+.pcard .suit-big { font-size:26px; text-align:center; }
+.pcard .corner.bottom { transform:rotate(180deg); }
+.pcard.facedown {
+  background:repeating-linear-gradient(45deg,#1e3a8a,#1e3a8a 6px,#27459c 6px,#27459c 12px);
+  border:2px solid #fdfdf8;
+}
+.action-row { display:flex; gap:10px; justify-content:center; margin-top:16px; flex-wrap:wrap; }
+.action-btn {
+  padding:13px 22px; border-radius:12px; font-size:15px; font-weight:600;
+  color:#fff; background:var(--surface2); border:1px solid var(--border);
+  transition:transform .1s;
+}
+.action-btn:active:not(:disabled) { transform:scale(.95); }
+.action-btn.primary { background:linear-gradient(135deg,#f5c542,#e09c1a); color:#3a2a00; border:none; }
+.action-btn.green { background:linear-gradient(135deg,#2ecc71,#1e9e54); border:none; }
+.action-btn.red { background:linear-gradient(135deg,#e74c3c,#b73225); border:none; }
+.result-msg { text-align:center; font-family:'Prompt'; font-size:17px; min-height:52px; margin-top:14px; }
+.result-msg .win { color:var(--green); font-weight:700; font-size:20px; }
+.result-msg .lose { color:var(--red); font-weight:600; }
+.result-msg .push { color:var(--gold); font-weight:600; }
+.result-msg small { display:block; color:var(--text2); font-size:13px; font-weight:400; margin-top:2px; }
+
+/* ===== TOPUP MODAL ===== */
+.modal-bg {
+  position:fixed; inset:0; background:rgba(0,0,0,.7); z-index:100;
+  display:none; align-items:center; justify-content:center; padding:20px;
+}
+.modal-bg.show { display:flex; }
+.modal {
+  background:var(--surface); border:1px solid var(--gold-dark);
+  border-radius:20px; padding:32px 24px; max-width:340px; width:100%; text-align:center;
+  animation:fadeIn .25s;
+}
+.modal .emoji { font-size:52px; margin-bottom:10px; }
+.modal h3 { font-size:20px; margin-bottom:8px; color:var(--gold); }
+.modal p { font-size:14px; color:var(--text2); margin-bottom:20px; }
+
+@media (max-width:420px) {
+  .reel { width:30%; max-width:90px; }
+  .pcard { width:52px; height:74px; }
+  .pcard .suit-big { font-size:22px; }
+}
+</style>
+</head>
+<body>
+
+<div class="fun-banner">🎈 เกมเพื่อความบันเทิงเท่านั้น — ใช้เครดิตจำลอง ไม่มีการใช้เงินจริง</div>
+
+<header>
+  <div class="logo">
+    <span class="chip-icon">🎰</span>
+    <div>Lucky Lala<small>สล็อต & เกมไพ่ เล่นฟรี</small></div>
+  </div>
+  <div class="balance" id="balanceBox">
+    <span class="coin">🪙</span><span id="balanceText">0</span>
+  </div>
+</header>
+
+<main>
+
+<!-- ============ LOBBY ============ -->
+<section class="screen active" id="screen-lobby">
+  <h1 class="lobby-title">🎲 Lucky Lala Casino 🎲</h1>
+  <p class="lobby-sub">เลือกเกมที่อยากเล่นได้เลย — เครดิตหมดกดรับฟรีได้ตลอด</p>
+  <div class="game-grid">
+    <button class="game-card" onclick="showScreen('slot')">
+      <span class="emoji">🎰</span>
+      <div><h3>สล็อต Lucky Spin</h3><p>หมุน 3 วงล้อ ลุ้นแจ็คพอต x100</p></div>
+      <span class="arrow">▶</span>
+    </button>
+    <button class="game-card" onclick="showScreen('pokdeng')">
+      <span class="emoji">🃏</span>
+      <div><h3>ป๊อกเด้ง</h3><p>วัดแต้มกับเจ้ามือ ลุ้นป๊อก 8 ป๊อก 9 เด้งคูณ</p></div>
+      <span class="arrow">▶</span>
+    </button>
+    <button class="game-card" onclick="showScreen('blackjack')">
+      <span class="emoji">♠️</span>
+      <div><h3>แบล็คแจ็ค 21</h3><p>จั่วไพ่ให้ใกล้ 21 ที่สุด แบล็คแจ็คจ่าย 3:2</p></div>
+      <span class="arrow">▶</span>
+    </button>
+    <button class="game-card" onclick="showScreen('hilo')">
+      <span class="emoji">🎴</span>
+      <div><h3>ไฮโล่ไพ่ สูง-ต่ำ</h3><p>ทายใบถัดไปสูงหรือต่ำ ชนะต่อเนื่องคูณยาว</p></div>
+      <span class="arrow">▶</span>
+    </button>
+  </div>
+</section>
+
+<!-- ============ SLOT ============ -->
+<section class="screen" id="screen-slot">
+  <button class="back-btn" onclick="showScreen('lobby')">← กลับล็อบบี้</button>
+  <h2 class="game-title">🎰 สล็อต Lucky Spin</h2>
+  <div class="slot-machine">
+    <div class="reels">
+      <div class="reel" id="reel0"><div class="reel-strip"></div></div>
+      <div class="reel" id="reel1"><div class="reel-strip"></div></div>
+      <div class="reel" id="reel2"><div class="reel-strip"></div></div>
+    </div>
+    <div class="slot-msg" id="slotMsg">กดหมุนเพื่อเริ่มเล่น!</div>
+  </div>
+  <div class="bet-bar" id="slotBets"><span class="label">เลือกเดิมพัน</span></div>
+  <button class="spin-btn" id="spinBtn" onclick="slotSpin()">🎰 หมุน!</button>
+  <div class="paytable">
+    <h4>ตารางจ่ายรางวัล (คูณเดิมพัน)</h4>
+    <div class="row"><span>7️⃣ 7️⃣ 7️⃣ แจ็คพอต</span><b>x100</b></div>
+    <div class="row"><span>💎 💎 💎</span><b>x50</b></div>
+    <div class="row"><span>🔔 🔔 🔔</span><b>x20</b></div>
+    <div class="row"><span>🍉 🍉 🍉</span><b>x15</b></div>
+    <div class="row"><span>🍇 🍇 🍇</span><b>x10</b></div>
+    <div class="row"><span>🍊 🍊 🍊</span><b>x8</b></div>
+    <div class="row"><span>🍒 🍒 🍒</span><b>x5</b></div>
+    <div class="row"><span>🍒 🍒 ✕ (เชอร์รี่ 2 ใบ)</span><b>x2</b></div>
+  </div>
+</section>
+
+<!-- ============ POK DENG ============ -->
+<section class="screen" id="screen-pokdeng">
+  <button class="back-btn" onclick="showScreen('lobby')">← กลับล็อบบี้</button>
+  <h2 class="game-title">🃏 ป๊อกเด้ง</h2>
+  <div class="table-felt">
+    <div class="hand-label">🏦 เจ้ามือ <span class="hand-score" id="pdDealerScore">-</span></div>
+    <div class="cards-row" id="pdDealerCards"></div>
+    <div class="hand-label">🙋 คุณ <span class="hand-score" id="pdPlayerScore">-</span></div>
+    <div class="cards-row" id="pdPlayerCards"></div>
+    <div class="result-msg" id="pdResult"></div>
+  </div>
+  <div class="bet-bar" id="pdBets"><span class="label">เลือกเดิมพัน</span></div>
+  <div class="action-row" id="pdActions">
+    <button class="action-btn primary" id="pdDealBtn" onclick="pdDeal()">แจกไพ่</button>
+    <button class="action-btn green" id="pdDrawBtn" onclick="pdDraw()" style="display:none">จั่วใบที่ 3</button>
+    <button class="action-btn red" id="pdStayBtn" onclick="pdStay()" style="display:none">ไม่จั่ว (อยู่)</button>
+  </div>
+</section>
+
+<!-- ============ BLACKJACK ============ -->
+<section class="screen" id="screen-blackjack">
+  <button class="back-btn" onclick="showScreen('lobby')">← กลับล็อบบี้</button>
+  <h2 class="game-title">♠️ แบล็คแจ็ค 21</h2>
+  <div class="table-felt">
+    <div class="hand-label">🏦 เจ้ามือ <span class="hand-score" id="bjDealerScore">-</span></div>
+    <div class="cards-row" id="bjDealerCards"></div>
+    <div class="hand-label">🙋 คุณ <span class="hand-score" id="bjPlayerScore">-</span></div>
+    <div class="cards-row" id="bjPlayerCards"></div>
+    <div class="result-msg" id="bjResult"></div>
+  </div>
+  <div class="bet-bar" id="bjBets"><span class="label">เลือกเดิมพัน</span></div>
+  <div class="action-row" id="bjActions">
+    <button class="action-btn primary" id="bjDealBtn" onclick="bjDeal()">แจกไพ่</button>
+    <button class="action-btn green" id="bjHitBtn" onclick="bjHit()" style="display:none">จั่ว (Hit)</button>
+    <button class="action-btn red" id="bjStandBtn" onclick="bjStand()" style="display:none">หยุด (Stand)</button>
+    <button class="action-btn" id="bjDoubleBtn" onclick="bjDouble()" style="display:none">ดับเบิล x2</button>
+  </div>
+</section>
+
+<!-- ============ HI-LO CARD ============ -->
+<section class="screen" id="screen-hilo">
+  <button class="back-btn" onclick="showScreen('lobby')">← กลับล็อบบี้</button>
+  <h2 class="game-title">🎴 ไฮโล่ไพ่ สูง-ต่ำ</h2>
+  <div class="table-felt" style="text-align:center">
+    <div class="hand-label" style="justify-content:center">ไพ่ปัจจุบัน → ใบถัดไปจะสูงหรือต่ำกว่า?</div>
+    <div class="cards-row" id="hlCards" style="justify-content:center"></div>
+    <div class="result-msg" id="hlResult"></div>
+    <div style="font-family:'Prompt';font-size:15px;color:var(--gold)" id="hlStreak"></div>
+  </div>
+  <div class="bet-bar" id="hlBets"><span class="label">เลือกเดิมพัน</span></div>
+  <div class="action-row" id="hlActions">
+    <button class="action-btn primary" id="hlStartBtn" onclick="hlStart()">เริ่มเกม</button>
+    <button class="action-btn green" id="hlHighBtn" onclick="hlGuess(true)" style="display:none">⬆️ สูงกว่า</button>
+    <button class="action-btn red" id="hlLowBtn" onclick="hlGuess(false)" style="display:none">⬇️ ต่ำกว่า</button>
+    <button class="action-btn" id="hlCashBtn" onclick="hlCashout()" style="display:none">💰 รับเงิน</button>
+  </div>
+</section>
+
+</main>
+
+<!-- TOPUP MODAL -->
+<div class="modal-bg" id="topupModal">
+  <div class="modal">
+    <div class="emoji">🪙</div>
+    <h3>เครดิตหมดแล้ว!</h3>
+    <p>ไม่ต้องห่วง — นี่เป็นเกมเล่นสนุก รับเครดิตฟรีเพิ่มได้เลย</p>
+    <button class="action-btn primary" onclick="topup()">รับฟรี 1,000 เครดิต</button>
+  </div>
+</div>
+
+<script>
+'use strict';
+
+/* ================= CREDITS ================= */
+const LS_KEY = 'lala_casino_credits';
+let credits = parseInt(localStorage.getItem(LS_KEY) || '1000', 10);
+if (isNaN(credits)) credits = 1000;
+
+function saveCredits() { localStorage.setItem(LS_KEY, String(credits)); }
+function renderBalance(delta) {
+  document.getElementById('balanceText').textContent = credits.toLocaleString('th-TH');
+  const box = document.getElementById('balanceBox');
+  box.classList.remove('flash-win','flash-lose');
+  if (delta > 0) { void box.offsetWidth; box.classList.add('flash-win'); }
+  if (delta < 0) { void box.offsetWidth; box.classList.add('flash-lose'); }
+}
+function addCredits(n) { credits += n; saveCredits(); renderBalance(n); }
+function canBet(n) {
+  if (credits >= n) return true;
+  document.getElementById('topupModal').classList.add('show');
+  return false;
+}
+function topup() {
+  addCredits(1000);
+  document.getElementById('topupModal').classList.remove('show');
+}
+renderBalance(0);
+
+/* ================= SCREENS ================= */
+function showScreen(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + name).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+/* ================= BET BARS ================= */
+const BET_OPTIONS = [10, 50, 100, 500];
+const bets = { slot: 50, pd: 50, bj: 50, hl: 50 };
+function buildBetBar(containerId, key) {
+  const el = document.getElementById(containerId);
+  BET_OPTIONS.forEach(v => {
+    const b = document.createElement('button');
+    b.className = 'bet-chip' + (v === bets[key] ? ' selected' : '');
+    b.textContent = '🪙 ' + v;
+    b.onclick = () => {
+      bets[key] = v;
+      el.querySelectorAll('.bet-chip').forEach(c => c.classList.remove('selected'));
+      b.classList.add('selected');
+    };
+    el.appendChild(b);
+  });
+}
+buildBetBar('slotBets', 'slot');
+buildBetBar('pdBets', 'pd');
+buildBetBar('bjBets', 'bj');
+buildBetBar('hlBets', 'hl');
+
+/* ================= DECK / CARD HELPERS ================= */
+const SUITS = ['♠','♥','♦','♣'];
+const RANKS = ['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
+function newDeck() {
+  const d = [];
+  for (const s of SUITS) for (let r = 0; r < 13; r++) d.push({ suit:s, rank:RANKS[r], val:r+1 });
+  for (let i = d.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [d[i], d[j]] = [d[j], d[i]];
+  }
+  return d;
+}
+function cardEl(card, facedown) {
+  const div = document.createElement('div');
+  if (facedown) { div.className = 'pcard facedown'; return div; }
+  const red = card.suit === '♥' || card.suit === '♦';
+  div.className = 'pcard' + (red ? ' red' : '');
+  div.innerHTML =
+    '<div class="corner">' + card.rank + '<br>' + card.suit + '</div>' +
+    '<div class="suit-big">' + card.suit + '</div>' +
+    '<div class="corner bottom">' + card.rank + '<br>' + card.suit + '</div>';
+  return div;
+}
+function renderHand(elId, cards, hideFirst) {
+  const el = document.getElementById(elId);
+  el.innerHTML = '';
+  cards.forEach((c, i) => el.appendChild(cardEl(c, hideFirst && i === 0)));
+}
+
+/* ================= SLOT ================= */
+const SLOT_SYMBOLS = ['🍒','🍊','🍇','🍉','🔔','💎','7️⃣'];
+// น้ำหนักการสุ่ม: ผลไม้ออกบ่อย สัญลักษณ์ใหญ่ออกยาก
+const SLOT_WEIGHTS = [30, 24, 18, 12, 9, 5, 2];
+const SLOT_PAY3 = { '🍒':5, '🍊':8, '🍇':10, '🍉':15, '🔔':20, '💎':50, '7️⃣':100 };
+let slotSpinning = false;
+
+function weightedSymbol() {
+  const total = SLOT_WEIGHTS.reduce((a,b) => a+b, 0);
+  let r = Math.random() * total;
+  for (let i = 0; i < SLOT_SYMBOLS.length; i++) {
+    r -= SLOT_WEIGHTS[i];
+    if (r < 0) return SLOT_SYMBOLS[i];
+  }
+  return SLOT_SYMBOLS[0];
+}
+function fillStrip(reelIdx, finalSym) {
+  const strip = document.querySelector('#reel' + reelIdx + ' .reel-strip');
+  strip.innerHTML = '';
+  const syms = [];
+  for (let i = 0; i < 2; i++) syms.push(SLOT_SYMBOLS[Math.floor(Math.random()*SLOT_SYMBOLS.length)]);
+  syms.push(finalSym);
+  syms.forEach(s => {
+    const d = document.createElement('div');
+    d.className = 'sym';
+    d.textContent = s;
+    strip.appendChild(d);
+  });
+  strip.style.transition = 'none';
+  strip.style.transform = 'translateY(0)';
+  return strip;
+}
+function initReels() {
+  for (let i = 0; i < 3; i++) {
+    const strip = fillStrip(i, SLOT_SYMBOLS[i]);
+    strip.style.transform = 'translateY(-220px)';
+  }
+}
+initReels();
+
+function slotSpin() {
+  if (slotSpinning) return;
+  const bet = bets.slot;
+  if (!canBet(bet)) return;
+  addCredits(-bet);
+  slotSpinning = true;
+  document.getElementById('spinBtn').disabled = true;
+  document.getElementById('slotMsg').innerHTML = '<span style="color:var(--text2)">กำลังหมุน...</span>';
+
+  const result = [weightedSymbol(), weightedSymbol(), weightedSymbol()];
+  const strips = [];
+  for (let i = 0; i < 3; i++) {
+    strips.push(fillStrip(i, result[i]));
+    document.getElementById('reel' + i).classList.add('spinning');
+  }
+  // หยุดทีละวงล้อ
+  [900, 1500, 2100].forEach((delay, i) => {
+    setTimeout(() => {
+      document.getElementById('reel' + i).classList.remove('spinning');
+      strips[i].style.transition = 'transform .35s cubic-bezier(.2,.8,.3,1.2)';
+      strips[i].style.transform = 'translateY(-220px)';
+      if (i === 2) setTimeout(() => slotSettle(result, bet), 450);
+    }, delay);
+  });
+}
+function slotSettle(result, bet) {
+  const [a, b, c] = result;
+  let mult = 0;
+  if (a === b && b === c) mult = SLOT_PAY3[a];
+  else if (result.filter(s => s === '🍒').length === 2) mult = 2;
+
+  const msg = document.getElementById('slotMsg');
+  if (mult >= 50) {
+    const win = bet * mult;
+    addCredits(win);
+    msg.innerHTML = '<span class="big-win">🎉 แจ็คพอต! ชนะ ' + win.toLocaleString('th-TH') + ' เครดิต (x' + mult + ')</span>';
+  } else if (mult > 0) {
+    const win = bet * mult;
+    addCredits(win);
+    msg.innerHTML = '<span class="win">✨ ชนะ ' + win.toLocaleString('th-TH') + ' เครดิต (x' + mult + ')</span>';
+  } else {
+    msg.innerHTML = '<span class="lose">เสียใจด้วย ลองอีกครั้ง!</span>';
+  }
+  slotSpinning = false;
+  document.getElementById('spinBtn').disabled = false;
+}
+
+/* ================= POK DENG ================= */
+// แต้ม: A=1, 2-9 ตามหน้าไพ่, 10/J/Q/K=0, รวมแล้ว mod 10
+let pdDeck, pdPlayer, pdDealer, pdBet, pdInPlay = false;
+
+function pdPoint(card) { return card.val >= 10 ? 0 : card.val; }
+function pdScore(hand) { return hand.reduce((s,c) => s + pdPoint(c), 0) % 10; }
+function pdIsPok(hand) { return hand.length === 2 && pdScore(hand) >= 8; }
+// เด้ง: 2 ใบ ดอกเดียวกันหรือคู่ = x2 | 3 ใบ ดอกเดียวกันหรือเรียง = x3 | ตอง = x5
+function pdDeng(hand) {
+  if (hand.length === 2) {
+    if (hand[0].suit === hand[1].suit || hand[0].rank === hand[1].rank) return 2;
+    return 1;
+  }
+  if (hand[0].rank === hand[1].rank && hand[1].rank === hand[2].rank) return 5;
+  if (hand[0].suit === hand[1].suit && hand[1].suit === hand[2].suit) return 3;
+  const v = hand.map(c => c.val).sort((a,b) => a-b);
+  if (v[1] === v[0]+1 && v[2] === v[1]+1) return 3;
+  if (v[0] === 1 && v[1] === 12 && v[2] === 13) return 3; // Q K A
+  return 1;
+}
+function pdDengLabel(hand) {
+  const d = pdDeng(hand);
+  if (d === 5) return ' ตอง x5';
+  if (d === 3) return ' สามเด้ง x3';
+  if (d === 2) return ' สองเด้ง x2';
+  return '';
+}
+function pdRender(revealDealer) {
+  renderHand('pdPlayerCards', pdPlayer);
+  renderHand('pdDealerCards', pdDealer, !revealDealer);
+  document.getElementById('pdPlayerScore').textContent =
+    pdScore(pdPlayer) + ' แต้ม' + (pdIsPok(pdPlayer) ? ' ป๊อก!' : '') + pdDengLabel(pdPlayer);
+  document.getElementById('pdDealerScore').textContent =
+    revealDealer ? pdScore(pdDealer) + ' แต้ม' + (pdIsPok(pdDealer) ? ' ป๊อก!' : '') + pdDengLabel(pdDealer) : '?';
+}
+function pdSetButtons(deal, draw) {
+  document.getElementById('pdDealBtn').style.display = deal ? '' : 'none';
+  document.getElementById('pdDrawBtn').style.display = draw ? '' : 'none';
+  document.getElementById('pdStayBtn').style.display = draw ? '' : 'none';
+}
+function pdDeal() {
+  pdBet = bets.pd;
+  if (!canBet(pdBet)) return;
+  addCredits(-pdBet);
+  pdDeck = newDeck();
+  pdPlayer = [pdDeck.pop(), pdDeck.pop()];
+  pdDealer = [pdDeck.pop(), pdDeck.pop()];
+  pdInPlay = true;
+  document.getElementById('pdResult').innerHTML = '';
+  // ป๊อกฝ่ายใดฝ่ายหนึ่ง = เปิดไพ่ทันที
+  if (pdIsPok(pdPlayer) || pdIsPok(pdDealer)) { pdRender(false); pdSetButtons(false, false); setTimeout(pdShowdown, 600); return; }
+  pdRender(false);
+  pdSetButtons(false, true);
+}
+function pdDraw() { pdPlayer.push(pdDeck.pop()); pdRender(false); pdDealerTurn(); }
+function pdStay() { pdDealerTurn(); }
+function pdDealerTurn() {
+  pdSetButtons(false, false);
+  if (pdScore(pdDealer) <= 4) pdDealer.push(pdDeck.pop());
+  setTimeout(pdShowdown, 500);
+}
+function pdShowdown() {
+  pdInPlay = false;
+  pdRender(true);
+  const ps = pdScore(pdPlayer), ds = pdScore(pdDealer);
+  const pPok = pdIsPok(pdPlayer), dPok = pdIsPok(pdDealer);
+  const el = document.getElementById('pdResult');
+  let outcome; // 1 ชนะ, -1 แพ้, 0 เสมอ
+  if (pPok && !dPok) outcome = 1;
+  else if (dPok && !pPok) outcome = -1;
+  else outcome = ps > ds ? 1 : ps < ds ? -1 : 0;
+
+  if (outcome === 1) {
+    const win = pdBet * pdDeng(pdPlayer);
+    addCredits(pdBet + win);
+    el.innerHTML = '<span class="win">🎉 คุณชนะ +' + win.toLocaleString('th-TH') + '</span><small>' +
+      ps + ' แต้ม ชนะ ' + ds + ' แต้ม' + pdDengLabel(pdPlayer) + '</small>';
+  } else if (outcome === -1) {
+    // เจ้ามือมีเด้ง เก็บเพิ่มจากเดิมพัน (เท่าที่เครดิตมี)
+    const extra = Math.min(pdBet * (pdDeng(pdDealer) - 1), credits);
+    if (extra > 0) addCredits(-extra);
+    el.innerHTML = '<span class="lose">😢 เจ้ามือชนะ -' + (pdBet + extra).toLocaleString('th-TH') + '</span><small>' +
+      ds + ' แต้ม ชนะ ' + ps + ' แต้ม' + pdDengLabel(pdDealer) + '</small>';
+  } else {
+    addCredits(pdBet);
+    el.innerHTML = '<span class="push">🤝 เสมอ คืนเดิมพัน</span><small>' + ps + ' แต้ม เท่ากัน</small>';
+  }
+  pdSetButtons(true, false);
+}
+
+/* ================= BLACKJACK ================= */
+let bjDeck, bjPlayer, bjDealer, bjBet, bjInPlay = false, bjDoubled = false;
+
+function bjScore(hand) {
+  let total = 0, aces = 0;
+  for (const c of hand) {
+    if (c.val === 1) { total += 11; aces++; }
+    else total += Math.min(c.val, 10);
+  }
+  while (total > 21 && aces > 0) { total -= 10; aces--; }
+  return total;
+}
+function bjIsBlackjack(hand) { return hand.length === 2 && bjScore(hand) === 21; }
+function bjRender(revealDealer) {
+  renderHand('bjPlayerCards', bjPlayer);
+  renderHand('bjDealerCards', bjDealer, !revealDealer);
+  document.getElementById('bjPlayerScore').textContent = bjScore(bjPlayer) + ' แต้ม';
+  const upCard = bjDealer[1].val === 1 ? 11 : Math.min(bjDealer[1].val, 10);
+  document.getElementById('bjDealerScore').textContent =
+    revealDealer ? bjScore(bjDealer) + ' แต้ม' : '? + ' + upCard;
+}
+function bjSetButtons(deal, play, canDouble) {
+  document.getElementById('bjDealBtn').style.display = deal ? '' : 'none';
+  document.getElementById('bjHitBtn').style.display = play ? '' : 'none';
+  document.getElementById('bjStandBtn').style.display = play ? '' : 'none';
+  document.getElementById('bjDoubleBtn').style.display = (play && canDouble) ? '' : 'none';
+}
+function bjDeal() {
+  bjBet = bets.bj;
+  if (!canBet(bjBet)) return;
+  addCredits(-bjBet);
+  bjDoubled = false;
+  bjDeck = newDeck();
+  bjPlayer = [bjDeck.pop(), bjDeck.pop()];
+  bjDealer = [bjDeck.pop(), bjDeck.pop()];
+  bjInPlay = true;
+  document.getElementById('bjResult').innerHTML = '';
+  bjRender(false);
+  if (bjIsBlackjack(bjPlayer) || bjIsBlackjack(bjDealer)) { bjSetButtons(false, false); setTimeout(bjFinish, 600); return; }
+  bjSetButtons(false, true, credits >= bjBet);
+}
+function bjHit() {
+  bjPlayer.push(bjDeck.pop());
+  bjRender(false);
+  if (bjScore(bjPlayer) > 21) { bjSetButtons(false, false); setTimeout(bjFinish, 400); }
+  else bjSetButtons(false, true, false);
+}
+function bjDouble() {
+  if (!canBet(bjBet)) return;
+  addCredits(-bjBet);
+  bjDoubled = true;
+  bjPlayer.push(bjDeck.pop());
+  bjRender(false);
+  bjSetButtons(false, false);
+  setTimeout(() => { bjScore(bjPlayer) > 21 ? bjFinish() : bjStand(true); }, 400);
+}
+function bjStand(skipButtons) {
+  if (!skipButtons) bjSetButtons(false, false);
+  // เจ้ามือจั่วจนถึง 17
+  const drawLoop = () => {
+    if (bjScore(bjDealer) < 17) {
+      bjDealer.push(bjDeck.pop());
+      bjRender(true);
+      setTimeout(drawLoop, 550);
+    } else bjFinish();
+  };
+  bjRender(true);
+  setTimeout(drawLoop, 550);
+}
+function bjFinish() {
+  bjInPlay = false;
+  bjRender(true);
+  const ps = bjScore(bjPlayer), ds = bjScore(bjDealer);
+  const totalBet = bjDoubled ? bjBet * 2 : bjBet;
+  const el = document.getElementById('bjResult');
+  const pBJ = bjIsBlackjack(bjPlayer), dBJ = bjIsBlackjack(bjDealer);
+
+  if (pBJ && !dBJ) {
+    const win = Math.floor(totalBet * 1.5);
+    addCredits(totalBet + win);
+    el.innerHTML = '<span class="win">🂡 แบล็คแจ็ค! +' + win.toLocaleString('th-TH') + '</span><small>จ่าย 3:2</small>';
+  } else if (dBJ && !pBJ) {
+    el.innerHTML = '<span class="lose">😢 เจ้ามือแบล็คแจ็ค -' + totalBet.toLocaleString('th-TH') + '</span>';
+  } else if (ps > 21) {
+    el.innerHTML = '<span class="lose">💥 แต้มเกิน 21 (Bust) -' + totalBet.toLocaleString('th-TH') + '</span>';
+  } else if (ds > 21) {
+    addCredits(totalBet * 2);
+    el.innerHTML = '<span class="win">🎉 เจ้ามือแตก! +' + totalBet.toLocaleString('th-TH') + '</span><small>เจ้ามือ ' + ds + ' แต้ม เกิน 21</small>';
+  } else if (ps > ds) {
+    addCredits(totalBet * 2);
+    el.innerHTML = '<span class="win">🎉 คุณชนะ +' + totalBet.toLocaleString('th-TH') + '</span><small>' + ps + ' ชนะ ' + ds + '</small>';
+  } else if (ps < ds) {
+    el.innerHTML = '<span class="lose">😢 เจ้ามือชนะ -' + totalBet.toLocaleString('th-TH') + '</span><small>' + ds + ' ชนะ ' + ps + '</small>';
+  } else {
+    addCredits(totalBet);
+    el.innerHTML = '<span class="push">🤝 เสมอ คืนเดิมพัน</span><small>' + ps + ' เท่ากัน</small>';
+  }
+  bjSetButtons(true, false);
+}
+
+/* ================= HI-LO ================= */
+let hlDeck, hlCurrent, hlPot = 0, hlStreak = 0, hlInPlay = false;
+
+function hlSetButtons(start, play) {
+  document.getElementById('hlStartBtn').style.display = start ? '' : 'none';
+  document.getElementById('hlHighBtn').style.display = play ? '' : 'none';
+  document.getElementById('hlLowBtn').style.display = play ? '' : 'none';
+  document.getElementById('hlCashBtn').style.display = (play && hlStreak > 0) ? '' : 'none';
+}
+function hlRenderCard(card) {
+  const el = document.getElementById('hlCards');
+  el.innerHTML = '';
+  el.appendChild(cardEl(card));
+}
+function hlUpdateStreak() {
+  document.getElementById('hlStreak').textContent =
+    hlStreak > 0 ? '🔥 ชนะติดต่อ ' + hlStreak + ' ครั้ง — เงินกอง ' + hlPot.toLocaleString('th-TH') + ' เครดิต' : '';
+}
+function hlStart() {
+  const bet = bets.hl;
+  if (!canBet(bet)) return;
+  addCredits(-bet);
+  hlDeck = newDeck();
+  hlCurrent = hlDeck.pop();
+  hlPot = bet;
+  hlStreak = 0;
+  hlInPlay = true;
+  document.getElementById('hlResult').innerHTML = '<span style="color:var(--text2)">ทายเลย — สูงหรือต่ำ? (เสมอ = แพ้)</span>';
+  hlRenderCard(hlCurrent);
+  hlUpdateStreak();
+  hlSetButtons(false, true);
+}
+function hlGuess(high) {
+  if (!hlInPlay) return;
+  if (hlDeck.length === 0) hlDeck = newDeck();
+  const next = hlDeck.pop();
+  // A ต่ำสุด K สูงสุด
+  const correct = high ? next.val > hlCurrent.val : next.val < hlCurrent.val;
+  hlCurrent = next;
+  hlRenderCard(next);
+  const el = document.getElementById('hlResult');
+  if (correct) {
+    hlStreak++;
+    hlPot = Math.floor(hlPot * 1.8);
+    el.innerHTML = '<span class="win">✅ ถูกต้อง! กองเพิ่มเป็น ' + hlPot.toLocaleString('th-TH') + '</span><small>ทายต่อ x1.8 หรือกดรับเงิน</small>';
+    hlUpdateStreak();
+    hlSetButtons(false, true);
+  } else {
+    hlInPlay = false;
+    hlPot = 0;
+    el.innerHTML = '<span class="lose">❌ ผิด! เสียเงินกองทั้งหมด</span><small>เริ่มใหม่ได้เลย</small>';
+    hlStreak = 0;
+    hlUpdateStreak();
+    hlSetButtons(true, false);
+  }
+}
+function hlCashout() {
+  if (!hlInPlay || hlPot <= 0) return;
+  addCredits(hlPot);
+  document.getElementById('hlResult').innerHTML =
+    '<span class="win">💰 รับเงิน ' + hlPot.toLocaleString('th-TH') + ' เครดิต!</span>';
+  hlInPlay = false;
+  hlPot = 0;
+  hlStreak = 0;
+  hlUpdateStreak();
+  hlSetButtons(true, false);
+}
+</script>
+</body>
+</html>
