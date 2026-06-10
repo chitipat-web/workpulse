@@ -646,6 +646,31 @@ header{
 .mp-chat-in{flex:1;background:transparent;border:none;padding:10px 12px;color:var(--text);font-size:13px}
 .mp-chat-in::placeholder{color:var(--text3)}
 .mp-chat-snd{padding:10px 14px;background:rgba(64,96,255,.1);color:#6080ff;font-size:13px;font-weight:700;font-family:'Prompt';border-left:1px solid var(--border)}
+/* Game selector */
+.mp-game-sel{display:flex;gap:8px;margin:10px 0}
+.mp-game-opt{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;padding:10px 6px;border-radius:12px;background:var(--s2);border:2px solid var(--border);transition:all .2s;font-family:'Prompt';font-size:12px;color:var(--text2);cursor:pointer}
+.mp-game-opt .mp-go-icon{font-size:22px}
+.mp-game-opt.active{background:rgba(64,96,255,.1);border-color:rgba(64,96,255,.5);color:var(--text)}
+.mp-game-opt:disabled{opacity:.4;cursor:not-allowed}
+/* Pok Deng dealing panel */
+.mp-pd-hand{background:var(--s2);border:1px solid var(--border);border-radius:12px;padding:10px 12px;margin:8px 0}
+.mp-pd-hand-lbl{font-size:10px;font-family:'Prompt';font-weight:700;text-transform:uppercase;color:var(--text2);letter-spacing:.4px;margin-bottom:8px}
+.mp-pd-cards{display:flex;justify-content:center;gap:6px;min-height:80px;align-items:center}
+.mp-pd-score{text-align:center;font-family:'Orbitron';font-size:20px;font-weight:700;color:var(--gold);margin-top:6px}
+.mp-pd-tag{display:inline-block;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:700;font-family:'Prompt';margin-top:4px}
+.mp-pd-tag.pok{background:rgba(232,185,35,.2);color:var(--gold);border:1px solid rgba(232,185,35,.4)}
+.mp-pd-tag.deng{background:rgba(0,208,132,.12);color:var(--green2);border:1px solid rgba(0,208,132,.3)}
+.mp-pd-tag.tong{background:rgba(255,51,85,.12);color:var(--red2);border:1px solid rgba(255,51,85,.3)}
+/* Pok Deng result grid */
+.mp-pd-result-grid{display:flex;flex-direction:column;gap:6px;margin:10px 0}
+.mp-pd-rr{background:var(--s1);border:1px solid var(--border);border-radius:11px;padding:9px 12px}
+.mp-pd-rr.win{background:rgba(0,208,132,.08);border-color:rgba(0,208,132,.3)}
+.mp-pd-rr.lose{background:rgba(255,51,85,.07);border-color:rgba(255,51,85,.25)}
+.mp-pd-rr.banker{background:rgba(232,185,35,.07);border-color:rgba(232,185,35,.25)}
+.mp-pd-rr-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.mp-pd-rr-name{font-weight:700;font-size:13px}
+.mp-pd-rr-delta{font-family:'Orbitron';font-size:12px;font-weight:700}
+.mp-pd-rr-delta.wd{color:var(--green2)}.mp-pd-rr-delta.ld{color:var(--red2)}
 </style>
 </head>
 <body>
@@ -966,9 +991,9 @@ header{
         <span class="mp-btn-arr">›</span>
       </button>
       <div class="mp-info-box">
-        <p>🎴 เล่นสูง-ต่ำพร้อมกันได้สูงสุด 8 คน</p>
+        <p>🎴 เล่นได้หลายเกม: สูง-ต่ำ / ป๊อกเด้ง / แบล็คแจ็ค</p>
         <p>🔴 ไม่ต้องสมัครสมาชิก ใช้เครดิตในเกมเท่านั้น</p>
-        <p>💡 ทุกคนเห็นไพ่ใบเดียวกัน ทายพร้อมกันเลย!</p>
+        <p>💡 เจ้าของห้องเลือกเกมแล้วกดเริ่ม!</p>
       </div>
     </section>
 
@@ -993,8 +1018,21 @@ header{
           <small style="font-size:11px">แชร์รหัสห้องให้เพื่อนแล้วเริ่มเลย!</small>
         </div>
         <div id="mpHostBar" style="display:none">
+          <div class="mp-sec-lbl" style="margin-top:6px">เลือกเกม</div>
+          <div class="mp-game-sel">
+            <button class="mp-game-opt active" id="mpGameOptHilo" onclick="mpSetGame('hilo')">
+              <span class="mp-go-icon">🃏</span><span>สูง-ต่ำ</span>
+            </button>
+            <button class="mp-game-opt" id="mpGameOptPd" onclick="mpSetGame('pokdeng')">
+              <span class="mp-go-icon">🀄</span><span>ป๊อกเด้ง</span>
+            </button>
+            <button class="mp-game-opt" id="mpGameOptBj" onclick="mpSetGame('blackjack')">
+              <span class="mp-go-icon">♠</span><span>แบล็คแจ็ค</span>
+            </button>
+          </div>
           <button class="mp-start-btn" onclick="mpStartRound()">🎮 เริ่มเล่นเลย!</button>
         </div>
+        <div id="mpGuestGameLabel" style="display:none;text-align:center;padding:10px 0;color:var(--text2);font-size:13px;font-family:'Prompt'"></div>
       </div>
 
       <!-- Guessing panel -->
@@ -1029,6 +1067,33 @@ header{
         </div>
         <div class="mp-round-results" id="mpRoundResults"></div>
         <div class="mp-next-info" id="mpNextInfo"></div>
+      </div>
+
+      <!-- Pok Deng dealing panel -->
+      <div class="mp-phase-panel" id="mpPanelDealing">
+        <div class="mp-sec-lbl" style="margin-top:10px">ไพ่ของคุณ</div>
+        <div class="mp-pd-hand" id="mpPdMyHand">
+          <div class="mp-pd-hand-lbl">มือของคุณ</div>
+          <div class="mp-pd-cards" id="mpPdMyCards"></div>
+          <div class="mp-pd-score" id="mpPdMyScore"></div>
+        </div>
+        <div class="mp-timer-wrap">
+          <div class="mp-timer-bar"><div class="mp-timer-fill" id="mpPdTimerFill" style="width:100%"></div></div>
+          <div class="mp-timer-text" id="mpPdTimerText">20s</div>
+        </div>
+        <div class="mp-guess-ind" id="mpPdActionInd"></div>
+        <div class="bet-section"><div class="bet-lbl">เดิมพัน</div><div class="bet-bar" id="mpPdBetBar"></div></div>
+        <div class="action-row" id="mpPdActionRow">
+          <button class="action-btn green" id="mpPdStayBtn" onclick="mpPdAction('stay')">✋ อยู่</button>
+          <button class="action-btn blue" id="mpPdDrawBtn" onclick="mpPdAction('draw')">🃏 จั่ว</button>
+        </div>
+      </div>
+
+      <!-- Pok Deng result panel -->
+      <div class="mp-phase-panel" id="mpPanelPdResult">
+        <div class="mp-sec-lbl" style="margin-top:10px">ผลป๊อกเด้งรอบนี้</div>
+        <div class="mp-pd-result-grid" id="mpPdResultGrid"></div>
+        <div class="mp-next-info" id="mpPdNextInfo"></div>
       </div>
 
       <div class="mp-sec-lbl">แชท</div>
@@ -1733,6 +1798,8 @@ let mpPlayers={}, mpPhase='none', mpRound=0;
 let mpMyGuess=null, mpMyBet=100;
 let mpTimerInterval=null, mpTimerEnd=0;
 let mpResultProcessed=false, mpBetBuilt=false;
+let mpGame='hilo';
+let mpPdMyAction=null, mpPdBetBuilt=false;
 const mpChatSeen=new Set();
 
 const MP_RELAYS=['https://gun-manhattan.herokuapp.com/gun','https://peer.wallie.io/gun'];
@@ -1753,6 +1820,60 @@ function mpGenCode(){
   let c='';const ch='ABCDEFGHJKLMNPRSTUVWXYZ23456789';
   for(let i=0;i<6;i++)c+=ch[Math.floor(Math.random()*ch.length)];
   return c;
+}
+
+// Full seeded 52-card shuffle for Pok Deng / Blackjack (different seed from Hi-Lo card)
+function mpDeckForRound(code,round){
+  const deck=[];
+  for(const s of SUITS)for(let r=0;r<13;r++)deck.push({suit:s,rank:RANKS[r],val:r+1});
+  const seed=([...code].reduce((a,c,i)=>(a+c.charCodeAt(0)*(i*19+7))|0,0)+round*99991+12345)|0;
+  const rng=_mpMul(seed);
+  for(let i=deck.length-1;i>0;i--){const j=Math.floor(rng()*(i+1));[deck[i],deck[j]]=[deck[j],deck[i]];}
+  return deck;
+}
+
+// Returns player pids in stable order: host first, then others sorted alphabetically
+function mpSortedPids(){
+  const pids=Object.keys(mpPlayers).filter(p=>mpPlayers[p]&&mpPlayers[p].name);
+  pids.sort((a,b)=>a===mpHostId?-1:b===mpHostId?1:a.localeCompare(b));
+  return pids;
+}
+
+// Get the 3 cards assigned to a given pid in a round (Pok Deng)
+function mpPdCardsFor(pid,round){
+  const deck=mpDeckForRound(mpRoomCode,round);
+  const pids=mpSortedPids();
+  const idx=pids.indexOf(pid);
+  if(idx<0)return[];
+  return[deck[idx*3],deck[idx*3+1],deck[idx*3+2]];
+}
+
+// 4th draw card for a pid (drawn if they chose 'draw')
+function mpPdDrawCardFor(pid,round){
+  const deck=mpDeckForRound(mpRoomCode,round);
+  const pids=mpSortedPids();
+  const n=pids.length;
+  const idx=pids.indexOf(pid);
+  if(idx<0)return null;
+  return deck[n*3+idx]; // draw cards start after all initial hands
+}
+
+function mpSetGame(g){
+  if(!mpIsHost)return;
+  mpGame=g;
+  mpRoomRef.put({game:g});
+  document.querySelectorAll('.mp-game-opt').forEach(el=>el.classList.remove('active'));
+  const m={hilo:'mpGameOptHilo',pokdeng:'mpGameOptPd',blackjack:'mpGameOptBj'};
+  const t=document.getElementById(m[g]);if(t)t.classList.add('active');
+  const names={hilo:'สูง-ต่ำ',pokdeng:'ป๊อกเด้ง',blackjack:'แบล็คแจ็ค'};
+  mpSysMsg('เจ้าของห้องเลือกเกม: '+( names[g]||g));
+}
+
+// Render Pok Deng hand in a container
+function mpPdRenderHand(container,cards,extraCard){
+  container.innerHTML='';
+  const all=extraCard?[...cards,extraCard]:cards;
+  all.forEach(c=>{const e=cardEl(c);e.style.width='52px';e.style.height='74px';container.appendChild(e);});
 }
 
 function mpInitGun(){
@@ -1793,24 +1914,36 @@ function mpEnterRoom(){
   // Reset state
   mpPlayers={};mpPhase='none';mpRound=0;mpMyGuess=null;
   mpResultProcessed=false;mpBetBuilt=false;mpChatSeen.clear();
+  mpPdMyAction=null;mpPdBetBuilt=false;
   if(mpTimerInterval){clearInterval(mpTimerInterval);mpTimerInterval=null;}
 
   mpRoomRef=gun.get(MP_NS).get(mpRoomCode);
 
   if(mpIsHost){
     mpHostId=mpId;
-    mpRoomRef.put({hostId:mpId,phase:'lobby',round:0,created:Date.now(),timerEnd:0});
+    mpGame='hilo';
+    mpRoomRef.put({hostId:mpId,phase:'lobby',round:0,created:Date.now(),timerEnd:0,game:'hilo'});
   }
 
   // Register self
   mpRoomRef.get('players').get(mpId).put({
-    name:mpName,credits:credits,online:true,lastSeen:Date.now(),bet:50,guess:'',guessRound:-1
+    name:mpName,credits:credits,online:true,lastSeen:Date.now(),bet:50,guess:'',guessRound:-1,pdAction:'',pdActionRound:-1
   });
 
   // Listen to room state
   mpRoomRef.on((data)=>{
     if(!data)return;
     if(data.hostId)mpHostId=data.hostId;
+    if(data.game&&data.game!==mpGame){
+      mpGame=data.game;
+      // Sync game selector UI
+      document.querySelectorAll('.mp-game-opt').forEach(el=>el.classList.remove('active'));
+      const m={hilo:'mpGameOptHilo',pokdeng:'mpGameOptPd',blackjack:'mpGameOptBj'};
+      const t=document.getElementById(m[mpGame]);if(t)t.classList.add('active');
+      const names={hilo:'สูง-ต่ำ',pokdeng:'ป๊อกเด้ง',blackjack:'แบล็คแจ็ค'};
+      const gl=document.getElementById('mpGuestGameLabel');
+      if(gl){gl.textContent='เกม: '+(names[mpGame]||mpGame);gl.style.display='';}
+    }
     const np=data.phase||'lobby';
     const nr=(data.round!==undefined&&data.round!==null)?data.round:0;
     if(np!==mpPhase||nr!==mpRound){
@@ -1818,8 +1951,9 @@ function mpEnterRoom(){
       mpPhase=np;mpRound=nr;
       mpOnPhaseChange(prev);
     }
-    // Start timer if guessing phase and timerEnd available
-    if(np==='guessing'&&data.timerEnd&&data.timerEnd>Date.now()&&!mpTimerInterval){
+    // Start timer for timed phases
+    const timedPhases=['guessing','dealing'];
+    if(timedPhases.includes(np)&&data.timerEnd&&data.timerEnd>Date.now()&&!mpTimerInterval){
       mpTimerEnd=data.timerEnd;
       mpRunTimer();
     }
@@ -1844,6 +1978,13 @@ function mpEnterRoom(){
   document.getElementById('mpRoomCodeDisplay').textContent=mpRoomCode;
   document.getElementById('mpHostBar').style.display=mpIsHost?'':'none';
   document.getElementById('mpWaitingInfo').style.display=mpIsHost?'none':'';
+  // Show game label for guests
+  const gl=document.getElementById('mpGuestGameLabel');
+  if(gl){gl.style.display=mpIsHost?'none':'';gl.textContent='เกม: สูง-ต่ำ';}
+  // Disable game opts for guests
+  document.querySelectorAll('.mp-game-opt').forEach(el=>{
+    if(!mpIsHost)el.disabled=true;else el.disabled=false;
+  });
   mpShowPanel('Lobby');
 
   if(mpIsHost){mpSysMsg('ห้อง '+mpRoomCode+' ถูกสร้างแล้ว กด 📋 แชร์รหัสให้เพื่อน!');}
@@ -1863,32 +2004,30 @@ function mpOnPhaseChange(prevPhase){
     mpShowPanel('Lobby');
     document.getElementById('mpHostBar').style.display=mpIsHost?'':'none';
     document.getElementById('mpWaitingInfo').style.display=mpIsHost?'none':'';
-    mpMyGuess=null;mpResultProcessed=false;
+    mpMyGuess=null;mpResultProcessed=false;mpPdMyAction=null;
     const gi=document.getElementById('mpGuessInd');
     if(gi){gi.style.display='none';gi.className='mp-guess-ind';}
   }
   else if(mpPhase==='guessing'){
+    // Hi-Lo only
     mpShowPanel('Guess');
     mpMyGuess=null;mpResultProcessed=false;
     const gi=document.getElementById('mpGuessInd');
     gi.style.display='none';gi.className='mp-guess-ind';
-    // Show card
     const card=mpCard(mpRoomCode,mpRound);
     const area=document.getElementById('mpGuessCardArea');
     area.innerHTML='';
     const ce=cardEl(card);ce.style.transform='scale(1.15)';
     area.appendChild(ce);
     SFX.deal();
-    // Build bet bar once
     if(!mpBetBuilt){buildBetBar('mpBetBar','mp');mpBetBuilt=true;}
     document.getElementById('mpHighBtn').disabled=false;
     document.getElementById('mpLowBtn').disabled=false;
-    // Reset timer display
     document.getElementById('mpTimerFill').style.width='100%';
     document.getElementById('mpTimerText').textContent='10s';
-    // Timer starts when .on() delivers timerEnd
   }
   else if(mpPhase==='result'){
+    // Hi-Lo result
     mpShowPanel('Result');
     const curCard=mpCard(mpRoomCode,mpRound);
     const nxtCard=mpCard(mpRoomCode,mpRound+1);
@@ -1898,7 +2037,6 @@ function mpOnPhaseChange(prevPhase){
     pa.appendChild(cardEl(curCard));
     na.appendChild(cardEl(nxtCard));
     SFX.deal();
-    // Resolve credits once
     if(!mpResultProcessed){
       mpResultProcessed=true;
       if(mpMyGuess){
@@ -1915,37 +2053,185 @@ function mpOnPhaseChange(prevPhase){
       }
     }
     mpRenderRoundResults(curCard,nxtCard);
-    // Auto-next for host
-    if(mpIsHost){
-      let cd=5;
-      const ni=document.getElementById('mpNextInfo');
-      const tick=()=>{
-        ni.innerHTML='รอบถัดไปใน <b style="color:var(--gold)">'+cd+'</b> วินาที...';
-        if(cd<=0){clearInterval(mpTimerInterval);mpTimerInterval=null;mpNextRound();return;}
-        cd--;
-      };
-      tick();
-      mpTimerInterval=setInterval(tick,1000);
-    }else{
-      document.getElementById('mpNextInfo').textContent='รอหัวห้องเริ่มรอบถัดไป...';
+    if(mpIsHost)mpAutoNext('mpNextInfo');
+    else document.getElementById('mpNextInfo').textContent='รอหัวห้องเริ่มรอบถัดไป...';
+  }
+  else if(mpPhase==='dealing'){
+    // Pok Deng dealing phase
+    mpShowPanel('Dealing');
+    mpPdMyAction=null;mpResultProcessed=false;
+    const myCards=mpPdCardsFor(mpId,mpRound);
+    const myCtr=document.getElementById('mpPdMyCards');
+    if(myCtr){mpPdRenderHand(myCtr,myCards,null);}
+    const sc=document.getElementById('mpPdMyScore');
+    if(sc){
+      const s=pdScore(myCards);
+      const isPok=pdIsPok(myCards);
+      sc.innerHTML=s+(isPok?'<div class="mp-pd-tag pok">ป๊อก!</div>':'');
     }
+    // Disable draw/stay if pok
+    const isPok=pdIsPok(myCards);
+    const drawBtn=document.getElementById('mpPdDrawBtn');
+    const stayBtn=document.getElementById('mpPdStayBtn');
+    if(isPok){
+      if(drawBtn)drawBtn.disabled=true;
+      if(stayBtn)stayBtn.disabled=true;
+      mpPdAction('stay'); // auto-stay on pok
+    }else{
+      if(drawBtn)drawBtn.disabled=false;
+      if(stayBtn)stayBtn.disabled=false;
+    }
+    SFX.deal();
+    if(!mpPdBetBuilt){buildBetBar('mpPdBetBar','mp');mpPdBetBuilt=true;}
+    document.getElementById('mpPdTimerFill').style.width='100%';
+    document.getElementById('mpPdTimerText').textContent='20s';
+    const ai=document.getElementById('mpPdActionInd');
+    if(ai){ai.style.display='none';ai.className='mp-guess-ind';}
+  }
+  else if(mpPhase==='pdresult'){
+    // Pok Deng result
+    mpShowPanel('PdResult');
+    mpPdResolveAndRender();
+    if(mpIsHost)mpAutoNext('mpPdNextInfo');
+    else document.getElementById('mpPdNextInfo').textContent='รอหัวห้องเริ่มรอบถัดไป...';
+  }
+}
+
+function mpAutoNext(infoId){
+  let cd=5;
+  const ni=document.getElementById(infoId);
+  const tick=()=>{
+    if(ni)ni.innerHTML='รอบถัดไปใน <b style="color:var(--gold)">'+cd+'</b> วินาที...';
+    if(cd<=0){clearInterval(mpTimerInterval);mpTimerInterval=null;mpNextRound();return;}
+    cd--;
+  };
+  tick();
+  mpTimerInterval=setInterval(tick,1000);
+}
+
+function mpPdAction(action){
+  if(mpPdMyAction)return;
+  mpPdMyAction=action;
+  mpMyBet=bets.mp||50;
+  const drawBtn=document.getElementById('mpPdDrawBtn');
+  const stayBtn=document.getElementById('mpPdStayBtn');
+  if(drawBtn)drawBtn.disabled=true;
+  if(stayBtn)stayBtn.disabled=true;
+  mpRoomRef.get('players').get(mpId).put({pdAction:action,pdActionRound:mpRound,bet:mpMyBet});
+  // Update hand display if drawing
+  const myCards=mpPdCardsFor(mpId,mpRound);
+  const myCtr=document.getElementById('mpPdMyCards');
+  const sc=document.getElementById('mpPdMyScore');
+  if(action==='draw'){
+    const extra=mpPdDrawCardFor(mpId,mpRound);
+    if(myCtr&&extra)mpPdRenderHand(myCtr,myCards,extra);
+    const allCards=extra?[...myCards,extra]:myCards;
+    const s=pdScore(allCards);
+    if(sc)sc.textContent=s;
+    SFX.deal();
+  }
+  const ai=document.getElementById('mpPdActionInd');
+  if(ai){
+    ai.textContent=action==='draw'?'🃏 คุณจั่วไพ่แล้ว!':'✋ คุณอยู่แล้ว!';
+    ai.className='mp-guess-ind '+(action==='draw'?'high':'low');
+    ai.style.display='';
+  }
+  showToast(action==='draw'?'🃏 จั่วไพ่!':'✋ อยู่!','gold',1200);
+}
+
+function mpPdResolveAndRender(){
+  if(mpResultProcessed)return;
+  mpResultProcessed=true;
+  mpMyBet=bets.mp||50;
+  const bankerCards=mpPdCardsFor(mpHostId,mpRound);
+  const grid=document.getElementById('mpPdResultGrid');
+  if(!grid)return;
+  grid.innerHTML='';
+
+  const pids=mpSortedPids();
+  let myDelta=0;
+
+  pids.forEach((pid,i)=>{
+    const p=mpPlayers[pid];
+    if(!p||!p.name)return;
+    const isBanker=pid===mpHostId;
+    const isMe=pid===mpId;
+    const pCards=mpPdCardsFor(pid,mpRound);
+    const pAction=(isMe?(mpPdMyAction||'stay'):(p.pdActionRound===mpRound?p.pdAction||'stay':'stay'));
+    const extraCard=pAction==='draw'?mpPdDrawCardFor(pid,mpRound):null;
+    const allCards=extraCard?[...pCards,extraCard]:pCards;
+    const ps=pdScore(allCards);
+    const pm=pdDeng(allCards);
+    const ppok=pdIsPok(allCards);
+
+    const div=document.createElement('div');
+    div.className='mp-pd-rr'+(isBanker?' banker':'');
+    const cardsHtml=allCards.map(c=>{
+      const col=c.suit==='♥'||c.suit==='♦'?'#ff4466':'#e0e8ff';
+      return`<span style="display:inline-flex;flex-direction:column;align-items:center;background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:2px 5px;font-size:14px;margin:0 2px"><span style="font-size:10px;color:${col}">${c.suit}</span><span style="font-family:'Orbitron';font-size:11px">${c.rank}</span></span>`;
+    }).join('');
+
+    if(isBanker){
+      div.innerHTML=`<div class="mp-pd-rr-top"><div class="mp-pd-rr-name">👑 ${p.name} (เจ้ามือ)</div><div>แต้ม: <b>${ps}</b>${ppok?' 🏅':''}</div></div><div>${cardsHtml}</div>`;
+    }else{
+      const bs=pdScore(bankerCards);
+      const bm=pdDeng(bankerCards);
+      const bpok=pdIsPok(bankerCards);
+      let won=false;
+      if(ppok&&!bpok){won=true;}
+      else if(bpok&&!ppok){won=false;}
+      else if(ps>bs){won=true;}
+      else if(ps<bs){won=false;}
+      else{won=pm>bm;}
+      const bet=isMe?mpMyBet:(p.bet||50);
+      const deng=Math.max(1,pm);
+      const delta=won?bet*deng:-bet*deng;
+      if(isMe)myDelta=delta;
+      const deltaStr=(delta>=0?'+':'')+delta.toLocaleString('th-TH');
+      div.className+=(won?' win':' lose');
+      div.innerHTML=`<div class="mp-pd-rr-top"><div class="mp-pd-rr-name">${isMe?'⭐ ':''}${p.name}${isMe?' (คุณ)':''}</div><div class="mp-pd-rr-delta ${won?'wd':'ld'}">${deltaStr}</div></div><div>${cardsHtml}<span style="margin-left:6px;font-size:12px;color:var(--text2)">แต้ม ${ps}${ppok?' 🏅':''}</span></div>`;
+    }
+    grid.appendChild(div);
+  });
+
+  // Apply credits for self
+  if(myDelta!==0){
+    if(myDelta>0){
+      addCredits(myDelta);recordResult(true,Math.abs(myDelta));
+      fireParticles(myDelta>=200);SFX.win();
+      showToast('✅ ชนะ! +'+Math.abs(myDelta).toLocaleString('th-TH'),'win');
+    }else{
+      addCredits(-Math.min(Math.abs(myDelta),credits));recordResult(false,Math.abs(myDelta));
+      SFX.lose();showToast('❌ แพ้! -'+Math.abs(myDelta).toLocaleString('th-TH'),'lose');
+    }
+    mpRoomRef.get('players').get(mpId).put({credits:credits,lastSeen:Date.now()});
   }
 }
 
 function mpRunTimer(){
+  const isPd=mpPhase==='dealing';
+  const totalMs=isPd?20000:10000;
+  const fillId=isPd?'mpPdTimerFill':'mpTimerFill';
+  const txtId=isPd?'mpPdTimerText':'mpTimerText';
   const tick=()=>{
     const left=Math.max(0,mpTimerEnd-Date.now());
     const secs=Math.ceil(left/1000);
-    const fill=document.getElementById('mpTimerFill');
-    const txt=document.getElementById('mpTimerText');
-    if(fill)fill.style.width=(left/10000*100)+'%';
+    const fill=document.getElementById(fillId);
+    const txt=document.getElementById(txtId);
+    if(fill)fill.style.width=(left/totalMs*100)+'%';
     if(txt)txt.textContent=secs+'s';
     if(left<=0){
       clearInterval(mpTimerInterval);mpTimerInterval=null;
-      const h=document.getElementById('mpHighBtn');const l=document.getElementById('mpLowBtn');
-      if(h)h.disabled=true;if(l)l.disabled=true;
-      // All clients trigger result transition — Gun merges idempotently
-      mpRoomRef.put({phase:'result'});
+      if(!isPd){
+        const h=document.getElementById('mpHighBtn');const l=document.getElementById('mpLowBtn');
+        if(h)h.disabled=true;if(l)l.disabled=true;
+        mpRoomRef.put({phase:'result'});
+      }else{
+        const db=document.getElementById('mpPdDrawBtn');const sb=document.getElementById('mpPdStayBtn');
+        if(db)db.disabled=true;if(sb)sb.disabled=true;
+        if(!mpPdMyAction)mpPdAction('stay');
+        mpRoomRef.put({phase:'pdresult'});
+      }
     }
   };
   tick();
@@ -1969,17 +2255,30 @@ function mpGuess(dir){
 
 function mpStartRound(){
   if(!mpIsHost)return;
-  const te=Date.now()+11000;
-  mpRoomRef.put({phase:'guessing',round:mpRound,timerEnd:te});
-  mpSysMsg('เริ่มรอบที่ '+(mpRound+1)+'! ทายสูงหรือต่ำใน 10 วินาที');
+  if(mpGame==='pokdeng'||mpGame==='blackjack'){
+    const te=Date.now()+21000;
+    mpRoomRef.put({phase:'dealing',round:mpRound,timerEnd:te,game:mpGame});
+    const names={pokdeng:'ป๊อกเด้ง',blackjack:'แบล็คแจ็ค'};
+    mpSysMsg('เริ่มรอบที่ '+(mpRound+1)+' ('+( names[mpGame]||mpGame)+')! ดูไพ่แล้วตัดสินใจใน 20 วินาที');
+  }else{
+    const te=Date.now()+11000;
+    mpRoomRef.put({phase:'guessing',round:mpRound,timerEnd:te,game:'hilo'});
+    mpSysMsg('เริ่มรอบที่ '+(mpRound+1)+'! ทายสูงหรือต่ำใน 10 วินาที');
+  }
 }
 
 function mpNextRound(){
   if(!mpIsHost)return;
   const nr=mpRound+1;
-  const te=Date.now()+11000;
-  mpRoomRef.put({phase:'guessing',round:nr,timerEnd:te});
-  mpSysMsg('เริ่มรอบที่ '+(nr+1)+'!');
+  if(mpGame==='pokdeng'||mpGame==='blackjack'){
+    const te=Date.now()+21000;
+    mpRoomRef.put({phase:'dealing',round:nr,timerEnd:te,game:mpGame});
+    mpSysMsg('เริ่มรอบที่ '+(nr+1)+'!');
+  }else{
+    const te=Date.now()+11000;
+    mpRoomRef.put({phase:'guessing',round:nr,timerEnd:te,game:'hilo'});
+    mpSysMsg('เริ่มรอบที่ '+(nr+1)+'!');
+  }
 }
 
 function mpRenderPlayers(){
@@ -1991,7 +2290,9 @@ function mpRenderPlayers(){
     const isMe=pid===mpId;
     const isHost=pid===mpHostId;
     const g=(p.guessRound===mpRound&&p.guess)?p.guess:null;
-    const icon=g==='high'?'⬆':g==='low'?'⬇':(mpPhase==='guessing'?'⏳':'🟢');
+    const pdAct=(p.pdActionRound===mpRound&&p.pdAction)?p.pdAction:null;
+    const icon=mpPhase==='guessing'?(g==='high'?'⬆':g==='low'?'⬇':'⏳'):
+               mpPhase==='dealing'?(pdAct==='stay'?'✋':pdAct==='draw'?'🃏':'⏳'):'🟢';
     const div=document.createElement('div');
     div.className='mp-pcard'+(isMe?' me':'');
     div.innerHTML=`<div class="mp-pav">${p.name[0].toUpperCase()}</div>
