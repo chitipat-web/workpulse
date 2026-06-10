@@ -210,6 +210,7 @@ header{
 .game-tile.gt-pd .gt-thumb{background:linear-gradient(135deg,#001530,#003068)}
 .game-tile.gt-bj .gt-thumb{background:linear-gradient(135deg,#001a10,#00441c)}
 .game-tile.gt-hl .gt-thumb{background:linear-gradient(135deg,#250030,#5a0070)}
+.game-tile.gt-ke .gt-thumb{background:linear-gradient(135deg,#2a1500,#7a3500)}
 .game-tile:hover .gt-thumb{filter:brightness(1.2)}
 .gt-badge{
   position:absolute;top:6px;left:6px;
@@ -396,6 +397,7 @@ header{
 .cgb-thumb{height:80px;display:flex;align-items:center;justify-content:center;font-size:38px}
 .cgb-thumb.t-pd{background:linear-gradient(135deg,#001530,#00306a)}
 .cgb-thumb.t-bj{background:linear-gradient(135deg,#001a10,#004420)}
+.cgb-thumb.t-ke{background:linear-gradient(135deg,#2a1500,#7a3500)}
 .cgb-label{background:var(--s2);padding:8px 10px;font-family:'Prompt';font-size:13px;font-weight:700;text-align:center}
 
 /* ========== TABLE FELT ========== */
@@ -737,6 +739,11 @@ header{
           <span class="gt-rtp">RTP 95%</span>
           <div class="gt-info"><h4>สูง-ต่ำ</h4><p>คูณ ×1.8 ต่อ</p></div>
         </div>
+        <div class="game-tile gt-ke" onclick="showScreen('9ke')">
+          <div class="gt-thumb">🀄<span class="gt-badge badge-new">NEW</span></div>
+          <span class="gt-rtp">RTP 97.5%</span>
+          <div class="gt-info"><h4>9 เก</h4><p>3 ใบ ตอง ×5</p></div>
+        </div>
       </div>
     </section>
 
@@ -811,9 +818,15 @@ header{
           <div class="cgb-label">Blackjack 21</div>
         </div>
       </div>
-      <div class="card-game-btn" style="border-radius:16px;overflow:hidden;border:1px solid var(--border);cursor:pointer" onclick="showScreen('hilo')">
-        <div class="cgb-thumb" style="background:linear-gradient(135deg,#250030,#5a0070);height:60px;font-size:32px">🎴</div>
-        <div class="cgb-label">ไฮโล่ไพ่ สูง-ต่ำ</div>
+      <div class="cards-grid" style="margin-top:0">
+        <div class="card-game-btn" onclick="showScreen('hilo')">
+          <div class="cgb-thumb" style="background:linear-gradient(135deg,#250030,#5a0070)">🎴</div>
+          <div class="cgb-label">สูง-ต่ำ</div>
+        </div>
+        <div class="card-game-btn" onclick="showScreen('9ke')">
+          <div class="cgb-thumb t-ke">🀄</div>
+          <div class="cgb-label">9 เก</div>
+        </div>
       </div>
     </section>
 
@@ -876,6 +889,34 @@ header{
         <button class="action-btn red" id="hlLowBtn" onclick="hlGuess(false)" style="display:none">⬇ ต่ำกว่า</button>
         <button class="action-btn" id="hlCashBtn" onclick="hlCashout()" style="display:none">💰 รับเงิน</button>
       </div>
+    </section>
+
+    <!-- ===== 9 เก ===== -->
+    <section class="screen" id="screen-9ke">
+      <button class="back-btn" onclick="showScreen('cards')">← เกมไพ่</button>
+      <h2 class="game-title">🀄 9 เก</h2>
+      <div class="table-felt">
+        <div class="felt-logo">🀄</div>
+        <div class="hand-label">🤵 ดีลเลอร์ <span class="hand-score" id="keDealerScore">-</span></div>
+        <div class="cards-row" id="keDealerCards"></div>
+        <div class="hand-label">🙋 คุณ <span class="hand-score" id="kePlayerScore">-</span></div>
+        <div class="cards-row" id="kePlayerCards"></div>
+        <div class="result-msg" id="keResult"></div>
+      </div>
+      <div class="bet-section"><div class="bet-lbl">เดิมพัน</div><div class="bet-bar" id="keBets"></div></div>
+      <div class="action-row">
+        <button class="action-btn primary" id="keDealBtn" onclick="keDeal()">🀄 แจก 3 ใบ</button>
+      </div>
+      <details class="paytable">
+        <summary>ตารางจ่ายรางวัล <span class="chevron">▼</span></summary>
+        <div class="pt-body">
+          <div class="pt-row"><span>ตอง (3 ใบ rank เดียวกัน)</span><b>×5</b></div>
+          <div class="pt-row"><span>สามเหลือง (J/Q/K/10 ×3)</span><b>×3</b></div>
+          <div class="pt-row"><span>ฟลัชตรง (เรียง-ดอกเดียว)</span><b>×3</b></div>
+          <div class="pt-row"><span>ชนะปกติ</span><b>×1</b></div>
+          <div class="pt-row"><span>แพ้ (ดีลเลอร์มีมือพิเศษ)</span><b>−ตาม mult</b></div>
+        </div>
+      </details>
     </section>
 
     <!-- ===== PROFILE ===== -->
@@ -1276,7 +1317,7 @@ function toggleSound() {
 
 /* ─────────────── BET BARS ─────────────── */
 const BET_OPTIONS=[10,50,100,500];
-const bets={slot:50,pd:50,bj:50,hl:50,mp:50};
+const bets={slot:50,pd:50,bj:50,hl:50,ke:50,mp:50};
 function buildBetBar(cid, key) {
   const el = document.getElementById(cid);
   BET_OPTIONS.forEach(v => {
@@ -1294,6 +1335,7 @@ buildBetBar('slotBets','slot');
 buildBetBar('pdBets','pd');
 buildBetBar('bjBets','bj');
 buildBetBar('hlBets','hl');
+buildBetBar('keBets','ke');
 
 /* ─────────────── CARD HELPERS ─────────────── */
 const SUITS=['♠','♥','♦','♣'], RANKS=['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
@@ -1609,6 +1651,70 @@ function hlCashout(){
   SFX.bigWin();fireParticles(hlPot>500);recordResult(true,hlPot);
   showToast(`💰 รับ ${hlPot.toLocaleString('th-TH')} เครดิต!`,'win',3000);
   hlPlay=false;hlPot=0;hlSt=0;hlUS();hlSB(true,false);
+}
+
+/* ─────────────── 9 เก (GAO KE) ─────────────── */
+// 3 cards dealt, no draw. Score = sum of values mod 10 (10/J/Q/K = 0).
+// Special hands: Tong ×5, Sam Lueang ×3, Straight-flush ×3.
+let keDeck, kePlayer, keDealer, keBet, keInPlay=false;
+const keVal=c=>c.val>=10?0:c.val;
+const keScore=h=>h.reduce((s,c)=>s+keVal(c),0)%10;
+function keMult(h){
+  if(h[0].rank===h[1].rank&&h[1].rank===h[2].rank)return 5;
+  if(h.every(c=>c.val>=10))return 3;
+  const sv=[...h].sort((a,b)=>a.val-b.val);
+  if(sv[0].suit===sv[1].suit&&sv[1].suit===sv[2].suit){
+    const v=sv.map(c=>c.val);
+    if(v[1]===v[0]+1&&v[2]===v[1]+1)return 3;
+    if(v[0]===1&&v[1]===12&&v[2]===13)return 3;
+  }
+  return 1;
+}
+function keMultLabel(h){
+  const m=keMult(h);
+  if(m===5)return ' ตอง ×5';
+  if(m===3)return h.every(c=>c.val>=10)?' สามเหลือง ×3':' ฟลัชตรง ×3';
+  return '';
+}
+function keRender(rv){
+  renderHand('kePlayerCards',kePlayer);
+  renderHand('keDealerCards',keDealer,!rv);
+  document.getElementById('kePlayerScore').textContent=keScore(kePlayer)+' แต้ม'+keMultLabel(kePlayer);
+  document.getElementById('keDealerScore').textContent=rv?keScore(keDealer)+' แต้ม'+keMultLabel(keDealer):'?';
+}
+function keDeal(){
+  keBet=bets.ke;if(!canBet(keBet))return;
+  addCredits(-keBet);keDeck=newDeck();
+  kePlayer=[keDeck.pop(),keDeck.pop(),keDeck.pop()];
+  keDealer=[keDeck.pop(),keDeck.pop(),keDeck.pop()];
+  keInPlay=true;document.getElementById('keResult').innerHTML='';
+  document.getElementById('keDealBtn').disabled=true;
+  SFX.deal();keRender(false);
+  setTimeout(keShowdown,700);
+}
+function keShowdown(){
+  keInPlay=false;keRender(true);
+  const ps=keScore(kePlayer),ds=keScore(keDealer);
+  const pm=keMult(kePlayer),dm=keMult(keDealer);
+  const el=document.getElementById('keResult');
+  // Tong > Sam Lueang > score; among equal mult compare score
+  const oc=pm>dm?1:dm>pm?-1:ps>ds?1:ps<ds?-1:0;
+  if(oc===1){
+    const w=keBet*pm;addCredits(keBet+w);
+    el.innerHTML=`<span class="win">🎉 ชนะ +${w.toLocaleString('th-TH')}</span><small>${ps} แต้ม${keMultLabel(kePlayer)} ชนะ ${ds} แต้ม</small>`;
+    SFX.win();fireParticles(pm>=3);recordResult(true,w);
+    showToast(`🎉 ชนะ +${w.toLocaleString('th-TH')}`+(pm>1?` (×${pm})`:''),'win');
+  }else if(oc===-1){
+    const ex=Math.min(keBet*(dm-1),credits);if(ex>0)addCredits(-ex);
+    el.innerHTML=`<span class="lose">😢 แพ้ -${(keBet+ex).toLocaleString('th-TH')}</span><small>${ds} แต้ม${keMultLabel(keDealer)} ชนะ ${ps} แต้ม</small>`;
+    SFX.lose();recordResult(false,keBet+ex);
+    showToast(`😢 แพ้ -${(keBet+ex).toLocaleString('th-TH')}`,'lose');
+  }else{
+    addCredits(keBet);
+    el.innerHTML=`<span class="push">🤝 เสมอ คืนเดิมพัน</span><small>${ps} แต้ม เท่ากัน</small>`;
+    showToast('🤝 เสมอ','gold');
+  }
+  document.getElementById('keDealBtn').disabled=false;
 }
 
 /* ─────────────── MULTIPLAYER (ONLINE HI-LO) ─────────────── */
