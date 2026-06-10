@@ -9,6 +9,7 @@
 <meta name="apple-mobile-web-app-title" content="Lucky Lala Casino">
 <title>Lucky Lala Casino</title>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Prompt:wght@300;400;500;600;700;800&family=Sarabun:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/gun/gun.js"></script>
 <style>
 :root{
   --bg:#080c12; --bg2:#0f1420; --bg3:#141b2d;
@@ -558,6 +559,91 @@ header{
   .pcard .suit-big{font-size:22px}
   .game-grid{grid-template-columns:1fr 1fr}
 }
+
+/* ========== MULTIPLAYER ========== */
+.mp-screen-hdr{display:flex;align-items:center;gap:14px;margin-bottom:20px}
+.mp-screen-icon{width:56px;height:56px;border-radius:18px;background:linear-gradient(135deg,#1a3a8f,#4060ff);display:flex;align-items:center;justify-content:center;font-size:28px;box-shadow:0 4px 20px rgba(64,96,255,.35);flex-shrink:0}
+.mp-screen-title{font-family:'Prompt';font-weight:800;font-size:22px}
+.mp-screen-sub{font-size:12px;color:var(--text2);margin-top:2px}
+.mp-status{text-align:center;font-size:12px;color:var(--text2);padding:6px 14px;border-radius:20px;background:var(--s1);border:1px solid var(--border);margin-bottom:14px;transition:all .3s}
+.mp-status.ok{color:var(--green2);background:rgba(0,208,132,.08);border-color:rgba(0,208,132,.25)}
+.mp-status.err{color:var(--red2);background:rgba(255,51,85,.08);border-color:rgba(255,51,85,.25)}
+.mp-field{margin-bottom:12px}
+.mp-field label{display:block;font-size:11px;color:var(--text2);font-family:'Prompt';font-weight:600;text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px}
+.mp-field input{width:100%;background:var(--s2);border:1px solid var(--border);border-radius:12px;padding:12px 14px;color:var(--text);font-size:15px;transition:border-color .2s}
+.mp-field input:focus{border-color:rgba(64,96,255,.5)}
+.mp-big-btn{width:100%;display:flex;align-items:center;gap:14px;padding:16px;border-radius:16px;margin-bottom:10px;text-align:left;transition:transform .15s}
+.mp-big-btn:active{transform:scale(.97)}
+.mp-big-btn.gold{background:linear-gradient(135deg,rgba(232,185,35,.12),rgba(200,120,0,.08));border:1px solid rgba(232,185,35,.3)}
+.mp-big-btn.blue{background:linear-gradient(135deg,rgba(64,96,255,.12),rgba(0,50,200,.08));border:1px solid rgba(64,96,255,.3)}
+.mp-btn-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.mp-big-btn.gold .mp-btn-icon{background:rgba(232,185,35,.12)}
+.mp-big-btn.blue .mp-btn-icon{background:rgba(64,96,255,.12)}
+.mp-btn-txt b{font-size:14px;display:block;font-weight:700}
+.mp-btn-txt small{font-size:11px;color:var(--text2)}
+.mp-btn-arr{margin-left:auto;color:var(--text3);font-size:18px}
+.mp-or-div{text-align:center;color:var(--text3);font-size:12px;margin:2px 0 10px;position:relative}
+.mp-or-div::before,.mp-or-div::after{content:'';position:absolute;top:50%;width:40%;height:1px;background:var(--border)}
+.mp-or-div::before{left:0}.mp-or-div::after{right:0}
+.mp-info-box{background:var(--s1);border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-top:6px}
+.mp-info-box p{font-size:12px;color:var(--text2);padding:3px 0;line-height:1.6}
+/* Room */
+.mp-room-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;gap:10px}
+.mp-code-badge{display:flex;align-items:center;gap:8px;background:rgba(64,96,255,.08);border:1px solid rgba(64,96,255,.25);border-radius:10px;padding:7px 12px}
+.mp-code-lbl{font-size:10px;color:var(--text2);font-family:'Prompt'}
+.mp-code-val{font-family:'Orbitron';font-weight:700;font-size:16px;color:#6080ff;letter-spacing:3px}
+.mp-copy-btn{padding:7px 11px;border-radius:8px;background:rgba(64,96,255,.12);border:1px solid rgba(64,96,255,.25);color:#6080ff;font-size:14px;transition:background .2s}
+.mp-copy-btn:active{background:rgba(64,96,255,.25)}
+.mp-sec-lbl{font-family:'Prompt';font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--text2);margin:12px 0 8px}
+/* Players */
+.mp-players{display:flex;flex-direction:column;gap:6px}
+.mp-pcard{display:flex;align-items:center;gap:10px;background:var(--s1);border:1px solid var(--border);border-radius:12px;padding:10px 12px;transition:border-color .2s}
+.mp-pcard.me{background:rgba(64,96,255,.07);border-color:rgba(64,96,255,.25)}
+.mp-pav{width:34px;height:34px;border-radius:10px;background:var(--s2);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:var(--text);flex-shrink:0;font-family:'Prompt'}
+.mp-pname{font-weight:700;font-size:13px;flex:1}
+.mp-pcred{font-family:'Orbitron';font-size:11px;color:var(--gold)}
+.mp-pstatus{font-size:18px;flex-shrink:0}
+/* Phases */
+.mp-phase-panel{display:none}
+.mp-phase-panel.active{display:block;animation:scrIn .3s cubic-bezier(.2,.8,.3,1)}
+/* Lobby panel */
+.mp-lobby-info{text-align:center;padding:18px;color:var(--text2);font-size:13px;line-height:1.8}
+.mp-start-btn{width:100%;padding:16px;border-radius:14px;font-size:16px;font-weight:700;font-family:'Prompt';background:linear-gradient(135deg,#e8b923,#ff8800);color:#1a0800;box-shadow:0 4px 20px rgba(232,185,35,.3);margin-top:6px}
+/* Guessing panel */
+.mp-card-center{display:flex;justify-content:center;margin:14px 0 10px;min-height:110px;align-items:center}
+.mp-timer-wrap{margin:8px 0 12px}
+.mp-timer-bar{height:6px;border-radius:3px;background:var(--s2);overflow:hidden;margin-bottom:6px}
+.mp-timer-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,#ff3355,#ff8800);transition:width .1s linear}
+.mp-timer-text{text-align:center;font-family:'Orbitron';font-size:12px;color:var(--text2);letter-spacing:.5px}
+.mp-guess-ind{text-align:center;font-size:13px;font-weight:700;font-family:'Prompt';padding:9px;border-radius:10px;margin:8px 0;display:none}
+.mp-guess-ind.high{background:rgba(0,208,132,.12);color:var(--green2);border:1px solid rgba(0,208,132,.3)}
+.mp-guess-ind.low{background:rgba(255,51,85,.1);color:var(--red2);border:1px solid rgba(255,51,85,.25)}
+/* Result panel */
+.mp-reveal-row{display:flex;align-items:center;justify-content:center;gap:16px;margin:14px 0 10px}
+.mp-reveal-side{text-align:center}
+.mp-reveal-lbl{font-size:10px;color:var(--text2);font-family:'Prompt';font-weight:600;margin-bottom:8px;text-transform:uppercase;letter-spacing:.4px}
+.mp-reveal-arrow{font-size:26px;color:var(--text3);margin-top:20px}
+.mp-round-results{display:flex;flex-direction:column;gap:5px;margin:8px 0}
+.mp-rr-row{display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:10px;background:var(--s1);border:1px solid var(--border)}
+.mp-rr-row.win{background:rgba(0,208,132,.1);border-color:rgba(0,208,132,.3)}
+.mp-rr-row.lose{background:rgba(255,51,85,.08);border-color:rgba(255,51,85,.3)}
+.mp-rr-name{flex:1;font-weight:700;font-size:13px}
+.mp-rr-guess{font-size:16px}
+.mp-rr-delta{font-family:'Orbitron';font-size:12px;font-weight:700}
+.mp-rr-delta.wd{color:var(--green2)}.mp-rr-delta.ld{color:var(--red2)}
+.mp-next-info{text-align:center;padding:12px;color:var(--text2);font-size:13px;font-family:'Prompt'}
+/* Chat */
+.mp-chat{background:var(--s1);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-top:4px;margin-bottom:16px}
+.mp-chat-msgs{max-height:130px;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:5px}
+.mp-chat-msgs::-webkit-scrollbar{display:none}
+.mp-chat-msg{font-size:12px;line-height:1.5}
+.mp-chat-msg .cn{font-weight:700;color:#6080ff;margin-right:4px}
+.mp-chat-msg.sys .cn{color:var(--text2)}
+.mp-chat-msg.mine .cn{color:var(--gold)}
+.mp-chat-irow{display:flex;border-top:1px solid var(--border)}
+.mp-chat-in{flex:1;background:transparent;border:none;padding:10px 12px;color:var(--text);font-size:13px}
+.mp-chat-in::placeholder{color:var(--text3)}
+.mp-chat-snd{padding:10px 14px;background:rgba(64,96,255,.1);color:#6080ff;font-size:13px;font-weight:700;font-family:'Prompt';border-left:1px solid var(--border)}
 </style>
 </head>
 <body>
@@ -808,6 +894,113 @@ header{
       <button class="reset-btn" onclick="confirmReset()">🗑️ รีเซ็ตข้อมูล</button>
     </section>
 
+    <!-- ===== MULTIPLAYER MENU ===== -->
+    <section class="screen" id="screen-multi">
+      <div class="mp-screen-hdr">
+        <div class="mp-screen-icon">👥</div>
+        <div>
+          <div class="mp-screen-title">เล่นกับเพื่อน</div>
+          <div class="mp-screen-sub">สูง-ต่ำออนไลน์ เรียลไทม์</div>
+        </div>
+      </div>
+      <div class="mp-status" id="mpStatusBar">⚪ กำลังเชื่อมต่อ...</div>
+      <div class="mp-field">
+        <label>ชื่อของคุณ</label>
+        <input type="text" id="mpNameInput" placeholder="ใส่ชื่อ (สูงสุด 12 ตัว)" maxlength="12" autocomplete="off">
+      </div>
+      <button class="mp-big-btn gold" onclick="mpCreate()">
+        <div class="mp-btn-icon">🏠</div>
+        <div class="mp-btn-txt"><b>สร้างห้องใหม่</b><small>แชร์รหัสให้เพื่อนเข้าร่วม</small></div>
+        <span class="mp-btn-arr">›</span>
+      </button>
+      <div class="mp-or-div">— หรือ —</div>
+      <div class="mp-field">
+        <label>รหัสห้อง</label>
+        <input type="text" id="mpJoinCode" placeholder="X X X X X X" maxlength="6"
+               style="text-transform:uppercase;letter-spacing:6px;font-size:20px;text-align:center">
+      </div>
+      <button class="mp-big-btn blue" onclick="mpJoin()">
+        <div class="mp-btn-icon">🚪</div>
+        <div class="mp-btn-txt"><b>เข้าร่วมห้อง</b><small>ใส่รหัส 6 ตัวจากเพื่อน</small></div>
+        <span class="mp-btn-arr">›</span>
+      </button>
+      <div class="mp-info-box">
+        <p>🎴 เล่นสูง-ต่ำพร้อมกันได้สูงสุด 8 คน</p>
+        <p>🔴 ไม่ต้องสมัครสมาชิก ใช้เครดิตในเกมเท่านั้น</p>
+        <p>💡 ทุกคนเห็นไพ่ใบเดียวกัน ทายพร้อมกันเลย!</p>
+      </div>
+    </section>
+
+    <!-- ===== MULTIPLAYER ROOM ===== -->
+    <section class="screen" id="screen-multi-room">
+      <div class="mp-room-top">
+        <button class="back-btn" onclick="mpLeave()" style="margin:0;padding:8px 14px">← ออก</button>
+        <div class="mp-code-badge">
+          <span class="mp-code-lbl">ห้อง</span>
+          <span class="mp-code-val" id="mpRoomCodeDisplay">------</span>
+        </div>
+        <button class="mp-copy-btn" onclick="mpCopyCode()" title="คัดลอกรหัส">📋</button>
+      </div>
+
+      <div class="mp-sec-lbl">ผู้เล่ม</div>
+      <div class="mp-players" id="mpPlayersList"></div>
+
+      <!-- Lobby panel -->
+      <div class="mp-phase-panel active" id="mpPanelLobby">
+        <div class="mp-lobby-info" id="mpWaitingInfo">
+          ⏳ รอผู้เล่นเข้าร่วม...<br>
+          <small style="font-size:11px">แชร์รหัสห้องให้เพื่อนแล้วเริ่มเลย!</small>
+        </div>
+        <div id="mpHostBar" style="display:none">
+          <button class="mp-start-btn" onclick="mpStartRound()">🎮 เริ่มเล่นเลย!</button>
+        </div>
+      </div>
+
+      <!-- Guessing panel -->
+      <div class="mp-phase-panel" id="mpPanelGuess">
+        <div class="mp-sec-lbl" style="margin-top:10px">ไพ่ปัจจุบัน — สูงหรือต่ำกว่า?</div>
+        <div class="mp-card-center" id="mpGuessCardArea"></div>
+        <div class="mp-timer-wrap">
+          <div class="mp-timer-bar"><div class="mp-timer-fill" id="mpTimerFill" style="width:100%"></div></div>
+          <div class="mp-timer-text" id="mpTimerText">10s</div>
+        </div>
+        <div class="mp-guess-ind" id="mpGuessInd"></div>
+        <div class="bet-section"><div class="bet-lbl">เดิมพัน</div><div class="bet-bar" id="mpBetBar"></div></div>
+        <div class="action-row">
+          <button class="action-btn green" id="mpHighBtn" onclick="mpGuess('high')">⬆ สูงกว่า</button>
+          <button class="action-btn red" id="mpLowBtn" onclick="mpGuess('low')">⬇ ต่ำกว่า</button>
+        </div>
+      </div>
+
+      <!-- Result panel -->
+      <div class="mp-phase-panel" id="mpPanelResult">
+        <div class="mp-sec-lbl" style="margin-top:10px">ผลรอบนี้</div>
+        <div class="mp-reveal-row">
+          <div class="mp-reveal-side">
+            <div class="mp-reveal-lbl">ไพ่เดิม</div>
+            <div id="mpResultPrev"></div>
+          </div>
+          <div class="mp-reveal-arrow">→</div>
+          <div class="mp-reveal-side">
+            <div class="mp-reveal-lbl">ไพ่ใหม่</div>
+            <div id="mpResultNext"></div>
+          </div>
+        </div>
+        <div class="mp-round-results" id="mpRoundResults"></div>
+        <div class="mp-next-info" id="mpNextInfo"></div>
+      </div>
+
+      <div class="mp-sec-lbl">แชท</div>
+      <div class="mp-chat">
+        <div class="mp-chat-msgs" id="mpChatMsgs"></div>
+        <div class="mp-chat-irow">
+          <input class="mp-chat-in" id="mpChatIn" placeholder="พิมพ์ข้อความ..." maxlength="60"
+                 onkeydown="if(event.key==='Enter')mpSendChat()">
+          <button class="mp-chat-snd" onclick="mpSendChat()">ส่ง</button>
+        </div>
+      </div>
+    </section>
+
   </div><!-- /mainContent -->
 
   <!-- BOTTOM NAV -->
@@ -823,6 +1016,9 @@ header{
     </button>
     <button class="nav-btn" id="nav-profile" onclick="gotoTab('profile')">
       <span class="nav-icon">👤</span>โปรไฟล์
+    </button>
+    <button class="nav-btn" id="nav-multi" onclick="gotoTab('multi')">
+      <span class="nav-icon">👥</span>ออนไลน์
     </button>
   </nav>
 
@@ -1059,7 +1255,7 @@ renderBalance(0);
 updateLevel();
 
 /* ─────────────── NAVIGATION ─────────────── */
-const TAB_SCREENS = {lobby:'lobby', slot:'slot', cards:'cards', profile:'profile'};
+const TAB_SCREENS = {lobby:'lobby', slot:'slot', cards:'cards', profile:'profile', multi:'multi'};
 let currentTab = 'lobby';
 function showScreen(name) {
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
@@ -1080,7 +1276,7 @@ function toggleSound() {
 
 /* ─────────────── BET BARS ─────────────── */
 const BET_OPTIONS=[10,50,100,500];
-const bets={slot:50,pd:50,bj:50,hl:50};
+const bets={slot:50,pd:50,bj:50,hl:50,mp:50};
 function buildBetBar(cid, key) {
   const el = document.getElementById(cid);
   BET_OPTIONS.forEach(v => {
@@ -1414,6 +1610,353 @@ function hlCashout(){
   showToast(`💰 รับ ${hlPot.toLocaleString('th-TH')} เครดิต!`,'win',3000);
   hlPlay=false;hlPot=0;hlSt=0;hlUS();hlSB(true,false);
 }
+
+/* ─────────────── MULTIPLAYER (ONLINE HI-LO) ─────────────── */
+
+// Persistent player identity
+const MP_ID_KEY='lala_mpid_v1', MP_NAME_KEY='lala_mpname_v1';
+let mpId=localStorage.getItem(MP_ID_KEY);
+if(!mpId){mpId=Date.now().toString(36)+Math.random().toString(36).slice(2,7);localStorage.setItem(MP_ID_KEY,mpId);}
+let mpName=localStorage.getItem(MP_NAME_KEY)||'';
+
+// State
+let gun=null, mpRoomRef=null;
+let mpRoomCode='', mpIsHost=false, mpHostId='';
+let mpPlayers={}, mpPhase='none', mpRound=0;
+let mpMyGuess=null, mpMyBet=100;
+let mpTimerInterval=null, mpTimerEnd=0;
+let mpResultProcessed=false, mpBetBuilt=false;
+const mpChatSeen=new Set();
+
+const MP_RELAYS=['https://gun-manhattan.herokuapp.com/gun','https://peer.wallie.io/gun'];
+const MP_NS='lala-casino-hilo-v3';
+
+// Seeded RNG (mulberry32) — everyone computes the same card sequence for a given room+round
+function _mpMul(s){return function(){s|=0;s=s+0x6D2B79F5|0;let t=Math.imul(s^s>>>15,1|s);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+function mpCard(code,round){
+  const deck=[];
+  for(const s of SUITS)for(let r=0;r<13;r++)deck.push({suit:s,rank:RANKS[r],val:r+1});
+  const seed=([...code].reduce((a,c,i)=>(a+c.charCodeAt(0)*(i*17+3))|0,0)+round*31337)|0;
+  const rng=_mpMul(seed);
+  for(let i=deck.length-1;i>0;i--){const j=Math.floor(rng()*(i+1));[deck[i],deck[j]]=[deck[j],deck[i]];}
+  return deck[0];
+}
+
+function mpGenCode(){
+  let c='';const ch='ABCDEFGHJKLMNPRSTUVWXYZ23456789';
+  for(let i=0;i<6;i++)c+=ch[Math.floor(Math.random()*ch.length)];
+  return c;
+}
+
+function mpInitGun(){
+  if(!window.Gun){mpSetStatus('❌ ไม่สามารถโหลด Gun.js ได้','err');return null;}
+  if(!gun){
+    gun=Gun(MP_RELAYS);
+    setTimeout(()=>mpSetStatus('🟢 พร้อมเล่นแล้ว','ok'),2500);
+  }
+  return gun;
+}
+
+function mpSetStatus(text,cls=''){
+  const el=document.getElementById('mpStatusBar');
+  if(el){el.textContent=text;el.className='mp-status '+(cls||'');}
+}
+
+function mpCreate(){
+  const name=(document.getElementById('mpNameInput').value||'').trim().slice(0,12);
+  if(!name){showToast('ใส่ชื่อก่อน','lose');return;}
+  if(!mpInitGun())return;
+  mpName=name;localStorage.setItem(MP_NAME_KEY,name);
+  mpIsHost=true;mpRoomCode=mpGenCode();
+  mpEnterRoom();
+}
+
+function mpJoin(){
+  const name=(document.getElementById('mpNameInput').value||'').trim().slice(0,12);
+  const code=(document.getElementById('mpJoinCode').value||'').trim().toUpperCase().replace(/\s/g,'').slice(0,6);
+  if(!name){showToast('ใส่ชื่อก่อน','lose');return;}
+  if(code.length<6){showToast('รหัสห้อง 6 ตัว','lose');return;}
+  if(!mpInitGun())return;
+  mpName=name;localStorage.setItem(MP_NAME_KEY,name);
+  mpIsHost=false;mpRoomCode=code;
+  mpEnterRoom();
+}
+
+function mpEnterRoom(){
+  // Reset state
+  mpPlayers={};mpPhase='none';mpRound=0;mpMyGuess=null;
+  mpResultProcessed=false;mpBetBuilt=false;mpChatSeen.clear();
+  if(mpTimerInterval){clearInterval(mpTimerInterval);mpTimerInterval=null;}
+
+  mpRoomRef=gun.get(MP_NS).get(mpRoomCode);
+
+  if(mpIsHost){
+    mpHostId=mpId;
+    mpRoomRef.put({hostId:mpId,phase:'lobby',round:0,created:Date.now(),timerEnd:0});
+  }
+
+  // Register self
+  mpRoomRef.get('players').get(mpId).put({
+    name:mpName,credits:credits,online:true,lastSeen:Date.now(),bet:50,guess:'',guessRound:-1
+  });
+
+  // Listen to room state
+  mpRoomRef.on((data)=>{
+    if(!data)return;
+    if(data.hostId)mpHostId=data.hostId;
+    const np=data.phase||'lobby';
+    const nr=(data.round!==undefined&&data.round!==null)?data.round:0;
+    if(np!==mpPhase||nr!==mpRound){
+      const prev=mpPhase;
+      mpPhase=np;mpRound=nr;
+      mpOnPhaseChange(prev);
+    }
+    // Start timer if guessing phase and timerEnd available
+    if(np==='guessing'&&data.timerEnd&&data.timerEnd>Date.now()&&!mpTimerInterval){
+      mpTimerEnd=data.timerEnd;
+      mpRunTimer();
+    }
+  });
+
+  // Listen to players
+  mpRoomRef.get('players').map().on((p,pid)=>{
+    if(!p||!p.name)return;
+    mpPlayers[pid]={...(mpPlayers[pid]||{}),...p};
+    mpRenderPlayers();
+  });
+
+  // Listen to chat
+  mpRoomRef.get('chat').map().on((msg,mid)=>{
+    if(!msg||!msg.text||mpChatSeen.has(mid))return;
+    mpChatSeen.add(mid);
+    mpAppendChat(msg);
+  });
+
+  // Navigate
+  showScreen('multi-room');
+  document.getElementById('mpRoomCodeDisplay').textContent=mpRoomCode;
+  document.getElementById('mpHostBar').style.display=mpIsHost?'':'none';
+  document.getElementById('mpWaitingInfo').style.display=mpIsHost?'none':'';
+  mpShowPanel('Lobby');
+
+  if(mpIsHost){mpSysMsg('ห้อง '+mpRoomCode+' ถูกสร้างแล้ว กด 📋 แชร์รหัสให้เพื่อน!');}
+  else{mpSysMsg('เข้าร่วมห้อง '+mpRoomCode+' แล้ว!');}
+}
+
+function mpShowPanel(name){
+  document.querySelectorAll('.mp-phase-panel').forEach(p=>p.classList.remove('active'));
+  const el=document.getElementById('mpPanel'+name);
+  if(el)el.classList.add('active');
+}
+
+function mpOnPhaseChange(prevPhase){
+  if(mpTimerInterval){clearInterval(mpTimerInterval);mpTimerInterval=null;}
+
+  if(mpPhase==='lobby'){
+    mpShowPanel('Lobby');
+    document.getElementById('mpHostBar').style.display=mpIsHost?'':'none';
+    document.getElementById('mpWaitingInfo').style.display=mpIsHost?'none':'';
+    mpMyGuess=null;mpResultProcessed=false;
+    const gi=document.getElementById('mpGuessInd');
+    if(gi){gi.style.display='none';gi.className='mp-guess-ind';}
+  }
+  else if(mpPhase==='guessing'){
+    mpShowPanel('Guess');
+    mpMyGuess=null;mpResultProcessed=false;
+    const gi=document.getElementById('mpGuessInd');
+    gi.style.display='none';gi.className='mp-guess-ind';
+    // Show card
+    const card=mpCard(mpRoomCode,mpRound);
+    const area=document.getElementById('mpGuessCardArea');
+    area.innerHTML='';
+    const ce=cardEl(card);ce.style.transform='scale(1.15)';
+    area.appendChild(ce);
+    SFX.deal();
+    // Build bet bar once
+    if(!mpBetBuilt){buildBetBar('mpBetBar','mp');mpBetBuilt=true;}
+    document.getElementById('mpHighBtn').disabled=false;
+    document.getElementById('mpLowBtn').disabled=false;
+    // Reset timer display
+    document.getElementById('mpTimerFill').style.width='100%';
+    document.getElementById('mpTimerText').textContent='10s';
+    // Timer starts when .on() delivers timerEnd
+  }
+  else if(mpPhase==='result'){
+    mpShowPanel('Result');
+    const curCard=mpCard(mpRoomCode,mpRound);
+    const nxtCard=mpCard(mpRoomCode,mpRound+1);
+    const pa=document.getElementById('mpResultPrev');
+    const na=document.getElementById('mpResultNext');
+    pa.innerHTML='';na.innerHTML='';
+    pa.appendChild(cardEl(curCard));
+    na.appendChild(cardEl(nxtCard));
+    SFX.deal();
+    // Resolve credits once
+    if(!mpResultProcessed){
+      mpResultProcessed=true;
+      if(mpMyGuess){
+        const won=mpMyGuess==='high'?nxtCard.val>curCard.val:nxtCard.val<curCard.val;
+        if(won){
+          addCredits(mpMyBet);recordResult(true,mpMyBet);
+          fireParticles(mpMyBet>=200);SFX.win();
+          showToast('✅ ถูก! +'+mpMyBet.toLocaleString('th-TH'),'win');
+        }else{
+          addCredits(-Math.min(mpMyBet,credits));recordResult(false,mpMyBet);
+          SFX.lose();showToast('❌ ผิด! -'+mpMyBet.toLocaleString('th-TH'),'lose');
+        }
+        mpRoomRef.get('players').get(mpId).put({credits:credits,lastSeen:Date.now()});
+      }
+    }
+    mpRenderRoundResults(curCard,nxtCard);
+    // Auto-next for host
+    if(mpIsHost){
+      let cd=5;
+      const ni=document.getElementById('mpNextInfo');
+      const tick=()=>{
+        ni.innerHTML='รอบถัดไปใน <b style="color:var(--gold)">'+cd+'</b> วินาที...';
+        if(cd<=0){clearInterval(mpTimerInterval);mpTimerInterval=null;mpNextRound();return;}
+        cd--;
+      };
+      tick();
+      mpTimerInterval=setInterval(tick,1000);
+    }else{
+      document.getElementById('mpNextInfo').textContent='รอหัวห้องเริ่มรอบถัดไป...';
+    }
+  }
+}
+
+function mpRunTimer(){
+  const tick=()=>{
+    const left=Math.max(0,mpTimerEnd-Date.now());
+    const secs=Math.ceil(left/1000);
+    const fill=document.getElementById('mpTimerFill');
+    const txt=document.getElementById('mpTimerText');
+    if(fill)fill.style.width=(left/10000*100)+'%';
+    if(txt)txt.textContent=secs+'s';
+    if(left<=0){
+      clearInterval(mpTimerInterval);mpTimerInterval=null;
+      const h=document.getElementById('mpHighBtn');const l=document.getElementById('mpLowBtn');
+      if(h)h.disabled=true;if(l)l.disabled=true;
+      // All clients trigger result transition — Gun merges idempotently
+      mpRoomRef.put({phase:'result'});
+    }
+  };
+  tick();
+  mpTimerInterval=setInterval(tick,100);
+}
+
+function mpGuess(dir){
+  if(mpMyGuess)return;
+  mpMyBet=bets.mp||50;
+  if(!canBet(mpMyBet)){return;}
+  mpMyGuess=dir;
+  mpRoomRef.get('players').get(mpId).put({guess:dir,guessRound:mpRound,bet:mpMyBet});
+  const gi=document.getElementById('mpGuessInd');
+  gi.textContent=dir==='high'?'⬆ คุณทายสูงกว่า!':'⬇ คุณทายต่ำกว่า!';
+  gi.className='mp-guess-ind '+dir;gi.style.display='';
+  document.getElementById('mpHighBtn').disabled=true;
+  document.getElementById('mpLowBtn').disabled=true;
+  SFX.coin();
+  showToast(dir==='high'?'⬆ ทายสูงกว่า!':'⬇ ทายต่ำกว่า!','gold',1500);
+}
+
+function mpStartRound(){
+  if(!mpIsHost)return;
+  const te=Date.now()+11000;
+  mpRoomRef.put({phase:'guessing',round:mpRound,timerEnd:te});
+  mpSysMsg('เริ่มรอบที่ '+(mpRound+1)+'! ทายสูงหรือต่ำใน 10 วินาที');
+}
+
+function mpNextRound(){
+  if(!mpIsHost)return;
+  const nr=mpRound+1;
+  const te=Date.now()+11000;
+  mpRoomRef.put({phase:'guessing',round:nr,timerEnd:te});
+  mpSysMsg('เริ่มรอบที่ '+(nr+1)+'!');
+}
+
+function mpRenderPlayers(){
+  const list=document.getElementById('mpPlayersList');
+  if(!list)return;
+  list.innerHTML='';
+  Object.entries(mpPlayers).forEach(([pid,p])=>{
+    if(!p||!p.name)return;
+    const isMe=pid===mpId;
+    const isHost=pid===mpHostId;
+    const g=(p.guessRound===mpRound&&p.guess)?p.guess:null;
+    const icon=g==='high'?'⬆':g==='low'?'⬇':(mpPhase==='guessing'?'⏳':'🟢');
+    const div=document.createElement('div');
+    div.className='mp-pcard'+(isMe?' me':'');
+    div.innerHTML=`<div class="mp-pav">${p.name[0].toUpperCase()}</div>
+      <div style="flex:1"><div class="mp-pname">${p.name}${isHost?' 👑':''}${isMe?' (คุณ)':''}</div>
+      <div class="mp-pcred">🪙 ${(p.credits||0).toLocaleString('th-TH')}</div></div>
+      <div class="mp-pstatus">${icon}</div>`;
+    list.appendChild(div);
+  });
+}
+
+function mpRenderRoundResults(curCard,nxtCard){
+  const ctr=document.getElementById('mpRoundResults');
+  if(!ctr)return;
+  ctr.innerHTML='';
+  Object.entries(mpPlayers).forEach(([pid,p])=>{
+    if(!p||!p.name)return;
+    const g=(p.guessRound===mpRound&&p.guess)?p.guess:null;
+    if(!g)return;
+    const won=g==='high'?nxtCard.val>curCard.val:nxtCard.val<curCard.val;
+    const bet=p.bet||50;
+    const div=document.createElement('div');
+    div.className='mp-rr-row'+(won?' win':' lose');
+    div.innerHTML=`<div class="mp-rr-name">${p.name}${pid===mpId?' (คุณ)':''}</div>
+      <div class="mp-rr-guess">${g==='high'?'⬆':'⬇'}</div>
+      <div class="mp-rr-delta ${won?'wd':'ld'}">${won?'+':'-'}${bet.toLocaleString('th-TH')}</div>`;
+    ctr.appendChild(div);
+  });
+  if(!ctr.children.length){
+    ctr.innerHTML='<div class="mp-rr-row"><div class="mp-rr-name" style="text-align:center;color:var(--text2)">ไม่มีผู้เล่นทายรอบนี้</div></div>';
+  }
+}
+
+function mpLeave(){
+  if(mpRoomRef)mpRoomRef.get('players').get(mpId).put({online:false,lastSeen:Date.now()});
+  if(mpTimerInterval){clearInterval(mpTimerInterval);mpTimerInterval=null;}
+  mpRoomRef=null;mpPlayers={};mpPhase='none';
+  mpChatSeen.clear();
+  showScreen('multi');
+}
+
+function mpCopyCode(){
+  const url=window.location.origin+window.location.pathname+'?room='+mpRoomCode;
+  navigator.clipboard?.writeText(mpRoomCode)
+    .then(()=>showToast('📋 คัดลอกรหัส '+mpRoomCode+' แล้ว!','gold'))
+    .catch(()=>showToast('รหัส: '+mpRoomCode,'gold',5000));
+}
+
+function mpSendChat(){
+  const inp=document.getElementById('mpChatIn');
+  const text=(inp.value||'').trim().slice(0,60);
+  if(!text||!mpRoomRef)return;
+  const mid=Date.now().toString(36)+mpId.slice(0,4);
+  mpRoomRef.get('chat').get(mid).put({pid:mpId,name:mpName,text,ts:Date.now()});
+  inp.value='';
+}
+
+function mpSysMsg(text){mpAppendChat({pid:'_sys',name:'🔔',text,ts:Date.now()});}
+
+function mpAppendChat(msg){
+  const msgs=document.getElementById('mpChatMsgs');
+  if(!msgs)return;
+  const div=document.createElement('div');
+  div.className='mp-chat-msg'+(msg.pid==='_sys'?' sys':'')+(msg.pid===mpId?' mine':'');
+  div.innerHTML=`<span class="cn">${msg.name}:</span><span class="ct"> ${msg.text}</span>`;
+  msgs.appendChild(div);msgs.scrollTop=msgs.scrollHeight;
+}
+
+// Pre-fill saved name on load
+(()=>{const ni=document.getElementById('mpNameInput');if(ni&&mpName)ni.value=mpName;})();
+
+// Init Gun in background to be ready
+setTimeout(()=>{if(window.Gun)mpInitGun();},500);
 
 /* ─────────────── SPLASH ─────────────── */
 setTimeout(()=>{
