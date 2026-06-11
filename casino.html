@@ -463,7 +463,11 @@ body{
 .ke-tub-head{background:rgba(0,0,0,.25);border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:10px;text-align:center}
 .ke-tub-lbl{font-family:'Cinzel',serif;font-size:10px;font-weight:700;letter-spacing:3px;color:var(--gold);margin-bottom:6px}
 .ke-tub-base{font-size:12px;color:var(--text2);font-family:'Sarabun'}
-.ke-tub-extra{font-family:'Orbitron',monospace;font-size:26px;font-weight:900;color:var(--gold);margin-top:6px;min-height:32px}
+.ke-tub-extra{font-family:'Orbitron',monospace;font-size:28px;font-weight:900;color:var(--gold);margin-top:6px;min-height:34px;transition:color .15s}
+.ke-tub-slider{-webkit-appearance:none;appearance:none;width:100%;height:6px;border-radius:3px;background:rgba(255,255,255,.12);outline:none;margin:4px 0 6px;cursor:pointer}
+.ke-tub-slider::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:26px;height:26px;border-radius:50%;background:linear-gradient(180deg,#e8d4a0,#c9aa71);border:2px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.4);cursor:pointer}
+.ke-tub-slider::-moz-range-thumb{width:26px;height:26px;border-radius:50%;background:linear-gradient(180deg,#e8d4a0,#c9aa71);border:2px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.4);cursor:pointer}
+.ke-tub-range-row{display:flex;justify-content:space-between;font-size:11px;color:var(--text3);font-family:'Sarabun';margin-bottom:8px}
 .ke-paytable{background:rgba(0,0,0,.25);border:1px solid var(--border);border-radius:14px;padding:12px 14px;margin-top:10px}
 .ke-pt-title{font-family:'Cinzel',serif;font-size:10px;font-weight:700;letter-spacing:3px;color:var(--gold);text-transform:uppercase;text-align:center;margin-bottom:8px}
 .ke-pt-row{display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid rgba(255,255,255,.05);font-family:'Sarabun',sans-serif;font-size:13px;color:var(--text2)}
@@ -815,7 +819,10 @@ body{
             <div class="ke-tub-base">เดิมพันเดิม <span id="keTubBase">฿0</span></div>
             <div class="ke-tub-extra" id="keTubExtraVal">+฿0</div>
           </div>
-          <div class="chip-tray" id="keTubChips"></div>
+          <input type="range" class="ke-tub-slider" id="keTubSlider" min="0" max="1000" step="25" value="0" oninput="keTubSlide(this.value)">
+          <div class="ke-tub-range-row">
+            <span>฿0</span><span id="keTubMaxLbl">฿0</span>
+          </div>
           <div class="action-btns" style="margin-top:8px">
             <button class="btn-play ke-fold" onclick="keTubCancel()">✕ ยกเลิก</button>
             <button class="btn-play ke-tub" onclick="keTubConfirm()">⚡ ยืนยัน</button>
@@ -1584,30 +1591,27 @@ function keTub(){
   keTubExtra=0;
   document.getElementById('keTubBase').textContent='฿'+keBet.toLocaleString('th-TH');
   document.getElementById('keTubExtraVal').textContent='+฿0';
-  const tray=document.getElementById('keTubChips');tray.innerHTML='';
-  CHIP_DEFS.forEach(({v,c})=>{
-    const btn=document.createElement('button');
-    btn.className='chip '+c;
-    btn.textContent=v>=1000?(v/1000)+'K':v;
-    btn.onclick=()=>{
-      if(keTubExtra+v>credits){showToast('เครดิตไม่พอ','lose');return;}
-      keTubExtra+=v;
-      document.getElementById('keTubExtraVal').textContent='+฿'+keTubExtra.toLocaleString('th-TH');
-    };
-    tray.appendChild(btn);
-  });
-  const clr=document.createElement('button');
-  clr.className='bet-clear';clr.textContent='✕';
-  clr.onclick=()=>{keTubExtra=0;document.getElementById('keTubExtraVal').textContent='+฿0';};
-  tray.appendChild(clr);
+  const sl=document.getElementById('keTubSlider');
+  sl.min=0;sl.max=credits;sl.step=Math.max(1,Math.floor(credits/200)*5||25);sl.value=0;
+  document.getElementById('keTubMaxLbl').textContent='฿'+credits.toLocaleString('th-TH');
+  _keTubFill(0,credits);
+}
+function keTubSlide(v){
+  keTubExtra=parseInt(v);
+  document.getElementById('keTubExtraVal').textContent=keTubExtra>0?'+฿'+keTubExtra.toLocaleString('th-TH'):'+฿0';
+  _keTubFill(keTubExtra,parseInt(document.getElementById('keTubSlider').max));
+}
+function _keTubFill(v,max){
+  const pct=max>0?Math.round(v/max*100):0;
+  document.getElementById('keTubSlider').style.background=
+    `linear-gradient(to right,#c9aa71 ${pct}%,rgba(255,255,255,.12) ${pct}%)`;
 }
 function keTubCancel(){
   document.getElementById('keTubPanel').style.display='none';
   document.getElementById('keActionBtns').style.display='';
 }
 function keTubConfirm(){
-  if(keTubExtra<=0){showToast('เลือกจำนวนที่จะเพิ่มก่อน','lose');return;}
-  if(credits<keTubExtra){showToast('เครดิตไม่พอ','lose');return;}
+  if(keTubExtra<=0){showToast('เลื่อนเพื่อเลือกจำนวนก่อน','lose');return;}
   addCredits(-keTubExtra);keWager=keBet+keTubExtra;
   keShowActionRow(false);document.getElementById('keHint').textContent='';
   showToast('⚡ เกทับ +฿'+keTubExtra.toLocaleString('th-TH')+' รวม ฿'+keWager.toLocaleString('th-TH'),'gold');
