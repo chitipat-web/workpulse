@@ -9,6 +9,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Sarabun:wght@300;400;600;700&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/gun/gun.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js"></script>
 <style>
 :root{
   --bg:#09090f;
@@ -1136,6 +1137,13 @@ function cardEl(card,fd,noAnim){
 
 // Phase 1: back card slides from dealer. Phase 2: flip to face (unless faceDown).
 function _dealCard(container,card,faceDown,delayMs){
+  // Trigger 3D dealer arm + flying card
+  setTimeout(()=>{
+    if(window._d3d){
+      const r=container.getBoundingClientRect();
+      window._d3d(r.left+r.width/2, r.top+r.height/2);
+    }
+  }, delayMs);
   const back=document.createElement('div');
   back.className='card back deal-slide';
   back.style.animationDelay=delayMs+'ms';
@@ -2397,6 +2405,166 @@ refreshDaily();
 
 // Init Gun in background to be ready
 setTimeout(()=>{if(window.Gun)mpInitGun();},500);
+
+/* ═══════════════ 3D DEALER ═══════════════ */
+(function(){
+  if(typeof THREE==='undefined')return;
+  const cv=document.createElement('canvas');
+  cv.id='d3cv';
+  Object.assign(cv.style,{position:'fixed',top:'0',left:'0',width:'100%',height:'100%',
+    pointerEvents:'none',zIndex:'45',opacity:'0',transition:'opacity .3s'});
+  document.body.appendChild(cv);
+
+  const renderer=new THREE.WebGLRenderer({canvas:cv,alpha:true,antialias:true});
+  renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+
+  const scene=new THREE.Scene();
+  const cam=new THREE.PerspectiveCamera(45,1,0.1,100);
+  cam.position.set(0,0,10);
+
+  scene.add(new THREE.AmbientLight(0xfff5e0,.55));
+  const dl=new THREE.DirectionalLight(0xffffff,1);dl.position.set(2,5,4);scene.add(dl);
+  const rl=new THREE.DirectionalLight(0xc9aa71,.3);rl.position.set(-3,0,-2);scene.add(rl);
+
+  /* ── arm ── */
+  const skin=new THREE.MeshLambertMaterial({color:0xe0b890});
+  const suit=new THREE.MeshLambertMaterial({color:0x12121e});
+  const cuffM=new THREE.MeshLambertMaterial({color:0xf5f5f5});
+  const arm=new THREE.Group();
+
+  const slv=new THREE.Mesh(new THREE.CylinderGeometry(.27,.31,1.9,12),suit);
+  slv.rotation.z=Math.PI/2;slv.position.x=-1.1;arm.add(slv);
+
+  const cuff=new THREE.Mesh(new THREE.CylinderGeometry(.31,.31,.24,12),cuffM);
+  cuff.rotation.z=Math.PI/2;cuff.position.x=-.1;arm.add(cuff);
+
+  const palm=new THREE.Mesh(new THREE.BoxGeometry(.62,.16,.44),skin);palm.position.x=.3;arm.add(palm);
+
+  for(let i=0;i<4;i++){
+    const f=new THREE.Mesh(new THREE.CapsuleGeometry(.052,.21,4,8),skin);
+    f.rotation.z=Math.PI/2;f.position.set(.8,.02,-.14+i*.095);arm.add(f);
+  }
+  const th=new THREE.Mesh(new THREE.CapsuleGeometry(.058,.15,4,8),skin);
+  th.position.set(.44,-.09,.25);th.rotation.z=-.5;arm.add(th);
+
+  /* card texture */
+  const cc=document.createElement('canvas');cc.width=128;cc.height=192;
+  const cx=cc.getContext('2d');
+  cx.fillStyle='#c8192e';cx.fillRect(0,0,128,192);
+  cx.strokeStyle='rgba(255,255,255,.45)';cx.lineWidth=4;
+  cx.strokeRect(8,8,112,176);cx.strokeRect(14,14,100,164);
+  cx.lineWidth=1;
+  for(let x=-128;x<256;x+=10){cx.beginPath();cx.moveTo(x,0);cx.lineTo(x+192,192);
+    cx.strokeStyle='rgba(255,255,255,.07)';cx.stroke();}
+  const ctex=new THREE.CanvasTexture(cc);
+  const cMats=[suit,suit,new THREE.MeshLambertMaterial({map:ctex}),
+    new THREE.MeshLambertMaterial({color:0xffffff}),
+    new THREE.MeshLambertMaterial({map:ctex}),new THREE.MeshLambertMaterial({map:ctex})];
+
+  const heldCard=new THREE.Mesh(new THREE.BoxGeometry(.53,.012,.76),cMats);
+  heldCard.position.set(.6,.1,0);heldCard.rotation.x=.08;arm.add(heldCard);
+
+  scene.add(arm);
+
+  /* ── flying cards pool ── */
+  const pool=[];
+  for(let i=0;i<6;i++){
+    const m=new THREE.Mesh(new THREE.BoxGeometry(.53,.012,.76),cMats);
+    m.visible=false;scene.add(m);
+    pool.push({m,on:false,t:0,p0:new THREE.Vector3(),p1:new THREE.Vector3(),p2:new THREE.Vector3()});
+  }
+
+  /* screen → world (z=0) */
+  function s2w(sx,sy){
+    const v=new THREE.Vector3((sx/innerWidth)*2-1,-(sy/innerHeight)*2+1,.5);
+    v.unproject(cam);
+    const d=v.sub(cam.position).normalize();
+    const dist=-cam.position.z/d.z;
+    return cam.position.clone().add(d.multiplyScalar(dist));
+  }
+
+  let ax=0,ay=0,animT=0;
+  function place(){
+    const vfov=cam.fov*Math.PI/180;
+    const hh=Math.tan(vfov/2)*10;
+    const hw=hh*cam.aspect;
+    ax=hw*.82;ay=-hh*.52;
+    arm.position.set(ax,ay,0);
+    arm.rotation.set(0,-.45,-.12);
+  }
+
+  function resize(){
+    const w=innerWidth,h=innerHeight;
+    cam.aspect=w/h;cam.updateProjectionMatrix();
+    renderer.setSize(w,h);
+    place();
+  }
+  resize();
+  window.addEventListener('resize',resize);
+
+  let hideT=null;
+  function showCv(){
+    cv.style.opacity='1';
+    clearTimeout(hideT);hideT=null;
+  }
+  function schedulHide(){
+    if(!hideT)hideT=setTimeout(()=>{cv.style.opacity='0';hideT=null;},3500);
+  }
+
+  window._d3d=function(tsx,tsy){
+    showCv();
+    animT=.001; // trigger arm swing
+    const fc=pool.find(c=>!c.on);if(!fc)return;
+    fc.on=true;fc.t=0;
+    fc.p0.set(ax-.05,ay+.08,.4);
+    fc.p2.copy(s2w(tsx,tsy));
+    fc.p1.set((fc.p0.x+fc.p2.x)/2-1,Math.max(fc.p0.y,fc.p2.y)+2.8,0);
+    fc.m.position.copy(fc.p0);fc.m.visible=true;
+  };
+
+  function eoc(t){return 1-Math.pow(1-t,3);}
+  function qbez(p0,p1,p2,t,o){
+    const mt=1-t;
+    o.x=mt*mt*p0.x+2*mt*t*p1.x+t*t*p2.x;
+    o.y=mt*mt*p0.y+2*mt*t*p1.y+t*t*p2.y;
+    o.z=mt*mt*p0.z+2*mt*t*p1.z+t*t*p2.z;
+  }
+  const tmp=new THREE.Vector3();
+
+  function tick(){
+    requestAnimationFrame(tick);
+    const ts=Date.now()*.001;
+    // idle bob
+    arm.position.y=ay+Math.sin(ts*.9)*.04;
+    arm.rotation.z=-.12+Math.sin(ts*.5)*.012;
+
+    // deal swing
+    if(animT>0){
+      animT=Math.min(animT+.055,1);
+      if(animT<.35){const s=animT/.35;arm.position.x=ax-s*2;arm.rotation.z=-.12-s*.75;}
+      else{const s=eoc((animT-.35)/.65);arm.position.x=ax-2+s*2;arm.rotation.z=-.12-.75+s*.75;}
+      if(animT>=1){animT=0;arm.position.x=ax;}
+    }
+
+    // flying cards
+    let any=false;
+    pool.forEach(fc=>{
+      if(!fc.on)return;any=true;
+      fc.t=Math.min(fc.t+.03,1);
+      qbez(fc.p0,fc.p1,fc.p2,fc.t,tmp);
+      fc.m.position.copy(tmp);
+      fc.m.rotation.y=fc.t*Math.PI*1.6;
+      fc.m.rotation.z=Math.sin(fc.t*Math.PI)*.25;
+      if(fc.t>=1){fc.on=false;fc.m.visible=false;}
+    });
+
+    if(!any&&animT===0)schedulHide();
+    else{clearTimeout(hideT);hideT=null;}
+
+    renderer.render(scene,cam);
+  }
+  tick();
+})();
 
 /* ═══════════════ SPLASH ═══════════════ */
 setTimeout(()=>{
