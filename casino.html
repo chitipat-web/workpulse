@@ -760,6 +760,10 @@ body{
       <div class="bet-display"><span class="bd-lbl">เดิมพัน</span><span class="bd-val" id="keBetVal">฿50</span><button class="bet-clear" onclick="clearBet('ke')">✕</button></div>
       <div class="chip-tray" id="keChips"></div>
       <button class="btn-gold" id="keDealBtn" onclick="keDeal()">แจกไพ่</button>
+      <div class="action-btns" id="keActionRow" style="display:none">
+        <button class="btn-play draw" onclick="keDraw()">🃏 จั่วใบที่ 3</button>
+        <button class="btn-play stay" onclick="keStay()">✋ ยืน</button>
+      </div>
     </div>
 
     <!-- CARDS MENU -->
@@ -1421,52 +1425,83 @@ function pdShowdown(){
 /* ═══════════════ 9 KE ═══════════════ */
 let keDeck,kePlayer,keDealer,keBet,keInPlay=false;
 function keSpecial(h){
-  // returns {mult, name}
+  if(h.length===2){
+    const s=keScore(h);
+    if(s===9)return{mult:2,name:'ป๊อก 9'};
+    if(s===8)return{mult:2,name:'ป๊อก 8'};
+    return{mult:1,name:''};
+  }
   if(h[0].rank===h[1].rank&&h[1].rank===h[2].rank)return{mult:5,name:'ตอง'};
   const sameSuit=h[0].suit===h[1].suit&&h[1].suit===h[2].suit;
   const v=h.map(c=>c.val).sort((a,b)=>a-b);
   const straight=(v[1]===v[0]+1&&v[2]===v[1]+1)||(v[0]===1&&v[1]===12&&v[2]===13);
   if(sameSuit&&straight)return{mult:3,name:'สเตรทฟลัช'};
-  const faces=h.filter(c=>c.val>=11).length; // J,Q,K
-  if(faces===3)return{mult:3,name:'สามลึง'};
+  if(h.filter(c=>c.val>=11).length===3)return{mult:3,name:'สามลึง'};
   return{mult:1,name:''};
 }
 const keScore=h=>h.reduce((s,c)=>s+(c.val>=10?0:c.val),0)%10;
+function keActionRow(show){
+  document.getElementById('keActionRow').style.display=show?'':'none';
+  document.getElementById('keDealBtn').style.display=show?'none':'';
+}
 function keRender(rv){
   renderHand('kePlayerCards',kePlayer);
   renderHand('keDealerCards',keDealer,!rv);
   const psp=keSpecial(kePlayer);
-  document.getElementById('kePlayerScore').textContent=keScore(kePlayer)+(psp.mult>1?' '+psp.name+' ×'+psp.mult:'');
-  if(rv){const dsp=keSpecial(keDealer);document.getElementById('keDealerScore').textContent=keScore(keDealer)+(dsp.mult>1?' '+dsp.name+' ×'+dsp.mult:'');}
+  document.getElementById('kePlayerScore').textContent=keScore(kePlayer)+(psp.name?' '+psp.name:'');
+  if(rv){const dsp=keSpecial(keDealer);document.getElementById('keDealerScore').textContent=keScore(keDealer)+(dsp.name?' '+dsp.name:'');}
   else document.getElementById('keDealerScore').textContent='?';
 }
 function keDeal(){
   if(keInPlay)return;
   keBet=bets.ke;if(!canBet(keBet))return;
   addCredits(-keBet);keDeck=newDeck();
-  kePlayer=[keDeck.pop(),keDeck.pop(),keDeck.pop()];
-  keDealer=[keDeck.pop(),keDeck.pop(),keDeck.pop()];
+  kePlayer=[keDeck.pop(),keDeck.pop()];
+  keDealer=[keDeck.pop(),keDeck.pop()];
   keInPlay=true;document.getElementById('keResult').innerHTML='';SFX.deal();
   keRender(false);
-  document.getElementById('keDealBtn').disabled=true;
-  setTimeout(keShowdown,900);
+  const pNat=keSpecial(kePlayer).name,dNat=keSpecial(keDealer).name;
+  if(pNat||dNat){keActionRow(false);setTimeout(keShowdown,900);}
+  else{setTimeout(()=>keActionRow(true),650);}
+}
+function keDraw(){
+  keActionRow(false);
+  kePlayer.push(keDeck.pop());
+  keRender(false);SFX.deal();
+  setTimeout(keDealerPlay,600);
+}
+function keStay(){
+  keActionRow(false);
+  setTimeout(keDealerPlay,300);
+}
+function keDealerPlay(){
+  if(keDealer.length===2&&keScore(keDealer)<=5){
+    keDealer.push(keDeck.pop());
+    renderHand('keDealerCards',keDealer,true);SFX.deal();
+  }
+  setTimeout(keShowdown,500);
 }
 function keShowdown(){
   keInPlay=false;keRender(true);
   const ps=keScore(kePlayer),ds=keScore(keDealer);
   const psp=keSpecial(kePlayer),dsp=keSpecial(keDealer);
+  const pNat=kePlayer.length===2&&psp.name,dNat=keDealer.length===2&&dsp.name;
   let oc;
-  if(psp.mult>dsp.mult)oc=1;
+  if(pNat&&!dNat)oc=1;
+  else if(!pNat&&dNat)oc=-1;
+  else if(pNat&&dNat){oc=ps>ds?1:ps<ds?-1:-1;}
+  else if(psp.mult>dsp.mult)oc=1;
   else if(psp.mult<dsp.mult)oc=-1;
   else if(ps>ds)oc=1;
   else if(ps<ds)oc=-1;
-  else oc=-1; // dealer wins ties
+  else oc=-1;
   const el=document.getElementById('keResult');
+  keActionRow(false);
   document.getElementById('keDealBtn').disabled=false;
   if(oc===1){
     const w=keBet*psp.mult;addCredits(keBet+w);
     recordResult(true,w);fireParticles(w>=300);SFX.win();
-    el.innerHTML=`<div class="result-box win"><div class="re">🎉</div><div class="rt">ชนะ!</div><div class="rd" style="color:var(--win)">+${w.toLocaleString('th-TH')}</div>${psp.mult>1?`<div style="color:var(--gold2);font-size:12px;margin-top:4px">${psp.name} ×${psp.mult}</div>`:''}</div>`;
+    el.innerHTML=`<div class="result-box win"><div class="re">🎉</div><div class="rt">ชนะ!</div><div class="rd" style="color:var(--win)">+${w.toLocaleString('th-TH')}</div>${psp.name?`<div style="color:var(--gold2);font-size:12px;margin-top:4px">${psp.name} ×${psp.mult}</div>`:''}</div>`;
     showToast('🎉 ชนะ +'+w.toLocaleString('th-TH'),'win');
   }else{
     const m=dsp.mult;const loss=keBet*m;
