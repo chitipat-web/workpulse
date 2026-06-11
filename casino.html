@@ -177,6 +177,18 @@ body{
   content:'';position:absolute;inset:0;opacity:.06;pointer-events:none;
   background:repeating-linear-gradient(45deg,#fff 0 1px,transparent 1px 16px);
 }
+/* Deck pile in top-right corner — cards appear to slide from here */
+.felt-table::after{
+  content:'';position:absolute;top:12px;right:14px;
+  width:38px;height:54px;border-radius:5px;
+  background:linear-gradient(135deg,#1e2f52,#0c1530);
+  border:1px solid rgba(201,170,113,.35);
+  box-shadow:
+    2px -2px 0 0 rgba(201,170,113,.2),
+    4px -4px 0 0 rgba(201,170,113,.15),
+    6px -6px 0 0 rgba(201,170,113,.1);
+  pointer-events:none;
+}
 .felt-label{
   font-family:'Cinzel',serif;font-weight:700;letter-spacing:6px;font-size:13px;
   text-align:center;color:var(--gold);opacity:.6;margin-bottom:14px;position:relative;
@@ -185,11 +197,24 @@ body{
 /* ───── CARDS ───── */
 .card{
   width:58px;height:82px;background:#fdf8f0;border-radius:8px;position:relative;
-  box-shadow:0 4px 10px rgba(0,0,0,.5),inset 0 0 0 1px rgba(0,0,0,.06);
-  flex:0 0 auto;animation:dealIn .4s cubic-bezier(.2,.9,.3,1.4) both;
+  box-shadow:0 4px 14px rgba(0,0,0,.55),inset 0 0 0 1px rgba(0,0,0,.06);
+  flex:0 0 auto;
   font-family:'Cinzel',serif;font-weight:700;
 }
-@keyframes dealIn{from{opacity:0;transform:translateY(-26px) rotate(-8deg) scale(.7)}to{opacity:1;transform:none}}
+.card.deal-slide{animation:dealSlide .38s cubic-bezier(.18,.9,.32,1.1) both}
+.card.flip-reveal{animation:cardFlip .26s ease-out both}
+.card.no-anim{animation:none}
+@keyframes dealSlide{
+  0%{opacity:0;transform:translateY(-130px) translateX(10px) rotate(-14deg) scale(.45)}
+  55%{opacity:1;transform:translateY(5px) translateX(-1px) rotate(1.5deg) scale(1.06)}
+  78%{transform:translateY(-2px) translateX(0) rotate(-.4deg) scale(1.01)}
+  100%{opacity:1;transform:none}
+}
+@keyframes cardFlip{
+  0%{transform:perspective(500px) rotateY(90deg) scale(.9);opacity:.4}
+  50%{opacity:1}
+  100%{transform:perspective(500px) rotateY(0deg) scale(1);opacity:1}
+}
 .card.red{color:var(--red)}
 .card.black{color:#0d0d0d}
 .card .cr{position:absolute;top:4px;left:6px;font-size:15px;line-height:1}
@@ -931,17 +956,54 @@ function newDeck(){
   for(let i=d.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[d[i],d[j]]=[d[j],d[i]];}
   return d;
 }
-function cardEl(card,fd){
+function cardEl(card,fd,noAnim){
   const d=document.createElement('div');
-  if(fd){d.className='card back';return d;}
+  if(fd){d.className='card back'+(noAnim?' no-anim':'');return d;}
   const isRed=card.suit==='♥'||card.suit==='♦';
-  d.className='card '+(isRed?'red':'black');
+  d.className='card '+(isRed?'red':'black')+(noAnim?' no-anim':'');
   d.innerHTML=`<div class="cr">${card.rank}</div><div class="cs">${card.suit}</div><div class="cc">${card.suit}</div><div class="cb">${card.rank}</div>`;
   return d;
 }
+
+// Phase 1: back card slides from dealer. Phase 2: flip to face (unless faceDown).
+function _dealCard(container,card,faceDown,delayMs){
+  const back=document.createElement('div');
+  back.className='card back deal-slide';
+  back.style.animationDelay=delayMs+'ms';
+  container.appendChild(back);
+  if(!faceDown){
+    setTimeout(()=>{
+      if(!back.parentNode)return;
+      const face=cardEl(card,false,true);
+      face.classList.add('flip-reveal');
+      back.replaceWith(face);
+    },delayMs+420);
+  }
+}
+
 function renderHand(id,cards,hideFirst){
-  const el=document.getElementById(id);if(!el)return;el.innerHTML='';
-  cards.forEach((c,i)=>{const ce=cardEl(c,hideFirst&&i===0);ce.style.animationDelay=(i*.09)+'s';el.appendChild(ce);});
+  const el=document.getElementById(id);if(!el)return;
+  const kids=Array.from(el.children);
+  if(kids.length>0){
+    // Flip any remaining back cards now that we're revealing
+    if(!hideFirst){
+      kids.forEach((child,i)=>{
+        if(child.classList.contains('back')&&cards[i]){
+          const face=cardEl(cards[i],false,true);
+          face.classList.add('flip-reveal');
+          el.replaceChild(face,child);
+        }
+      });
+    }
+    // Add new cards beyond existing (draw / hit / third card)
+    for(let i=kids.length;i<cards.length;i++){
+      _dealCard(el,cards[i],false,(i-kids.length)*150);
+    }
+    return;
+  }
+  // Fresh deal
+  el.innerHTML='';
+  cards.forEach((c,i)=>{_dealCard(el,c,!!(hideFirst&&i===0),i*150);});
 }
 
 /* ═══════════════ CHIP / BET SYSTEM ═══════════════ */
@@ -1416,8 +1478,8 @@ function hlNew(){
   hlInPlay=true;
   document.getElementById('hlResult').innerHTML='';
   document.getElementById('hlNewBtn').style.display='none';
-  const ca=document.getElementById('hlCurCard');ca.innerHTML='';ca.appendChild(cardEl(hlCur));
-  const na=document.getElementById('hlNextCard');na.innerHTML='';na.appendChild(cardEl(null,true));
+  const ca=document.getElementById('hlCurCard');ca.innerHTML='';_dealCard(ca,hlCur,false,0);
+  const na=document.getElementById('hlNextCard');na.innerHTML='';na.appendChild(cardEl(null,true,false));
   document.getElementById('hlArrow').textContent='?';
   document.getElementById('hlHighBtn').disabled=false;
   document.getElementById('hlLowBtn').disabled=false;
@@ -1432,7 +1494,7 @@ function hlGuess(dir){
   document.getElementById('hlHighBtn').disabled=true;
   document.getElementById('hlLowBtn').disabled=true;
   const next=hlDeck.pop();
-  const na=document.getElementById('hlNextCard');na.innerHTML='';na.appendChild(cardEl(next));
+  const na=document.getElementById('hlNextCard');na.innerHTML='';_dealCard(na,next,false,0);
   document.getElementById('hlArrow').textContent=dir==='high'?'⬆':'⬇';
   SFX.deal();
   const el=document.getElementById('hlResult');
@@ -1544,11 +1606,11 @@ function mpSetGame(g){
   mpSysMsg('เจ้าของห้องเลือกเกม: '+( names[g]||g));
 }
 
-// Render Pok Deng hand in a container
+// Render Pok Deng hand in a container (multiplayer)
 function mpPdRenderHand(container,cards,extraCard){
   container.innerHTML='';
   const all=extraCard?[...cards,extraCard]:cards;
-  all.forEach(c=>{const e=cardEl(c);e.style.width='52px';e.style.height='74px';container.appendChild(e);});
+  all.forEach((c,i)=>{_dealCard(container,c,false,i*150);});
 }
 
 function mpInitGun(){
@@ -1692,8 +1754,7 @@ function mpOnPhaseChange(prevPhase){
     const card=mpCard(mpRoomCode,mpRound);
     const area=document.getElementById('mpGuessCardArea');
     area.innerHTML='';
-    const ce=cardEl(card);ce.style.transform='scale(1.15)';
-    area.appendChild(ce);
+    _dealCard(area,card,false,0);
     SFX.deal();
     if(!mpBetBuilt){buildBetBar('mpBetBar','mp');mpBetBuilt=true;}
     document.getElementById('mpHighBtn').disabled=false;
