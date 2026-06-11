@@ -31,6 +31,13 @@
       "description": "บันทึกเวลาเข้างาน",
       "url": "/?action=checkin",
       "icons": [{ "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'><text y='.9em' font-size='90'>✅</text></svg>", "sizes": "96x96" }]
+    },
+    {
+      "name": "แผนที่โลก 3D",
+      "short_name": "แผนที่ 3D",
+      "description": "แผนที่โลกจริงพร้อมตึก 3D",
+      "url": "/map.html",
+      "icons": [{ "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 96'><text y='.9em' font-size='90'>🌍</text></svg>", "sizes": "96x96" }]
     }
   ]
 }

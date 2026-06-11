@@ -1,8 +1,9 @@
 // ทีมงานลาล่า — Service Worker
-const CACHE_NAME = 'lala-team-v1';
+const CACHE_NAME = 'lala-team-v2';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
+  '/map.html',
   '/manifest.json',
   'https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=Prompt:wght@400;500;600;700&display=swap',
   'https://cdn.jsdelivr.net/npm/chart.js'
@@ -45,11 +46,12 @@ self.addEventListener('activate', event => {
 self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
 
-  // ไม่ cache Firebase / API calls
+  // ไม่ cache Firebase / API calls / map tiles (ข้อมูลแผนที่เยอะมาก จะทำให้ cache บวม)
   if (
     url.hostname.includes('firestore.googleapis.com') ||
     url.hostname.includes('googleapis.com') ||
     url.hostname.includes('firebase') ||
+    url.hostname.includes('openfreemap.org') ||
     url.pathname.includes('/v1/') ||
     event.request.method !== 'GET'
   ) {

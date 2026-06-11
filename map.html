@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>แผนที่โลก 3D — Royal Lala</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#09090f">
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600;700&family=Sarabun:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://unpkg.com/maplibre-gl@5.6.0/dist/maplibre-gl.css" rel="stylesheet">
+<script src="https://unpkg.com/maplibre-gl@5.6.0/dist/maplibre-gl.js"></script>
+<style>
+  :root{
+    --bg:#09090f;
+    --gold:#c9aa71;
+    --gold-dim:rgba(201,170,113,.35);
+    --text:#e8dcc8;
+    --text2:#9a8f7a;
+    --panel:rgba(13,13,20,.88);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%;overflow:hidden;background:var(--bg);font-family:'Prompt','Sarabun',sans-serif;color:var(--text)}
+  #map{position:absolute;inset:0}
+
+  /* ===== Top bar ===== */
+  .topbar{
+    position:absolute;top:0;left:0;right:0;z-index:10;
+    display:flex;align-items:center;gap:10px;
+    padding:calc(10px + env(safe-area-inset-top)) 14px 10px;
+    background:linear-gradient(180deg,rgba(9,9,15,.92),rgba(9,9,15,0));
+    pointer-events:none;
+  }
+  .topbar>*{pointer-events:auto}
+  .back-btn{
+    display:flex;align-items:center;gap:6px;
+    background:var(--panel);border:1px solid var(--gold-dim);color:var(--text);
+    font-family:inherit;font-size:14px;font-weight:500;
+    padding:8px 14px;border-radius:22px;cursor:pointer;
+    backdrop-filter:blur(8px);text-decoration:none;
+  }
+  .back-btn:active{transform:scale(.96)}
+  .title{
+    font-size:16px;font-weight:600;letter-spacing:.3px;
+    text-shadow:0 1px 6px rgba(0,0,0,.8);
+  }
+  .title small{display:block;font-size:11px;font-weight:400;color:var(--text2);letter-spacing:1.5px}
+
+  /* ===== Action buttons (right side) ===== */
+  .actions{
+    position:absolute;right:10px;top:calc(70px + env(safe-area-inset-top));z-index:10;
+    display:flex;flex-direction:column;gap:8px;
+  }
+  .act-btn{
+    width:44px;height:44px;border-radius:12px;
+    background:var(--panel);border:1px solid var(--gold-dim);color:var(--text);
+    font-size:19px;cursor:pointer;backdrop-filter:blur(8px);
+    display:flex;align-items:center;justify-content:center;
+    transition:background .15s,border-color .15s;
+  }
+  .act-btn.on{background:rgba(201,170,113,.25);border-color:var(--gold);color:var(--gold)}
+  .act-btn:active{transform:scale(.94)}
+
+  /* ===== City chips (bottom) ===== */
+  .chips{
+    position:absolute;left:0;right:0;bottom:0;z-index:10;
+    display:flex;gap:8px;overflow-x:auto;
+    padding:10px 14px calc(14px + env(safe-area-inset-bottom));
+    background:linear-gradient(0deg,rgba(9,9,15,.9),rgba(9,9,15,0));
+    scrollbar-width:none;
+  }
+  .chips::-webkit-scrollbar{display:none}
+  .chip{
+    flex:0 0 auto;display:flex;align-items:center;gap:6px;
+    background:var(--panel);border:1px solid var(--gold-dim);color:var(--text);
+    font-family:inherit;font-size:13px;font-weight:500;
+    padding:9px 16px;border-radius:22px;cursor:pointer;
+    backdrop-filter:blur(8px);white-space:nowrap;
+    transition:background .15s,border-color .15s;
+  }
+  .chip.active{background:rgba(201,170,113,.25);border-color:var(--gold);color:var(--gold)}
+  .chip:active{transform:scale(.95)}
+
+  /* ===== Hint toast ===== */
+  .hint{
+    position:absolute;left:50%;bottom:calc(72px + env(safe-area-inset-bottom));z-index:10;
+    transform:translateX(-50%);
+    background:var(--panel);border:1px solid var(--gold-dim);
+    color:var(--text2);font-size:12px;
+    padding:8px 16px;border-radius:18px;backdrop-filter:blur(8px);
+    white-space:nowrap;opacity:1;transition:opacity .6s;pointer-events:none;
+  }
+  .hint.hide{opacity:0}
+
+  /* ===== Loading overlay ===== */
+  .loading{
+    position:absolute;inset:0;z-index:20;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;
+    background:var(--bg);transition:opacity .5s;
+  }
+  .loading.hide{opacity:0;pointer-events:none}
+  .loading .globe{font-size:52px;animation:spin 2.5s linear infinite}
+  .loading p{color:var(--text2);font-size:14px}
+  @keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+
+  /* MapLibre controls — ปรับให้เข้าธีมมืด */
+  .maplibregl-ctrl-group{background:var(--panel)!important;backdrop-filter:blur(8px);border:1px solid var(--gold-dim)}
+  .maplibregl-ctrl-group button{filter:invert(.85)}
+  .maplibregl-ctrl-attrib{background:rgba(9,9,15,.6)!important;color:var(--text2)!important;font-size:10px}
+  .maplibregl-ctrl-attrib a{color:var(--text2)!important}
+</style>
+</head>
+<body>
+
+<div id="map"></div>
+
+<div class="loading" id="loading">
+  <div class="globe">🌍</div>
+  <p>กำลังโหลดแผนที่โลก 3D...</p>
+</div>
+
+<div class="topbar">
+  <a class="back-btn" href="casino.html">←</a>
+  <div class="title">🌍 แผนที่โลก 3D<small>REAL WORLD · 3D BUILDINGS</small></div>
+</div>
+
+<div class="actions">
+  <button class="act-btn on" id="btn3d" onclick="toggle3D()" title="สลับมุมมอง 2D / 3D">🏙️</button>
+  <button class="act-btn" id="btnGlobe" onclick="goGlobe()" title="กลับไปดูลูกโลก">🌐</button>
+</div>
+
+<div class="hint" id="hint">ลาก 2 นิ้ว (หรือคลิกขวา) เพื่อหมุน/เอียงมุมมอง</div>
+
+<div class="chips" id="chips"></div>
+
+<script>
+// ===== เมืองตัวอย่าง — จุดที่มีตึก 3D สวย ๆ =====
+const CITIES = [
+  { name: '🇹🇭 กรุงเทพฯ',  center: [100.5390, 13.7263], zoom: 15.8, bearing: -30 }, // สาทร-สีลม
+  { name: '🇯🇵 โตเกียว',    center: [139.7006, 35.6896], zoom: 15.8, bearing: 20 },  // ชินจูกุ
+  { name: '🇺🇸 นิวยอร์ก',   center: [-73.9857, 40.7484], zoom: 15.5, bearing: -15 }, // แมนแฮตตัน
+  { name: '🇦🇪 ดูไบ',       center: [55.2744, 25.1972],  zoom: 15.5, bearing: 40 },  // เบิร์จคาลิฟา
+  { name: '🇫🇷 ปารีส',      center: [2.2945, 48.8584],   zoom: 15.8, bearing: 60 },  // หอไอเฟล
+  { name: '🇬🇧 ลอนดอน',    center: [-0.0190, 51.5050],  zoom: 15.5, bearing: -45 }, // แคนารีวอร์ฟ
+  { name: '🇸🇬 สิงคโปร์',   center: [103.8520, 1.2840],  zoom: 15.8, bearing: 0 },   // มารีนาเบย์
+];
+
+const map = new maplibregl.Map({
+  container: 'map',
+  // OpenFreeMap — แผนที่โลกจริงจาก OpenStreetMap, ฟรี ไม่ต้องใช้ API key
+  style: 'https://tiles.openfreemap.org/styles/liberty',
+  center: [100.5018, 13.7563],
+  zoom: 1.6,
+  pitch: 0,
+  bearing: 0,
+  maxPitch: 75,
+  hash: true,
+  attributionControl: { compact: true }
+});
+
+map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), 'right');
+map.addControl(new maplibregl.GeolocateControl({
+  positionOptions: { enableHighAccuracy: true },
+  trackUserLocation: true,
+  fitBoundsOptions: { maxZoom: 16.5 }
+}), 'right');
+map.addControl(new maplibregl.ScaleControl({ unit: 'metric' }), 'bottom-left');
+
+let buildingsOn = true;
+
+map.on('style.load', () => {
+  // โหมดลูกโลกจริง (globe projection)
+  map.setProjection({ type: 'globe' });
+
+  // ชั้นบรรยากาศ + ท้องฟ้ารอบลูกโลก
+  map.setSky({
+    'sky-color': '#0b1530',
+    'horizon-color': '#7da3cf',
+    'fog-color': '#e8edf4',
+    'sky-horizon-blend': 0.6,
+    'horizon-fog-blend': 0.6,
+    'fog-ground-blend': 0.7,
+    'atmosphere-blend': ['interpolate', ['linear'], ['zoom'], 0, 1, 6, 1, 9, 0.2, 12, 0]
+  });
+
+  addBuildings3D();
+});
+
+// ===== ตึก 3D (fill-extrusion จากข้อมูลความสูงอาคาร OpenStreetMap) =====
+function addBuildings3D() {
+  const style = map.getStyle();
+
+  // ลบเลเยอร์ตึก 3D เดิมของสไตล์ออกก่อน แล้วใส่ของเราที่ปรับสี/แสงเอง
+  style.layers
+    .filter(l => l.type === 'fill-extrusion')
+    .forEach(l => map.removeLayer(l.id));
+
+  const srcId = Object.keys(style.sources).find(k => style.sources[k].type === 'vector');
+  if (!srcId) return;
+
+  map.addLayer({
+    id: 'lala-3d-buildings',
+    type: 'fill-extrusion',
+    source: srcId,
+    'source-layer': 'building',
+    minzoom: 13.5,
+    paint: {
+      // ตึกยิ่งสูงยิ่งเข้มไปทางสีทองตามธีมแอป
+      'fill-extrusion-color': [
+        'interpolate', ['linear'], ['coalesce', ['get', 'render_height'], 0],
+        0,   '#e3dccb',
+        40,  '#cdb88a',
+        120, '#b08d52',
+        300, '#8a6a38'
+      ],
+      // ค่อย ๆ ดันตึกขึ้นตอนซูมเข้า จะได้ไม่กระตุก
+      'fill-extrusion-height': [
+        'interpolate', ['linear'], ['zoom'],
+        13.5, 0,
+        15.5, ['coalesce', ['get', 'render_height'], 8]
+      ],
+      'fill-extrusion-base': [
+        'interpolate', ['linear'], ['zoom'],
+        13.5, 0,
+        15.5, ['coalesce', ['get', 'render_min_height'], 0]
+      ],
+      'fill-extrusion-opacity': 0.88,
+      'fill-extrusion-vertical-gradient': true
+    }
+  });
+}
+
+function toggle3D() {
+  buildingsOn = !buildingsOn;
+  document.getElementById('btn3d').classList.toggle('on', buildingsOn);
+  if (map.getLayer('lala-3d-buildings')) {
+    map.setLayoutProperty('lala-3d-buildings', 'visibility', buildingsOn ? 'visible' : 'none');
+  }
+  map.easeTo({ pitch: buildingsOn ? 60 : 0, duration: 800 });
+}
+
+function goGlobe() {
+  stopSpin();
+  setActiveChip(-1);
+  map.flyTo({ center: [100.5018, 13.7563], zoom: 1.6, pitch: 0, bearing: 0, duration: 2500 });
+}
+
+// ===== บินไปเมืองต่าง ๆ =====
+const chipsEl = document.getElementById('chips');
+CITIES.forEach((c, i) => {
+  const b = document.createElement('button');
+  b.className = 'chip';
+  b.textContent = c.name;
+  b.onclick = () => {
+    stopSpin();
+    setActiveChip(i);
+    map.flyTo({
+      center: c.center, zoom: c.zoom, bearing: c.bearing,
+      pitch: buildingsOn ? 62 : 0,
+      duration: 4500, essential: true
+    });
+  };
+  chipsEl.appendChild(b);
+});
+
+function setActiveChip(idx) {
+  [...chipsEl.children].forEach((el, i) => el.classList.toggle('active', i === idx));
+}
+
+// ===== ลูกโลกหมุนเอง จนกว่าผู้ใช้จะแตะแผนที่ =====
+let spinning = true;
+function spinGlobe() {
+  if (!spinning || map.getZoom() > 4) return;
+  const c = map.getCenter();
+  c.lng += 12; // องศาต่อรอบ ease (~ค่อย ๆ หมุน)
+  map.easeTo({ center: c, duration: 6000, easing: t => t });
+}
+function stopSpin() { spinning = false; }
+map.on('moveend', spinGlobe);
+['mousedown', 'touchstart', 'wheel', 'dblclick'].forEach(e => map.on(e, stopSpin));
+
+map.on('load', () => {
+  document.getElementById('loading').classList.add('hide');
+  spinGlobe();
+  setTimeout(() => document.getElementById('hint').classList.add('hide'), 6000);
+});
+
+// Service worker (PWA เดิมของแอป)
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/sw.js').catch(() => {});
+}
+</script>
+</body>
+</html>
