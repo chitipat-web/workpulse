@@ -1388,7 +1388,10 @@ function pdDeal(){
   pdBet=bets.pd;if(!canBet(pdBet))return;
   addCredits(-pdBet);pdDeck=newDeck();
   pdPlayer=[pdDeck.pop(),pdDeck.pop()];pdDealer=[pdDeck.pop(),pdDeck.pop()];
-  pdInPlay=true;document.getElementById('pdResult').innerHTML='';SFX.deal();
+  pdInPlay=true;document.getElementById('pdResult').innerHTML='';
+  document.getElementById('pdPlayerCards').innerHTML='';document.getElementById('pdDealerCards').innerHTML='';
+  document.getElementById('pdPlayerScore').textContent='—';document.getElementById('pdDealerScore').textContent='?';
+  SFX.deal();
   if(pdIsPok(pdPlayer)||pdIsPok(pdDealer)){pdRender(false);pdActionRow(false);setTimeout(pdShowdown,700);return;}
   pdRender(false);pdActionRow(true);
 }
@@ -1458,7 +1461,10 @@ function keDeal(){
   addCredits(-keBet);keDeck=newDeck();
   kePlayer=[keDeck.pop(),keDeck.pop()];
   keDealer=[keDeck.pop(),keDeck.pop()];
-  keInPlay=true;document.getElementById('keResult').innerHTML='';SFX.deal();
+  keInPlay=true;document.getElementById('keResult').innerHTML='';
+  document.getElementById('kePlayerCards').innerHTML='';document.getElementById('keDealerCards').innerHTML='';
+  document.getElementById('kePlayerScore').textContent='—';document.getElementById('keDealerScore').textContent='?';
+  SFX.deal();
   keRender(false);
   const pNat=keSpecial(kePlayer).name,dNat=keSpecial(keDealer).name;
   if(pNat||dNat){keActionRow(false);setTimeout(keShowdown,900);}
@@ -1533,7 +1539,10 @@ function bjDeal(){
   bjBet=bets.bj;if(!canBet(bjBet))return;
   addCredits(-bjBet);bjDoubled=false;bjDeck=newDeck();
   bjPlayer=[bjDeck.pop(),bjDeck.pop()];bjDealer=[bjDeck.pop(),bjDeck.pop()];
-  bjInPlay=true;document.getElementById('bjResult').innerHTML='';SFX.deal();
+  bjInPlay=true;document.getElementById('bjResult').innerHTML='';
+  document.getElementById('bjPlayerCards').innerHTML='';document.getElementById('bjDealerCards').innerHTML='';
+  document.getElementById('bjPlayerScore').textContent='—';document.getElementById('bjDealerScore').textContent='?';
+  SFX.deal();
   bjRender(false);
   if(bjIsBJ(bjPlayer)){bjActionRow(false);setTimeout(bjStand,500);return;}
   bjActionRow(true);
