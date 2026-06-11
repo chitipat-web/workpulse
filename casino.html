@@ -196,9 +196,14 @@ body{
 
 /* ───── CARDS ───── */
 .card{
-  width:72px;height:102px;background:#fdf8f0;border-radius:10px;position:relative;
-  box-shadow:0 6px 20px rgba(0,0,0,.65),0 2px 4px rgba(0,0,0,.4),inset 0 0 0 1px rgba(0,0,0,.07);
-  flex:0 0 auto;font-family:'Cinzel',serif;font-weight:700;
+  width:76px;height:108px;background:#fff;border-radius:10px;position:relative;
+  box-shadow:0 6px 20px rgba(0,0,0,.6),0 2px 6px rgba(0,0,0,.35);
+  border:1px solid rgba(0,0,0,.12);
+  flex:0 0 auto;font-family:'Cinzel',serif;overflow:hidden;
+}
+.card::before{
+  content:'';position:absolute;inset:3px;border-radius:7px;
+  border:1px solid currentColor;opacity:.15;pointer-events:none;z-index:0;
 }
 .card.deal-slide{animation:dealSlide .38s cubic-bezier(.18,.9,.32,1.1) both}
 .card.flip-reveal{animation:cardFlip .26s ease-out both}
@@ -214,22 +219,29 @@ body{
   50%{opacity:1}
   100%{transform:perspective(500px) rotateY(0deg) scale(1);opacity:1}
 }
-.card.red{color:var(--red)}
+.card.red{color:#d42030}
 .card.black{color:#111}
-.card .cr{position:absolute;top:5px;left:7px;font-size:19px;line-height:1;font-weight:900}
-.card .cs{position:absolute;top:26px;left:7px;font-size:15px;line-height:1}
-.card .cc{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:38px;opacity:.85}
-.card .cb{position:absolute;bottom:5px;right:7px;font-size:19px;line-height:1;transform:rotate(180deg);font-weight:900}
+.card .cr{position:absolute;top:5px;left:7px;font-size:18px;line-height:1;font-weight:900;z-index:1}
+.card .cs{position:absolute;top:24px;left:8px;font-size:14px;line-height:1;z-index:1}
+.card .cc{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:42px;z-index:1}
+.card .cb{position:absolute;bottom:5px;right:7px;font-size:18px;line-height:1;transform:rotate(180deg);font-weight:900;z-index:1}
+.card.face-J .cc,.card.face-Q .cc,.card.face-K .cc{font-size:34px;top:46%}
 .card.back{
-  background:linear-gradient(135deg,#1e2d52,#0c1530);border:2px solid rgba(201,170,113,.4);
+  background:linear-gradient(160deg,#c8192e 0%,#9a1020 100%);
+  border:1px solid rgba(255,255,255,.15);
+}
+.card.back::before{
+  inset:4px;border-color:rgba(255,255,255,.4);opacity:1;
+  background:
+    repeating-linear-gradient(45deg,transparent,transparent 4px,rgba(255,255,255,.07) 4px,rgba(255,255,255,.07) 5px),
+    repeating-linear-gradient(-45deg,transparent,transparent 4px,rgba(255,255,255,.07) 4px,rgba(255,255,255,.07) 5px);
 }
 .card.back::after{
-  content:'♠';position:absolute;inset:0;
+  content:'♦';position:absolute;inset:0;
   display:flex;align-items:center;justify-content:center;
-  font-size:32px;color:rgba(201,170,113,.25);
-  border-radius:8px;
+  font-size:30px;color:rgba(255,255,255,.18);z-index:1;
 }
-.hand{display:flex;gap:10px;justify-content:center;align-items:flex-end;flex-wrap:wrap;min-height:102px}
+.hand{display:flex;gap:10px;justify-content:center;align-items:flex-end;flex-wrap:wrap;min-height:108px}
 
 /* ───── GAME TABLE (card games) ───── */
 .game-table{
@@ -431,7 +443,7 @@ body{
 .pt-row b{font-family:'Orbitron';color:var(--gold2)}
 
 /* ───── HI-LO ───── */
-.hl-card-area{display:flex;justify-content:center;margin:8px 0;min-height:102px}
+.hl-card-area{display:flex;justify-content:center;margin:8px 0;min-height:108px}
 .hl-prev-next{display:flex;align-items:center;justify-content:center;gap:18px}
 .hl-arrow{font-size:24px;color:var(--gold)}
 /* ───── 9 KE ───── */
@@ -1063,8 +1075,13 @@ function cardEl(card,fd,noAnim){
   const d=document.createElement('div');
   if(fd){d.className='card back'+(noAnim?' no-anim':'');return d;}
   const isRed=card.suit==='♥'||card.suit==='♦';
-  d.className='card '+(isRed?'red':'black')+(noAnim?' no-anim':'');
-  d.innerHTML=`<div class="cr">${card.rank}</div><div class="cs">${card.suit}</div><div class="cc">${card.suit}</div><div class="cb">${card.rank}</div>`;
+  const isFace=['J','Q','K'].includes(card.rank);
+  const faceMap={J:'🃏 J',Q:'👑 Q',K:'⚔️ K'};
+  const centerHtml=isFace
+    ?`<div class="cc">${faceMap[card.rank]||card.rank}</div>`
+    :`<div class="cc">${card.suit}</div>`;
+  d.className='card '+(isRed?'red':'black')+(isFace?' face-'+card.rank:'')+(noAnim?' no-anim':'');
+  d.innerHTML=`<div class="cr">${card.rank}</div><div class="cs">${card.suit}</div>${centerHtml}<div class="cb">${card.rank}</div>`;
   return d;
 }
 
