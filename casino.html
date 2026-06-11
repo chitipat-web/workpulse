@@ -485,13 +485,14 @@ body{
   border:1px solid rgba(201,170,113,.1);
 }
 .ke-table-row{display:flex;align-items:center;gap:0}
-.ke-av-col{width:50px;display:flex;flex-direction:column;align-items:center;gap:5px;flex-shrink:0;z-index:2}
-.ke-avatar-frame{
-  width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;
-  font-size:24px;border:2px solid;box-shadow:0 4px 12px rgba(0,0,0,.5);
+.ke-av-col{width:70px;display:flex;flex-direction:column;align-items:center;gap:5px;flex-shrink:0;z-index:2}
+.ke-3d-portrait{
+  width:66px;height:108px;display:block;border-radius:33px;
+  background:radial-gradient(circle at 50% 35%,#1c2e3e,#070c10);
+  box-shadow:0 5px 16px rgba(0,0,0,.6);
 }
-.ke-av-dealer .ke-avatar-frame{border-color:rgba(201,170,113,.55);background:radial-gradient(circle at 40% 35%,#3d2a14,#1a1008)}
-.ke-av-player .ke-avatar-frame{border-color:rgba(61,220,127,.45);background:radial-gradient(circle at 40% 35%,#143028,#08180e)}
+.ke-av-dealer .ke-3d-portrait{border:2px solid rgba(201,170,113,.45)}
+.ke-av-player .ke-3d-portrait{border:2px solid rgba(61,220,127,.38)}
 .ke-av-lbl{font-size:9px;color:rgba(255,255,255,.4);letter-spacing:1px;font-family:'Sarabun',sans-serif;text-align:center}
 /* Oval felt table */
 .ke-oval{
@@ -532,7 +533,9 @@ body{
 .ke-oval .card .cs{font-size:11px;top:19px;left:6px}
 .ke-oval .card .cc{font-size:32px}
 .ke-oval .card .cb{font-size:14px;bottom:4px;right:5px}
-.ke-oval .hand{gap:6px;min-height:85px}
+.ke-oval .hand{gap:0;min-height:85px}
+.ke-oval .hand .card{margin-right:-14px;position:relative}
+.ke-oval .hand .card:last-child{margin-right:0}
 /* Result ribbon */
 .ke-ribbon{
   display:inline-flex;flex-direction:column;align-items:center;
@@ -878,7 +881,7 @@ body{
         <div class="ke-table-row">
           <!-- Dealer avatar -->
           <div class="ke-av-col ke-av-dealer">
-            <div class="ke-avatar-frame">🤵</div>
+            <canvas id="dealerPortrait" class="ke-3d-portrait"></canvas>
             <div class="ke-av-lbl">เจ้ามือ</div>
           </div>
           <!-- Oval felt table -->
@@ -900,7 +903,7 @@ body{
           </div>
           <!-- Player avatar -->
           <div class="ke-av-col ke-av-player">
-            <div class="ke-avatar-frame">🧑</div>
+            <canvas id="playerPortrait" class="ke-3d-portrait"></canvas>
             <div class="ke-av-lbl">คุณ</div>
           </div>
         </div>
@@ -2684,6 +2687,125 @@ setTimeout(()=>{if(window.Gun)mpInitGun();},500);
     renderer.render(scene,cam);
   }
   tick();
+})();
+
+/* ═══════════════ 3D CHARACTER PORTRAITS ═══════════════ */
+(function(){
+  if(typeof THREE==='undefined')return;
+
+  function mkChar(cvId,toRight){
+    const cv=document.getElementById(cvId);if(!cv)return;
+    const W=66,H=108;
+    const rdr=new THREE.WebGLRenderer({canvas:cv,alpha:true,antialias:true});
+    rdr.setPixelRatio(Math.min(devicePixelRatio,2));
+    rdr.setSize(W,H);
+
+    const sc=new THREE.Scene();
+    const cam=new THREE.PerspectiveCamera(46,W/H,.1,20);
+    cam.position.set(toRight?-.1:.1,.28,3.1);
+    cam.lookAt(0,.28,0);
+
+    /* lights */
+    sc.add(new THREE.AmbientLight(0xfff8e8,.8));
+    const dl=new THREE.DirectionalLight(0xffffff,1.15);dl.position.set(1.5,4,3);sc.add(dl);
+    const rl=new THREE.DirectionalLight(0xc9aa71,.38);rl.position.set(-2,1,-1);sc.add(rl);
+
+    /* materials */
+    const M=c=>new THREE.MeshLambertMaterial({color:c});
+    const mSk=M(toRight?0xedc09a:0xe0b88a);   // skin
+    const mHr=M(toRight?0x0c0608:0x1c0e0c);   // hair
+    const mSu=M(toRight?0x14101e:0x0e1a14);   // suit
+    const mWh=M(0xf4f2f0);                    // white shirt
+    const mEy=M(0x060408);                    // eyes
+    const mLp=M(0xd03852);                    // lips
+    const mAc=M(toRight?0xc9aa71:0x2faa5e);  // accent (gold dealer / green player)
+
+    const G=new THREE.Group();
+
+    /* helper – create mesh, set position/rotation/scale, add to group */
+    function add(geo,mat,x,y,z,rx,ry,rz,sx,sy,sz){
+      const m=new THREE.Mesh(geo,mat);
+      m.position.set(x||0,y||0,z||0);
+      if(rx||ry||rz)m.rotation.set(rx||0,ry||0,rz||0);
+      if(sx)m.scale.set(sx,sy!=null?sy:1,sz!=null?sz:1);
+      G.add(m);
+    }
+
+    /* ── head ── */
+    add(new THREE.SphereGeometry(.3,22,16),mSk,0,.76);
+
+    /* ── hair cap (top dome) ── */
+    add(new THREE.SphereGeometry(.316,22,10,0,6.28,0,1.78),mHr,0,.76);
+
+    /* ── hair sides (long strands) ── */
+    const hsg=new THREE.CylinderGeometry(.083,.052,.72,7);
+    add(hsg,mHr,-.235,.39,-.02,0,0,.17);
+    add(hsg,mHr, .235,.39,-.02,0,0,-.17);
+
+    /* ── hair back bulk ── */
+    add(new THREE.CylinderGeometry(.26,.18,.48,10),mHr,0,.49,-.14);
+
+    /* ── eyes ── */
+    const eg=new THREE.SphereGeometry(.046,8,6);
+    add(eg,mEy,-.115,.8,.266);
+    add(eg,mEy, .115,.8,.266);
+
+    /* ── eyebrows (thin boxes, slight arch) ── */
+    const bwg=new THREE.BoxGeometry(.12,.016,.05);
+    const mBw=M(toRight?0x0a0608:0x180e0c);
+    add(bwg,mBw,-.115,.892,.25,0,0,.09);
+    add(bwg,mBw, .115,.892,.25,0,0,-.09);
+
+    /* ── nose (subtle) ── */
+    add(new THREE.SphereGeometry(.028,6,4),mSk,0,.757,.305);
+
+    /* ── lips ── */
+    add(new THREE.SphereGeometry(.052,8,4),mLp,0,.662,.278,0,0,0,1.52,.5,.82);
+
+    /* ── neck ── */
+    add(new THREE.CylinderGeometry(.1,.12,.22,10),mSk,0,.48);
+
+    /* ── torso / jacket ── */
+    add(new THREE.BoxGeometry(.72,.62,.33),mSu,0,.1);
+
+    /* ── shoulder caps ── */
+    const shg=new THREE.SphereGeometry(.2,10,7,0,6.28,0,1.62);
+    add(shg,mSu,-.375,.3,0,0,0,-.92);
+    add(shg,mSu, .375,.3,0,0,0, .92);
+
+    /* ── white collar / shirt ── */
+    add(new THREE.BoxGeometry(.17,.33,.37),mWh,0,.19,.01);
+
+    /* ── V-collar shape ── */
+    add(new THREE.BoxGeometry(.06,.18,.03),mWh,-.04,.28,.17,0,0,.28);
+    add(new THREE.BoxGeometry(.06,.18,.03),mWh, .04,.28,.17,0,0,-.28);
+
+    /* ── accent (tie for dealer, pin for player) ── */
+    add(new THREE.BoxGeometry(.055,.27,.032),mAc,0,.11,.185);
+
+    /* face the table */
+    G.rotation.y=toRight?.28:-.28;
+    sc.add(G);
+
+    const off=Math.random()*6.28;
+    let lt=0;
+    function tick(now){
+      requestAnimationFrame(tick);
+      if(now-lt<50)return; // 20 fps cap
+      lt=now;
+      const t=now*.001;
+      G.position.y=Math.sin(t*.65+off)*.022;       // gentle breathing
+      G.rotation.y=(toRight?.28:-.28)+Math.sin(t*.32+off)*.03; // subtle sway
+      rdr.render(sc,cam);
+    }
+    requestAnimationFrame(tick);
+  }
+
+  /* init after splash finishes */
+  setTimeout(()=>{
+    mkChar('dealerPortrait',true);
+    mkChar('playerPortrait',false);
+  },2200);
 })();
 
 /* ═══════════════ SPLASH ═══════════════ */
