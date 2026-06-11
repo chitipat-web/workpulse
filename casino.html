@@ -475,6 +475,96 @@ body{
 .ke-pt-row:last-child{border-bottom:none}
 .ke-pt-mult{font-family:'Orbitron',monospace;font-weight:700;font-size:13px;color:var(--gold)}
 
+/* ───── 9 KE OVAL TABLE SCENE ───── */
+.ke-scene{
+  position:relative;
+  background:
+    radial-gradient(ellipse at 50% 60%,rgba(10,70,38,.5) 0%,transparent 65%),
+    linear-gradient(180deg,#0c1810 0%,#060c08 100%);
+  border-radius:20px;padding:18px 10px;margin-bottom:14px;
+  border:1px solid rgba(201,170,113,.1);
+}
+.ke-table-row{display:flex;align-items:center;gap:0}
+.ke-av-col{width:50px;display:flex;flex-direction:column;align-items:center;gap:5px;flex-shrink:0;z-index:2}
+.ke-avatar-frame{
+  width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:24px;border:2px solid;box-shadow:0 4px 12px rgba(0,0,0,.5);
+}
+.ke-av-dealer .ke-avatar-frame{border-color:rgba(201,170,113,.55);background:radial-gradient(circle at 40% 35%,#3d2a14,#1a1008)}
+.ke-av-player .ke-avatar-frame{border-color:rgba(61,220,127,.45);background:radial-gradient(circle at 40% 35%,#143028,#08180e)}
+.ke-av-lbl{font-size:9px;color:rgba(255,255,255,.4);letter-spacing:1px;font-family:'Sarabun',sans-serif;text-align:center}
+/* Oval felt table */
+.ke-oval{
+  flex:1;display:flex;flex-direction:column;
+  border-radius:60px;
+  background:radial-gradient(ellipse at 50% 45%,#207847 0%,#0f4e2c 55%,#07301a 100%);
+  border:5px solid #7b4a1e;
+  box-shadow:inset 0 0 50px rgba(0,0,0,.5),0 6px 0 #4d2a0a,0 10px 24px rgba(0,0,0,.6);
+  position:relative;overflow:hidden;
+}
+.ke-oval::before{
+  content:'';position:absolute;inset:0;pointer-events:none;
+  background:repeating-linear-gradient(45deg,transparent,transparent 8px,rgba(255,255,255,.018) 8px,rgba(255,255,255,.018) 9px);
+}
+.ke-oval::after{
+  content:'';position:absolute;inset:8px;
+  border-radius:55px;
+  border:1px solid rgba(255,255,255,.06);pointer-events:none;
+}
+.ke-oval-zone{
+  display:flex;flex-direction:column;align-items:center;
+  padding:14px 6px 8px;position:relative;z-index:1;
+}
+.ke-oval-zone.player-zone{padding:8px 6px 14px}
+/* Center strip for ribbon */
+.ke-oval-mid{
+  height:46px;display:flex;align-items:center;justify-content:center;
+  position:relative;z-index:5;
+}
+.ke-oval-mid::before{
+  content:'';position:absolute;left:14px;right:14px;top:50%;
+  height:1px;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.1) 40%,rgba(255,255,255,.1) 60%,transparent);
+}
+/* Smaller cards in oval */
+.ke-oval .card{width:60px;height:85px}
+.ke-oval .card .cr{font-size:14px;top:4px;left:5px}
+.ke-oval .card .cs{font-size:11px;top:19px;left:6px}
+.ke-oval .card .cc{font-size:32px}
+.ke-oval .card .cb{font-size:14px;bottom:4px;right:5px}
+.ke-oval .hand{gap:6px;min-height:85px}
+/* Result ribbon */
+.ke-ribbon{
+  display:inline-flex;flex-direction:column;align-items:center;
+  padding:5px 18px;position:relative;min-width:130px;text-align:center;
+  border-radius:2px;
+}
+.ke-ribbon::before,.ke-ribbon::after{
+  content:'';position:absolute;top:0;bottom:0;width:14px;
+}
+.ke-ribbon::before{left:-12px;clip-path:polygon(100% 0,100% 100%,0 50%)}
+.ke-ribbon::after{right:-12px;clip-path:polygon(0 0,0 100%,100% 50%)}
+.ke-ribbon.r-win{background:linear-gradient(180deg,#f0d030,#c09010);box-shadow:0 3px 14px rgba(200,160,10,.45)}
+.ke-ribbon.r-win::before,.ke-ribbon.r-win::after{background:#c09010}
+.ke-ribbon.r-lose{background:linear-gradient(180deg,#e03040,#8a0f1c);box-shadow:0 3px 14px rgba(180,20,30,.5)}
+.ke-ribbon.r-lose::before,.ke-ribbon.r-lose::after{background:#8a0f1c}
+.ke-ribbon.r-tie{background:linear-gradient(180deg,#c9aa71,#8a6a30);box-shadow:0 3px 14px rgba(150,120,50,.4)}
+.ke-ribbon.r-tie::before,.ke-ribbon.r-tie::after{background:#8a6a30}
+.kr-title{font-family:'Cinzel',serif;font-weight:900;font-size:15px;line-height:1.2;color:#fff;position:relative;z-index:1}
+.ke-ribbon.r-win .kr-title,.ke-ribbon.r-tie .kr-title{color:#1a0800}
+.kr-amt{font-family:'Orbitron',monospace;font-weight:700;font-size:12px;position:relative;z-index:1;color:rgba(255,255,255,.9);margin-top:1px}
+.ke-ribbon.r-win .kr-amt,.ke-ribbon.r-tie .kr-amt{color:rgba(26,8,0,.8)}
+.kr-sub{font-size:9px;color:rgba(255,255,255,.65);position:relative;z-index:1}
+.ke-ribbon.r-win .kr-sub,.ke-ribbon.r-tie .kr-sub{color:rgba(26,8,0,.55)}
+@keyframes ribbonIn{
+  0%{transform:scaleX(0);opacity:0}
+  65%{transform:scaleX(1.07);opacity:1}
+  100%{transform:scaleX(1);opacity:1}
+}
+.ke-ribbon.animate{animation:ribbonIn .42s cubic-bezier(.18,.9,.32,1.2) both}
+/* Hide old result box for ke screen */
+#screen-ke #keResult{display:none!important}
+
 /* ───── TABLE ROWS (multiplayer / results) ───── */
 .mp-status{text-align:center;font-size:12px;padding:6px;color:var(--text2);border-radius:8px;margin-bottom:10px;background:var(--s1);border:1px solid var(--border)}
 .mp-status.ok{color:var(--win)}
@@ -783,20 +873,36 @@ body{
     <div class="screen" id="screen-ke">
       <button class="back-btn" onclick="gotoTab('lobby')">← กลับ</button>
       <div class="game-head">🀄 เก้าเก</div>
-      <div class="game-table">
-        <div class="table-top">
-          <div class="table-lbl">DEALER · เจ้ามือ</div>
-          <div class="hand" id="keDealerCards"></div>
-          <div class="ke-score s-hidden" id="keDealerScore">?</div>
-          <div class="ke-hand-name" id="keDealerName"></div>
-        </div>
-        <div class="table-divider"></div>
-        <div class="table-bot">
-          <div class="table-lbl">YOU · คุณ</div>
-          <div class="hand" id="kePlayerCards"></div>
-          <div class="ke-score s-hidden" id="kePlayerScore">—</div>
-          <div class="ke-hand-name" id="kePlayerName"></div>
-          <div class="ke-hint" id="keHint"></div>
+      <!-- Oval casino table scene -->
+      <div class="ke-scene">
+        <div class="ke-table-row">
+          <!-- Dealer avatar -->
+          <div class="ke-av-col ke-av-dealer">
+            <div class="ke-avatar-frame">🤵</div>
+            <div class="ke-av-lbl">เจ้ามือ</div>
+          </div>
+          <!-- Oval felt table -->
+          <div class="ke-oval">
+            <div class="ke-oval-zone">
+              <div class="hand" id="keDealerCards"></div>
+              <div class="ke-score s-hidden" id="keDealerScore">?</div>
+              <div class="ke-hand-name" id="keDealerName"></div>
+            </div>
+            <div class="ke-oval-mid">
+              <div id="keRibbon" style="display:none"></div>
+            </div>
+            <div class="ke-oval-zone player-zone">
+              <div class="ke-hand-name" id="kePlayerName"></div>
+              <div class="ke-score s-hidden" id="kePlayerScore">—</div>
+              <div class="hand" id="kePlayerCards"></div>
+              <div class="ke-hint" id="keHint"></div>
+            </div>
+          </div>
+          <!-- Player avatar -->
+          <div class="ke-av-col ke-av-player">
+            <div class="ke-avatar-frame">🧑</div>
+            <div class="ke-av-lbl">คุณ</div>
+          </div>
         </div>
       </div>
       <div id="keResult"></div>
@@ -1573,6 +1679,7 @@ function keDeal(){
   keDealer=[keDeck.pop(),keDeck.pop()];
   keWager=keBet;kePhase='initial';keInPlay=true;
   document.getElementById('keResult').innerHTML='';
+  const _rb=document.getElementById('keRibbon');if(_rb){_rb.style.display='none';_rb.innerHTML='';}
   document.getElementById('kePlayerCards').innerHTML='';document.getElementById('keDealerCards').innerHTML='';
   document.getElementById('kePlayerScore').className='ke-score s-hidden';document.getElementById('kePlayerScore').textContent='—';
   document.getElementById('keDealerScore').className='ke-score s-hidden';document.getElementById('keDealerScore').textContent='?';
@@ -1618,6 +1725,15 @@ function keTubCancel(){
   document.getElementById('keTubPanel').style.display='none';
   document.getElementById('keActionBtns').style.display='';
 }
+function _keSetRibbon(type,title,amt,sub){
+  const r=document.getElementById('keRibbon');
+  if(!r)return;
+  r.className='ke-ribbon r-'+type;
+  r.innerHTML=`<div class="kr-title">${title}</div><div class="kr-amt">${amt}</div>${sub?`<div class="kr-sub">${sub}</div>`:''}`;
+  r.style.display='';
+  void r.offsetWidth;
+  r.classList.add('animate');
+}
 function keTubConfirm(){
   if(keTubExtra<=0){showToast('เลื่อนเพื่อเลือกจำนวนก่อน','lose');return;}
   addCredits(-keTubExtra);keWager=keBet+keTubExtra;
@@ -1633,6 +1749,7 @@ function keHmob(){
   const loss=keBet-refund;
   recordResult(false,loss);SFX.lose();
   document.getElementById('keResult').innerHTML=`<div class="result-box lose"><div class="re">🏳️</div><div class="rt">หมอบ</div><div class="rd" style="color:var(--lose)">-${loss.toLocaleString('th-TH')}</div><div style="color:var(--text2);font-size:12px;margin-top:4px">${kePhase==='initial'?'คืนครึ่งเดิมพัน':'สยบ'}</div></div>`;
+  _keSetRibbon('lose','หมอบ','-฿'+loss.toLocaleString('th-TH'),kePhase==='initial'?'คืนครึ่งเดิมพัน':'สยบ');
   showToast('🏳️ หมอบ -'+loss.toLocaleString('th-TH'),'lose');
   document.getElementById('keDealBtn').disabled=false;
 }
@@ -1662,16 +1779,19 @@ function keShowdown(){
     const w=keWager*psp.mult;addCredits(keWager+w);
     recordResult(true,w);fireParticles(w>=300);SFX.win();
     el.innerHTML=`<div class="result-box win"><div class="re">🎉</div><div class="rt">ชนะ!</div><div class="rd" style="color:var(--win)">+${w.toLocaleString('th-TH')}</div>${psp.name?`<div style="color:var(--gold2);font-size:12px;margin-top:4px">${psp.name}${psp.mult>1?' ×'+psp.mult:''}</div>`:''}</div>`;
+    _keSetRibbon('win','ท่านชนะ','+฿'+w.toLocaleString('th-TH'),psp.name?(psp.name+(psp.mult>1?' ×'+psp.mult:'')):'');
     showToast('🎉 ชนะ +'+w.toLocaleString('th-TH'),'win');
   }else if(oc===0){
     addCredits(keWager);
     el.innerHTML=`<div class="result-box tie"><div class="re">🤝</div><div class="rt">เสมอ ป๊อกชนป๊อก</div><div class="rd" style="color:var(--gold2)">±0</div></div>`;
+    _keSetRibbon('tie','เสมอ','±฿0','ป๊อกชนป๊อก');
     showToast('🤝 เสมอ คืนเดิมพัน','gold');
   }else{
     const m=dsp.mult;const loss=keWager*m;
     if(m>1)addCredits(-Math.min(keWager*(m-1),credits));
     recordResult(false,loss);SFX.lose();
     el.innerHTML=`<div class="result-box lose"><div class="re">😢</div><div class="rt">แพ้</div><div class="rd" style="color:var(--lose)">-${loss.toLocaleString('th-TH')}</div>${dsp.name?`<div style="color:var(--text2);font-size:12px;margin-top:4px">เจ้ามือ ${dsp.name}${dsp.mult>1?' ×'+m:''}</div>`:''}</div>`;
+    _keSetRibbon('lose','ท่านแพ้','-฿'+loss.toLocaleString('th-TH'),dsp.name?('เจ้ามือ '+dsp.name+(dsp.mult>1?' ×'+m:'')):'');
     showToast('😢 แพ้ -'+loss.toLocaleString('th-TH'),'lose');
   }
 }
