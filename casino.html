@@ -196,10 +196,9 @@ body{
 
 /* ───── CARDS ───── */
 .card{
-  width:58px;height:82px;background:#fdf8f0;border-radius:8px;position:relative;
-  box-shadow:0 4px 14px rgba(0,0,0,.55),inset 0 0 0 1px rgba(0,0,0,.06);
-  flex:0 0 auto;
-  font-family:'Cinzel',serif;font-weight:700;
+  width:72px;height:102px;background:#fdf8f0;border-radius:10px;position:relative;
+  box-shadow:0 6px 20px rgba(0,0,0,.65),0 2px 4px rgba(0,0,0,.4),inset 0 0 0 1px rgba(0,0,0,.07);
+  flex:0 0 auto;font-family:'Cinzel',serif;font-weight:700;
 }
 .card.deal-slide{animation:dealSlide .38s cubic-bezier(.18,.9,.32,1.1) both}
 .card.flip-reveal{animation:cardFlip .26s ease-out both}
@@ -216,23 +215,106 @@ body{
   100%{transform:perspective(500px) rotateY(0deg) scale(1);opacity:1}
 }
 .card.red{color:var(--red)}
-.card.black{color:#0d0d0d}
-.card .cr{position:absolute;top:4px;left:6px;font-size:15px;line-height:1}
-.card .cs{position:absolute;top:20px;left:6px;font-size:13px;line-height:1}
-.card .cc{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:30px;opacity:.92}
-.card .cb{position:absolute;bottom:4px;right:6px;font-size:15px;line-height:1;transform:rotate(180deg)}
+.card.black{color:#111}
+.card .cr{position:absolute;top:5px;left:7px;font-size:19px;line-height:1;font-weight:900}
+.card .cs{position:absolute;top:26px;left:7px;font-size:15px;line-height:1}
+.card .cc{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:38px;opacity:.85}
+.card .cb{position:absolute;bottom:5px;right:7px;font-size:19px;line-height:1;transform:rotate(180deg);font-weight:900}
 .card.back{
-  background:linear-gradient(135deg,#1a2542,#0c1530);border:2px solid var(--gold3);
+  background:linear-gradient(135deg,#1e2d52,#0c1530);border:2px solid rgba(201,170,113,.4);
 }
 .card.back::after{
-  content:'';position:absolute;inset:5px;border:1px solid var(--gold3);border-radius:5px;
-  background:repeating-linear-gradient(45deg,rgba(201,170,113,.12) 0 3px,transparent 3px 7px);
+  content:'♠';position:absolute;inset:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:32px;color:rgba(201,170,113,.25);
+  border-radius:8px;
 }
-.hand{display:flex;gap:6px;justify-content:center;align-items:center;flex-wrap:wrap;min-height:84px}
-.hand.sm .card{width:46px;height:66px}
-.hand.sm .card .cr{font-size:12px}
-.hand.sm .card .cs{top:16px;font-size:10px}
-.hand.sm .card .cc{font-size:22px}
+.hand{display:flex;gap:10px;justify-content:center;align-items:flex-end;flex-wrap:wrap;min-height:102px}
+
+/* ───── GAME TABLE (card games) ───── */
+.game-table{
+  background:var(--felt);
+  border:2px solid rgba(201,170,113,.22);
+  border-radius:24px;overflow:hidden;
+  margin-bottom:14px;
+  position:relative;
+  box-shadow:inset 0 0 60px rgba(0,0,0,.5),0 8px 22px rgba(0,0,0,.45);
+}
+.game-table::before{
+  content:'';position:absolute;inset:0;opacity:.05;pointer-events:none;
+  background:repeating-linear-gradient(45deg,#fff 0 1px,transparent 1px 18px);
+}
+/* deck pile visual */
+.game-table::after{
+  content:'';position:absolute;top:14px;right:16px;
+  width:40px;height:56px;border-radius:6px;
+  background:linear-gradient(135deg,#1e2f52,#0c1530);
+  border:1px solid rgba(201,170,113,.3);
+  box-shadow:2px -2px 0 rgba(201,170,113,.18),4px -4px 0 rgba(201,170,113,.12),6px -6px 0 rgba(201,170,113,.07);
+  pointer-events:none;z-index:1;
+}
+.table-top{
+  padding:18px 16px 14px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  min-height:155px;text-align:center;position:relative;
+}
+.table-divider{
+  height:1px;
+  background:linear-gradient(90deg,transparent,rgba(201,170,113,.25) 30%,rgba(201,170,113,.25) 70%,transparent);
+  margin:0 20px;position:relative;
+}
+.table-divider::before{
+  content:'VS';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  font-family:'Cinzel',serif;font-size:9px;font-weight:700;letter-spacing:3px;
+  color:rgba(201,170,113,.35);background:var(--felt2,#07170e);padding:0 10px;
+  /* felt2 fallback */
+}
+.table-bot{
+  padding:14px 16px 18px;
+  background:rgba(0,0,0,.2);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  min-height:155px;text-align:center;
+}
+.table-lbl{
+  font-family:'Cinzel',serif;font-size:9px;font-weight:700;letter-spacing:3.5px;
+  color:rgba(201,170,113,.4);text-transform:uppercase;margin-bottom:10px;
+}
+.score-big{
+  font-family:'Orbitron',monospace;font-size:38px;font-weight:900;
+  color:var(--gold);line-height:1;margin-top:10px;
+  text-shadow:0 0 24px rgba(201,170,113,.3);
+  min-height:44px;
+}
+.score-sub{
+  font-size:13px;color:var(--gold2);font-family:'Sarabun';font-weight:700;margin-top:5px;letter-spacing:.5px;
+}
+
+/* ───── ACTION BUTTONS (casino-app style) ───── */
+.action-btns{display:flex;gap:10px;margin-bottom:12px}
+.btn-play{
+  flex:1;padding:18px 8px;border-radius:16px;border:none;cursor:pointer;
+  font-family:'Sarabun';font-weight:700;font-size:17px;letter-spacing:.3px;
+  transition:transform .1s,box-shadow .1s,filter .1s;position:relative;overflow:hidden;
+}
+.btn-play::after{
+  content:'';position:absolute;inset:0;border-radius:inherit;
+  background:linear-gradient(180deg,rgba(255,255,255,.12) 0%,transparent 60%);
+  pointer-events:none;
+}
+.btn-play:active{transform:translateY(3px);filter:brightness(.88)}
+.btn-play:disabled{opacity:.35;cursor:default;transform:none}
+.btn-play.draw{
+  background:linear-gradient(180deg,#3fcb7e,#1a8044);color:#fff;
+  box-shadow:0 7px 18px rgba(60,200,120,.35),inset 0 1px 0 rgba(255,255,255,.2);
+}
+.btn-play.stay{
+  background:linear-gradient(180deg,#e8b923,#b07a10);color:#1a0800;
+  box-shadow:0 7px 18px rgba(232,185,35,.3),inset 0 1px 0 rgba(255,255,255,.25);
+}
+.btn-play.double{
+  background:linear-gradient(180deg,#cf4a5a,#8b1a26);color:#fff;
+  box-shadow:0 7px 18px rgba(207,74,90,.3),inset 0 1px 0 rgba(255,255,255,.15);
+}
 .hand.sm .card .cb{font-size:12px}
 
 .score-badge{
@@ -246,6 +328,7 @@ body{
 .bac-sides{display:flex;gap:10px;position:relative}
 .bac-seat{flex:1;text-align:center;padding:10px 4px;border-radius:14px;background:rgba(0,0,0,.18);border:1px solid transparent;transition:border-color .25s,box-shadow .25s}
 .bac-seat.winner{border-color:var(--gold);box-shadow:0 0 18px rgba(201,170,113,.4)}
+.table-top.winner,.table-bot.winner{background:rgba(201,170,113,.12);box-shadow:inset 0 0 0 1px rgba(201,170,113,.5),0 0 20px rgba(201,170,113,.2)}
 .bac-vs{display:flex;align-items:center;justify-content:center;font-family:'Cinzel';color:var(--gold);font-size:14px;letter-spacing:2px;width:36px}
 
 .bet-zones{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px}
@@ -348,7 +431,7 @@ body{
 .pt-row b{font-family:'Orbitron';color:var(--gold2)}
 
 /* ───── HI-LO ───── */
-.hl-card-area{display:flex;justify-content:center;margin:12px 0;min-height:90px}
+.hl-card-area{display:flex;justify-content:center;margin:8px 0;min-height:102px}
 .hl-prev-next{display:flex;align-items:center;justify-content:center;gap:18px}
 .hl-arrow{font-size:24px;color:var(--gold)}
 
@@ -514,31 +597,28 @@ body{
     <div class="screen" id="screen-bac">
       <button class="back-btn" onclick="gotoTab('lobby')">← กลับ</button>
       <div class="game-head">🎴 บาคาร่า</div>
-      <div class="felt-table">
-        <div class="felt-label">BACCARAT</div>
-        <div class="bac-sides">
-          <div class="bac-seat" id="bacSeatP">
-            <div class="seat-label">PLAYER</div>
-            <div class="hand sm" id="bacPlayerCards"></div>
-            <div class="score-badge" id="bacPlayerScore">0</div>
-          </div>
-          <div class="bac-vs">VS</div>
-          <div class="bac-seat" id="bacSeatB">
-            <div class="seat-label">BANKER</div>
-            <div class="hand sm" id="bacBankerCards"></div>
-            <div class="score-badge" id="bacBankerScore">0</div>
-          </div>
+      <div class="game-table">
+        <div class="table-top" id="bacSeatB">
+          <div class="table-lbl">BANKER · เจ้ามือ</div>
+          <div class="hand" id="bacBankerCards"></div>
+          <div class="score-big" id="bacBankerScore">0</div>
+        </div>
+        <div class="table-divider"></div>
+        <div class="table-bot" id="bacSeatP">
+          <div class="table-lbl">PLAYER · ผู้เล่น</div>
+          <div class="hand" id="bacPlayerCards"></div>
+          <div class="score-big" id="bacPlayerScore">0</div>
         </div>
       </div>
+      <div id="bacResult"></div>
       <div class="bet-zones">
         <div class="bet-zone" id="bacZoneP" onclick="bacPick('player')"><div class="bz-name">PLAYER</div><div class="bz-pay">จ่าย 1:1</div></div>
         <div class="bet-zone" id="bacZoneT" onclick="bacPick('tie')"><div class="bz-name">TIE</div><div class="bz-pay">จ่าย 8:1</div></div>
         <div class="bet-zone" id="bacZoneB" onclick="bacPick('banker')"><div class="bz-name">BANKER</div><div class="bz-pay">จ่าย 0.95:1</div></div>
       </div>
-      <div class="bet-display"><span class="bd-lbl">เดิมพัน:</span><span class="bd-val" id="bacBetVal">฿0</span><button class="bet-clear" onclick="clearBet('bac')">ล้าง</button></div>
+      <div class="bet-display"><span class="bd-lbl">เดิมพัน</span><span class="bd-val" id="bacBetVal">฿0</span><button class="bet-clear" onclick="clearBet('bac')">✕</button></div>
       <div class="chip-tray" id="bacChips"></div>
       <button class="btn-gold" id="bacDealBtn" onclick="bacDeal()">แจกไพ่</button>
-      <div id="bacResult"></div>
     </div>
 
     <!-- SLOT -->
@@ -581,100 +661,105 @@ body{
     <div class="screen" id="screen-pd">
       <button class="back-btn" onclick="gotoTab('lobby')">← กลับ</button>
       <div class="game-head">🃏 ป๊อกเด้ง</div>
-      <div class="felt-table">
-        <div class="felt-label">POK DENG</div>
-        <div style="text-align:center;margin-bottom:14px">
-          <div class="seat-label">👑 เจ้ามือ</div>
-          <div class="hand sm" id="pdDealerCards"></div>
-          <div class="score-badge" id="pdDealerScore">?</div>
+      <div class="game-table">
+        <div class="table-top">
+          <div class="table-lbl">DEALER · เจ้ามือ</div>
+          <div class="hand" id="pdDealerCards"></div>
+          <div class="score-big" id="pdDealerScore">?</div>
         </div>
-        <div style="text-align:center">
-          <div class="seat-label">⭐ คุณ</div>
-          <div class="hand sm" id="pdPlayerCards"></div>
-          <div class="score-badge" id="pdPlayerScore">0</div>
+        <div class="table-divider"></div>
+        <div class="table-bot">
+          <div class="table-lbl">YOU · คุณ</div>
+          <div class="hand" id="pdPlayerCards"></div>
+          <div class="score-big" id="pdPlayerScore">—</div>
         </div>
-      </div>
-      <div class="bet-display"><span class="bd-lbl">เดิมพัน:</span><span class="bd-val" id="pdBetVal">฿50</span><button class="bet-clear" onclick="clearBet('pd')">ล้าง</button></div>
-      <div class="chip-tray" id="pdChips"></div>
-      <button class="btn-gold" id="pdDealBtn" onclick="pdDeal()">แจกไพ่</button>
-      <div class="btn-row" id="pdActionRow" style="display:none">
-        <button class="btn-act primary" id="pdDrawBtn" onclick="pdDraw()">จั่ว 🃏</button>
-        <button class="btn-act" id="pdStayBtn" onclick="pdStay()">อยู่ ✋</button>
       </div>
       <div id="pdResult"></div>
+      <div class="bet-display"><span class="bd-lbl">เดิมพัน</span><span class="bd-val" id="pdBetVal">฿50</span><button class="bet-clear" onclick="clearBet('pd')">✕</button></div>
+      <div class="chip-tray" id="pdChips"></div>
+      <button class="btn-gold" id="pdDealBtn" onclick="pdDeal()">แจกไพ่</button>
+      <div class="action-btns" id="pdActionRow" style="display:none">
+        <button class="btn-play draw" id="pdDrawBtn" onclick="pdDraw()">🃏 จั่ว</button>
+        <button class="btn-play stay" id="pdStayBtn" onclick="pdStay()">✋ อยู่</button>
+      </div>
     </div>
 
     <!-- BLACKJACK -->
     <div class="screen" id="screen-bj">
       <button class="back-btn" onclick="gotoTab('lobby')">← กลับ</button>
       <div class="game-head">♠ แบล็คแจ็ค</div>
-      <div class="felt-table">
-        <div class="felt-label">BLACKJACK · PAYS 3:2</div>
-        <div style="text-align:center;margin-bottom:14px">
-          <div class="seat-label">👑 ดีลเลอร์</div>
-          <div class="hand sm" id="bjDealerCards"></div>
-          <div class="score-badge" id="bjDealerScore">?</div>
+      <div class="game-table">
+        <div class="table-top">
+          <div class="table-lbl">DEALER · ดีลเลอร์</div>
+          <div class="hand" id="bjDealerCards"></div>
+          <div class="score-big" id="bjDealerScore">?</div>
         </div>
-        <div style="text-align:center">
-          <div class="seat-label">⭐ คุณ</div>
-          <div class="hand sm" id="bjPlayerCards"></div>
-          <div class="score-badge" id="bjPlayerScore">0</div>
+        <div class="table-divider"></div>
+        <div class="table-bot">
+          <div class="table-lbl">YOU · คุณ</div>
+          <div class="hand" id="bjPlayerCards"></div>
+          <div class="score-big" id="bjPlayerScore">—</div>
         </div>
-      </div>
-      <div class="bet-display"><span class="bd-lbl">เดิมพัน:</span><span class="bd-val" id="bjBetVal">฿50</span><button class="bet-clear" onclick="clearBet('bj')">ล้าง</button></div>
-      <div class="chip-tray" id="bjChips"></div>
-      <button class="btn-gold" id="bjDealBtn" onclick="bjDeal()">แจกไพ่</button>
-      <div class="btn-row" id="bjActionRow" style="display:none">
-        <button class="btn-act primary" id="bjHitBtn" onclick="bjHit()">จั่ว</button>
-        <button class="btn-act" id="bjStandBtn" onclick="bjStand()">หยุด</button>
-        <button class="btn-act danger" id="bjDoubleBtn" onclick="bjDouble()">ดับเบิล</button>
       </div>
       <div id="bjResult"></div>
+      <div class="bet-display"><span class="bd-lbl">เดิมพัน</span><span class="bd-val" id="bjBetVal">฿50</span><button class="bet-clear" onclick="clearBet('bj')">✕</button></div>
+      <div class="chip-tray" id="bjChips"></div>
+      <button class="btn-gold" id="bjDealBtn" onclick="bjDeal()">แจกไพ่</button>
+      <div class="action-btns" id="bjActionRow" style="display:none">
+        <button class="btn-play draw" id="bjHitBtn" onclick="bjHit()">🃏 จั่ว</button>
+        <button class="btn-play stay" id="bjStandBtn" onclick="bjStand()">✋ หยุด</button>
+        <button class="btn-play double" id="bjDoubleBtn" onclick="bjDouble()">⚡ ดับเบิล</button>
+      </div>
     </div>
 
     <!-- HI-LO -->
     <div class="screen" id="screen-hl">
       <button class="back-btn" onclick="gotoTab('lobby')">← กลับ</button>
       <div class="game-head">🃏 สูง-ต่ำ</div>
-      <div class="felt-table">
-        <div class="felt-label">HI-LO</div>
-        <div class="hl-prev-next">
-          <div style="text-align:center"><div class="seat-label">ใบนี้</div><div class="hl-card-area" id="hlCurCard"></div></div>
+      <div class="game-table">
+        <div class="table-top" style="flex-direction:row;justify-content:center;gap:18px;align-items:center;">
+          <div style="text-align:center">
+            <div class="table-lbl">ใบนี้</div>
+            <div class="hl-card-area" id="hlCurCard"></div>
+          </div>
           <div class="hl-arrow" id="hlArrow">?</div>
-          <div style="text-align:center"><div class="seat-label">ใบถัดไป</div><div class="hl-card-area" id="hlNextCard"></div></div>
+          <div style="text-align:center">
+            <div class="table-lbl">ใบถัดไป</div>
+            <div class="hl-card-area" id="hlNextCard"></div>
+          </div>
         </div>
       </div>
-      <div class="bet-display"><span class="bd-lbl">เดิมพัน:</span><span class="bd-val" id="hlBetVal">฿50</span><button class="bet-clear" onclick="clearBet('hl')">ล้าง</button></div>
+      <div id="hlResult"></div>
+      <div class="bet-display"><span class="bd-lbl">เดิมพัน</span><span class="bd-val" id="hlBetVal">฿50</span><button class="bet-clear" onclick="clearBet('hl')">✕</button></div>
       <div class="chip-tray" id="hlChips"></div>
-      <div class="btn-row">
-        <button class="btn-act primary" id="hlHighBtn" onclick="hlGuess('high')">⬆ สูงกว่า</button>
-        <button class="btn-act danger" id="hlLowBtn" onclick="hlGuess('low')">⬇ ต่ำกว่า</button>
+      <div class="action-btns">
+        <button class="btn-play draw" id="hlHighBtn" onclick="hlGuess('high')">⬆ สูงกว่า</button>
+        <button class="btn-play double" id="hlLowBtn" onclick="hlGuess('low')">⬇ ต่ำกว่า</button>
       </div>
       <button class="btn-gold" id="hlNewBtn" onclick="hlNew()" style="display:none">เริ่มใหม่</button>
-      <div id="hlResult"></div>
     </div>
 
     <!-- 9 KE -->
     <div class="screen" id="screen-ke">
       <button class="back-btn" onclick="gotoTab('lobby')">← กลับ</button>
       <div class="game-head">🀄 ไพ่ 9 เก</div>
-      <div class="felt-table">
-        <div class="felt-label">GAO KE · 9 เก</div>
-        <div style="text-align:center;margin-bottom:14px">
-          <div class="seat-label">👑 เจ้ามือ</div>
-          <div class="hand sm" id="keDealerCards"></div>
-          <div class="score-badge" id="keDealerScore">?</div>
+      <div class="game-table">
+        <div class="table-top">
+          <div class="table-lbl">DEALER · เจ้ามือ</div>
+          <div class="hand" id="keDealerCards"></div>
+          <div class="score-big" id="keDealerScore">?</div>
         </div>
-        <div style="text-align:center">
-          <div class="seat-label">⭐ คุณ</div>
-          <div class="hand sm" id="kePlayerCards"></div>
-          <div class="score-badge" id="kePlayerScore">0</div>
+        <div class="table-divider"></div>
+        <div class="table-bot">
+          <div class="table-lbl">YOU · คุณ</div>
+          <div class="hand" id="kePlayerCards"></div>
+          <div class="score-big" id="kePlayerScore">—</div>
         </div>
       </div>
-      <div class="bet-display"><span class="bd-lbl">เดิมพัน:</span><span class="bd-val" id="keBetVal">฿50</span><button class="bet-clear" onclick="clearBet('ke')">ล้าง</button></div>
+      <div id="keResult"></div>
+      <div class="bet-display"><span class="bd-lbl">เดิมพัน</span><span class="bd-val" id="keBetVal">฿50</span><button class="bet-clear" onclick="clearBet('ke')">✕</button></div>
       <div class="chip-tray" id="keChips"></div>
       <button class="btn-gold" id="keDealBtn" onclick="keDeal()">แจกไพ่</button>
-      <div id="keResult"></div>
     </div>
 
     <!-- CARDS MENU -->
@@ -751,28 +836,30 @@ body{
 
       <!-- GUESS PANEL (Hi-Lo) -->
       <div class="mp-phase-panel" id="mpPanelGuess">
-        <div class="felt-table">
-          <div class="felt-label">HI-LO</div>
-          <div class="hl-card-area" id="mpGuessCardArea"></div>
+        <div class="game-table">
+          <div class="table-top" style="min-height:120px">
+            <div class="table-lbl">HI-LO · เดาไพ่ใบถัดไป</div>
+            <div class="hl-card-area" id="mpGuessCardArea"></div>
+          </div>
         </div>
         <div class="mp-timer"><div class="mp-timer-fill" id="mpTimerFill"></div></div>
         <div class="mp-timer-text" id="mpTimerText">10s</div>
         <div class="mp-guess-ind" id="mpGuessInd" style="display:none"></div>
-        <div class="bet-display"><span class="bd-lbl">เดิมพัน:</span><span class="bd-val" id="mpBetVal">฿50</span></div>
+        <div class="bet-display"><span class="bd-lbl">เดิมพัน</span><span class="bd-val" id="mpBetVal">฿50</span></div>
         <div class="chip-tray" id="mpBetBar"></div>
-        <div class="btn-row">
-          <button class="btn-act primary" id="mpHighBtn" onclick="mpGuess('high')">⬆ สูงกว่า</button>
-          <button class="btn-act danger" id="mpLowBtn" onclick="mpGuess('low')">⬇ ต่ำกว่า</button>
+        <div class="action-btns">
+          <button class="btn-play draw" id="mpHighBtn" onclick="mpGuess('high')">⬆ สูงกว่า</button>
+          <button class="btn-play double" id="mpLowBtn" onclick="mpGuess('low')">⬇ ต่ำกว่า</button>
         </div>
       </div>
 
       <!-- RESULT PANEL (Hi-Lo) -->
       <div class="mp-phase-panel" id="mpPanelResult">
-        <div class="felt-table">
-          <div class="hl-prev-next">
-            <div style="text-align:center"><div class="seat-label">ใบเดิม</div><div class="hl-card-area" id="mpResultPrev"></div></div>
+        <div class="game-table">
+          <div class="table-top" style="flex-direction:row;justify-content:center;gap:18px;align-items:center;min-height:120px">
+            <div style="text-align:center"><div class="table-lbl">ใบเดิม</div><div class="hl-card-area" id="mpResultPrev"></div></div>
             <div class="hl-arrow">→</div>
-            <div style="text-align:center"><div class="seat-label">ใบใหม่</div><div class="hl-card-area" id="mpResultNext"></div></div>
+            <div style="text-align:center"><div class="table-lbl">ใบใหม่</div><div class="hl-card-area" id="mpResultNext"></div></div>
           </div>
         </div>
         <div id="mpRoundResults"></div>
@@ -781,22 +868,21 @@ body{
 
       <!-- DEALING PANEL (Pok Deng) -->
       <div class="mp-phase-panel" id="mpPanelDealing">
-        <div class="felt-table">
-          <div class="felt-label">POK DENG</div>
-          <div style="text-align:center">
-            <div class="seat-label">ไพ่ของคุณ</div>
-            <div class="hand sm" id="mpPdMyCards"></div>
-            <div class="score-badge" id="mpPdMyScore">0</div>
+        <div class="game-table">
+          <div class="table-bot" style="min-height:120px">
+            <div class="table-lbl">ไพ่ของคุณ</div>
+            <div class="hand" id="mpPdMyCards"></div>
+            <div class="score-big" id="mpPdMyScore" style="font-size:28px">—</div>
           </div>
         </div>
         <div class="mp-timer"><div class="mp-timer-fill" id="mpPdTimerFill"></div></div>
         <div class="mp-timer-text" id="mpPdTimerText">20s</div>
         <div class="mp-guess-ind" id="mpPdActionInd" style="display:none"></div>
-        <div class="bet-display"><span class="bd-lbl">เดิมพัน:</span><span class="bd-val" id="mpPdBetVal">฿50</span></div>
+        <div class="bet-display"><span class="bd-lbl">เดิมพัน</span><span class="bd-val" id="mpPdBetVal">฿50</span></div>
         <div class="chip-tray" id="mpPdBetBar"></div>
-        <div class="btn-row">
-          <button class="btn-act primary" id="mpPdDrawBtn" onclick="mpPdAction('draw')">จั่ว 🃏</button>
-          <button class="btn-act" id="mpPdStayBtn" onclick="mpPdAction('stay')">อยู่ ✋</button>
+        <div class="action-btns">
+          <button class="btn-play draw" id="mpPdDrawBtn" onclick="mpPdAction('draw')">🃏 จั่ว</button>
+          <button class="btn-play stay" id="mpPdStayBtn" onclick="mpPdAction('stay')">✋ อยู่</button>
         </div>
       </div>
 
