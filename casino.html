@@ -460,6 +460,10 @@ body{
 .btn-play.ke-fold:active{transform:scale(.97)}
 .btn-play.ke-tub{background:linear-gradient(180deg,#c9aa71,#8a6a30);color:#1a0800;box-shadow:0 4px 14px rgba(200,170,80,.3)}
 .btn-play.ke-tub:active{transform:scale(.97)}
+.ke-tub-head{background:rgba(0,0,0,.25);border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:10px;text-align:center}
+.ke-tub-lbl{font-family:'Cinzel',serif;font-size:10px;font-weight:700;letter-spacing:3px;color:var(--gold);margin-bottom:6px}
+.ke-tub-base{font-size:12px;color:var(--text2);font-family:'Sarabun'}
+.ke-tub-extra{font-family:'Orbitron',monospace;font-size:26px;font-weight:900;color:var(--gold);margin-top:6px;min-height:32px}
 .ke-paytable{background:rgba(0,0,0,.25);border:1px solid var(--border);border-radius:14px;padding:12px 14px;margin-top:10px}
 .ke-pt-title{font-family:'Cinzel',serif;font-size:10px;font-weight:700;letter-spacing:3px;color:var(--gold);text-transform:uppercase;text-align:center;margin-bottom:8px}
 .ke-pt-row{display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid rgba(255,255,255,.05);font-family:'Sarabun',sans-serif;font-size:13px;color:var(--text2)}
@@ -795,13 +799,27 @@ body{
       <div class="chip-tray" id="keChips"></div>
       <button class="btn-gold" id="keDealBtn" onclick="keDeal()">แจกไพ่</button>
       <div id="keActionRow" style="display:none">
-        <div class="action-btns">
-          <button class="btn-play draw" id="keDrawBtn" onclick="keDraw()">🃏 จั่ว</button>
-          <button class="btn-play stay" onclick="keSu()">✊ สู้</button>
+        <div id="keActionBtns">
+          <div class="action-btns">
+            <button class="btn-play draw" id="keDrawBtn" onclick="keDraw()">🃏 จั่ว</button>
+            <button class="btn-play stay" onclick="keSu()">✊ สู้</button>
+          </div>
+          <div class="action-btns" style="margin-top:8px">
+            <button class="btn-play ke-fold" onclick="keHmob()">🏳️ หมอบ</button>
+            <button class="btn-play ke-tub" onclick="keTub()">⚡ เกทับ</button>
+          </div>
         </div>
-        <div class="action-btns" style="margin-top:8px">
-          <button class="btn-play ke-fold" onclick="keHmob()">🏳️ หมอบ</button>
-          <button class="btn-play ke-tub" onclick="keTub()">⚡ เกทับ</button>
+        <div id="keTubPanel" style="display:none">
+          <div class="ke-tub-head">
+            <div class="ke-tub-lbl">เพิ่มเดิมพัน</div>
+            <div class="ke-tub-base">เดิมพันเดิม <span id="keTubBase">฿0</span></div>
+            <div class="ke-tub-extra" id="keTubExtraVal">+฿0</div>
+          </div>
+          <div class="chip-tray" id="keTubChips"></div>
+          <div class="action-btns" style="margin-top:8px">
+            <button class="btn-play ke-fold" onclick="keTubCancel()">✕ ยกเลิก</button>
+            <button class="btn-play ke-tub" onclick="keTubConfirm()">⚡ ยืนยัน</button>
+          </div>
         </div>
       </div>
       <div class="ke-paytable">
@@ -1480,7 +1498,7 @@ function pdShowdown(){
 }
 
 /* ═══════════════ 9 KE ═══════════════ */
-let keDeck,kePlayer,keDealer,keBet,keWager,kePhase,keInPlay=false;
+let keDeck,kePlayer,keDealer,keBet,keWager,kePhase,keTubExtra=0,keInPlay=false;
 function keSpecial(h){
   if(h.length===2){
     const s=keScore(h);
@@ -1503,7 +1521,11 @@ function keScoreClass(s,pok){return pok?'s-hi pok':s>=8?'s-hi':s>=6?'s-mid':'s-l
 function keShowActionRow(show){
   document.getElementById('keActionRow').style.display=show?'':'none';
   document.getElementById('keDealBtn').style.display=show?'none':'';
-  if(show) document.getElementById('keDrawBtn').style.display=kePhase==='initial'?'':'none';
+  if(show){
+    document.getElementById('keActionBtns').style.display='';
+    document.getElementById('keTubPanel').style.display='none';
+    document.getElementById('keDrawBtn').style.display=kePhase==='initial'?'':'none';
+  }
 }
 function keSetScore(elId,nameId,score,sp,hidden){
   const el=document.getElementById(elId);
@@ -1557,10 +1579,38 @@ function keSu(){
   setTimeout(keDealerPlay,300);
 }
 function keTub(){
-  if(credits<keBet){showToast('เครดิตไม่พอสำหรับเกทับ','lose');return;}
-  addCredits(-keBet);keWager=keBet*2;
+  document.getElementById('keActionBtns').style.display='none';
+  document.getElementById('keTubPanel').style.display='';
+  keTubExtra=0;
+  document.getElementById('keTubBase').textContent='฿'+keBet.toLocaleString('th-TH');
+  document.getElementById('keTubExtraVal').textContent='+฿0';
+  const tray=document.getElementById('keTubChips');tray.innerHTML='';
+  CHIP_DEFS.forEach(({v,c})=>{
+    const btn=document.createElement('button');
+    btn.className='chip '+c;
+    btn.textContent=v>=1000?(v/1000)+'K':v;
+    btn.onclick=()=>{
+      if(keTubExtra+v>credits){showToast('เครดิตไม่พอ','lose');return;}
+      keTubExtra+=v;
+      document.getElementById('keTubExtraVal').textContent='+฿'+keTubExtra.toLocaleString('th-TH');
+    };
+    tray.appendChild(btn);
+  });
+  const clr=document.createElement('button');
+  clr.className='bet-clear';clr.textContent='✕';
+  clr.onclick=()=>{keTubExtra=0;document.getElementById('keTubExtraVal').textContent='+฿0';};
+  tray.appendChild(clr);
+}
+function keTubCancel(){
+  document.getElementById('keTubPanel').style.display='none';
+  document.getElementById('keActionBtns').style.display='';
+}
+function keTubConfirm(){
+  if(keTubExtra<=0){showToast('เลือกจำนวนที่จะเพิ่มก่อน','lose');return;}
+  if(credits<keTubExtra){showToast('เครดิตไม่พอ','lose');return;}
+  addCredits(-keTubExtra);keWager=keBet+keTubExtra;
   keShowActionRow(false);document.getElementById('keHint').textContent='';
-  showToast('⚡ เกทับ! เดิมพัน ×2','gold');
+  showToast('⚡ เกทับ +฿'+keTubExtra.toLocaleString('th-TH')+' รวม ฿'+keWager.toLocaleString('th-TH'),'gold');
   setTimeout(keDealerPlay,300);
 }
 function keHmob(){
