@@ -487,12 +487,13 @@ body{
 .ke-table-row{display:flex;align-items:center;gap:0}
 .ke-av-col{width:70px;display:flex;flex-direction:column;align-items:center;gap:5px;flex-shrink:0;z-index:2}
 .ke-3d-portrait{
-  width:66px;height:108px;display:block;border-radius:33px;
-  background:radial-gradient(circle at 50% 35%,#1c2e3e,#070c10);
-  box-shadow:0 5px 16px rgba(0,0,0,.6);
+  width:66px;height:108px;display:block;border-radius:33px;overflow:hidden;
+  box-shadow:0 5px 18px rgba(0,0,0,.65);
+  animation:charFloat 3.8s ease-in-out infinite;
 }
 .ke-av-dealer .ke-3d-portrait{border:2px solid rgba(201,170,113,.45)}
-.ke-av-player .ke-3d-portrait{border:2px solid rgba(61,220,127,.38)}
+.ke-av-player .ke-3d-portrait{border:2px solid rgba(61,220,127,.38);animation-delay:-1.9s}
+@keyframes charFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
 .ke-av-lbl{font-size:9px;color:rgba(255,255,255,.4);letter-spacing:1px;font-family:'Sarabun',sans-serif;text-align:center}
 /* Oval felt table */
 .ke-oval{
@@ -881,7 +882,45 @@ body{
         <div class="ke-table-row">
           <!-- Dealer avatar -->
           <div class="ke-av-col ke-av-dealer">
-            <canvas id="dealerPortrait" class="ke-3d-portrait"></canvas>
+            <svg class="ke-3d-portrait" viewBox="0 0 66 108" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="dBg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1c2440"/><stop offset="1" stop-color="#080b16"/></linearGradient>
+                <linearGradient id="dSk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe2c4"/><stop offset="1" stop-color="#f3c39c"/></linearGradient>
+                <linearGradient id="dHair" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#262430"/><stop offset="1" stop-color="#0c0b12"/></linearGradient>
+                <linearGradient id="dJk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#23242c"/><stop offset="1" stop-color="#101116"/></linearGradient>
+              </defs>
+              <rect width="66" height="108" rx="33" fill="url(#dBg)"/>
+              <path d="M9 108 V94 Q33 78 57 94 V108Z" fill="url(#dJk)"/>
+              <path d="M24 86 L33 100 L42 86 L37 84 L33 92 L29 84Z" fill="#f6f7fb"/>
+              <path d="M33 92 L30 98 L33 108 L36 98Z" fill="#e6b53c"/>
+              <path d="M33 92 L31 95 L33 97 L35 95Z" fill="#f4d479"/>
+              <path d="M28 80 H38 V90 Q33 94 28 90Z" fill="#eab98e"/>
+              <ellipse cx="33.6" cy="58" rx="16.5" ry="19" fill="url(#dSk)"/>
+              <path d="M16 64 Q14 36 33 33 Q53 36 51 64 Q52 50 44 46 Q47 54 44 56 Q42 47 33 46 Q24 47 22 56 Q19 54 22 46 Q15 50 16 64Z" fill="url(#dHair)"/>
+              <path d="M16 60 Q13 80 19 100 L24 100 Q19 78 22 56Z" fill="url(#dHair)"/>
+              <path d="M51 60 Q54 80 48 100 L43 100 Q48 78 45 56Z" fill="url(#dHair)"/>
+              <ellipse cx="18.6" cy="60" rx="2.4" ry="3.4" fill="#eab98e"/>
+              <ellipse cx="48.6" cy="60" rx="2.4" ry="3.4" fill="#eab98e"/>
+              <circle cx="18.6" cy="64.4" r="1.5" fill="#e6b53c"/>
+              <ellipse cx="25" cy="63" rx="3" ry="1.8" fill="#f6a98a" opacity=".45"/>
+              <ellipse cx="42" cy="63" rx="3" ry="1.8" fill="#f6a98a" opacity=".45"/>
+              <ellipse cx="26.5" cy="57.5" rx="5.5" ry="4.8" fill="#fff"/>
+              <ellipse cx="40.5" cy="57.5" rx="5.5" ry="4.8" fill="#fff"/>
+              <circle cx="27.2" cy="58" r="3.7" fill="#3a2415"/>
+              <circle cx="41.2" cy="58" r="3.7" fill="#3a2415"/>
+              <circle cx="27.2" cy="58" r="1.9" fill="#140b06"/>
+              <circle cx="41.2" cy="58" r="1.9" fill="#140b06"/>
+              <circle cx="28.6" cy="56.4" r="1.3" fill="#fff"/>
+              <circle cx="42.6" cy="56.4" r="1.3" fill="#fff"/>
+              <path d="M21 55 Q26 51 32 54" stroke="#120c08" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+              <path d="M35 54 Q41 51 46 55" stroke="#120c08" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+              <path d="M21.5 50 Q26.5 48 31 50" stroke="#1c1410" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+              <path d="M36 50 Q40.5 48 45.5 50" stroke="#1c1410" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+              <path d="M33.6 60 Q34.8 63 33 64" stroke="#d89e72" stroke-width="1" fill="none" stroke-linecap="round"/>
+              <path d="M30 69 Q33.6 71.5 37 69 Q33.6 68 30 69Z" fill="#c8584f"/>
+              <path d="M30 69 Q33.6 70 37 69" stroke="#a8403a" stroke-width=".7" fill="none"/>
+              <path d="M24 40 Q30 35 38 37" stroke="#5a5566" stroke-width="1.6" fill="none" stroke-linecap="round" opacity=".7"/>
+            </svg>
             <div class="ke-av-lbl">เจ้ามือ</div>
           </div>
           <!-- Oval felt table -->
@@ -903,7 +942,46 @@ body{
           </div>
           <!-- Player avatar -->
           <div class="ke-av-col ke-av-player">
-            <canvas id="playerPortrait" class="ke-3d-portrait"></canvas>
+            <svg class="ke-3d-portrait" viewBox="0 0 66 108" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="pBg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#143026"/><stop offset="1" stop-color="#06140e"/></linearGradient>
+                <linearGradient id="pSk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe2c4"/><stop offset="1" stop-color="#f3c39c"/></linearGradient>
+                <linearGradient id="pHair" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7a4a25"/><stop offset="1" stop-color="#3e2412"/></linearGradient>
+                <linearGradient id="pJk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1d4434"/><stop offset="1" stop-color="#0c241a"/></linearGradient>
+              </defs>
+              <rect width="66" height="108" rx="33" fill="url(#pBg)"/>
+              <path d="M9 108 V94 Q33 78 57 94 V108Z" fill="url(#pJk)"/>
+              <path d="M24 86 L33 100 L42 86 L37 84 L33 92 L29 84Z" fill="#f6f7fb"/>
+              <path d="M33 92 L30 98 L33 108 L36 98Z" fill="#2f9c66"/>
+              <path d="M33 92 L31 95 L33 97 L35 95Z" fill="#74d6a3"/>
+              <path d="M28 80 H38 V90 Q33 94 28 90Z" fill="#eab98e"/>
+              <ellipse cx="32.4" cy="58" rx="16.5" ry="19" fill="url(#pSk)"/>
+              <path d="M15 64 Q13 36 33 33 Q53 36 51 64 Q52 50 44 46 Q47 54 44 56 Q42 47 33 46 Q28 46 26 51 Q23 47 21 52 Q15 51 15 64Z" fill="url(#pHair)"/>
+              <path d="M15 60 Q12 80 18 100 L23 100 Q18 78 21 56Z" fill="url(#pHair)"/>
+              <path d="M51 60 Q54 80 48 100 L43 100 Q48 78 45 56Z" fill="url(#pHair)"/>
+              <rect x="40" y="44" width="6" height="2.4" rx="1.2" fill="#74d6a3"/>
+              <ellipse cx="17.4" cy="60" rx="2.4" ry="3.4" fill="#eab98e"/>
+              <ellipse cx="47.4" cy="60" rx="2.4" ry="3.4" fill="#eab98e"/>
+              <circle cx="47.4" cy="64.4" r="1.5" fill="#2f9c66"/>
+              <ellipse cx="24" cy="63" rx="3" ry="1.8" fill="#f6a98a" opacity=".45"/>
+              <ellipse cx="41" cy="63" rx="3" ry="1.8" fill="#f6a98a" opacity=".45"/>
+              <ellipse cx="25.5" cy="57.5" rx="5.5" ry="4.8" fill="#fff"/>
+              <ellipse cx="39.5" cy="57.5" rx="5.5" ry="4.8" fill="#fff"/>
+              <circle cx="24.8" cy="58" r="3.7" fill="#2f6fb0"/>
+              <circle cx="38.8" cy="58" r="3.7" fill="#2f6fb0"/>
+              <circle cx="24.8" cy="58" r="1.9" fill="#0d2138"/>
+              <circle cx="38.8" cy="58" r="1.9" fill="#0d2138"/>
+              <circle cx="26.2" cy="56.4" r="1.3" fill="#fff"/>
+              <circle cx="40.2" cy="56.4" r="1.3" fill="#fff"/>
+              <path d="M20 55 Q25 51 31 54" stroke="#3a2412" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+              <path d="M34 54 Q39 51 45 55" stroke="#3a2412" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+              <path d="M20.5 50 Q25.5 48 30 50" stroke="#5a3920" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+              <path d="M35 50 Q39.5 48 44.5 50" stroke="#5a3920" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+              <path d="M32.4 60 Q33.6 63 31.8 64" stroke="#d89e72" stroke-width="1" fill="none" stroke-linecap="round"/>
+              <path d="M29 69 Q32.4 71.5 36 69 Q32.4 68 29 69Z" fill="#c8584f"/>
+              <path d="M29 69 Q32.4 70 36 69" stroke="#a8403a" stroke-width=".7" fill="none"/>
+              <path d="M23 40 Q29 35 37 37" stroke="#c69a6a" stroke-width="1.6" fill="none" stroke-linecap="round" opacity=".7"/>
+            </svg>
             <div class="ke-av-lbl">คุณ</div>
           </div>
         </div>
@@ -2687,125 +2765,6 @@ setTimeout(()=>{if(window.Gun)mpInitGun();},500);
     renderer.render(scene,cam);
   }
   tick();
-})();
-
-/* ═══════════════ 3D CHARACTER PORTRAITS ═══════════════ */
-(function(){
-  if(typeof THREE==='undefined')return;
-
-  function mkChar(cvId,toRight){
-    const cv=document.getElementById(cvId);if(!cv)return;
-    const W=66,H=108;
-    const rdr=new THREE.WebGLRenderer({canvas:cv,alpha:true,antialias:true});
-    rdr.setPixelRatio(Math.min(devicePixelRatio,2));
-    rdr.setSize(W,H);
-
-    const sc=new THREE.Scene();
-    const cam=new THREE.PerspectiveCamera(46,W/H,.1,20);
-    cam.position.set(toRight?-.1:.1,.28,3.1);
-    cam.lookAt(0,.28,0);
-
-    /* lights */
-    sc.add(new THREE.AmbientLight(0xfff8e8,.8));
-    const dl=new THREE.DirectionalLight(0xffffff,1.15);dl.position.set(1.5,4,3);sc.add(dl);
-    const rl=new THREE.DirectionalLight(0xc9aa71,.38);rl.position.set(-2,1,-1);sc.add(rl);
-
-    /* materials */
-    const M=c=>new THREE.MeshLambertMaterial({color:c});
-    const mSk=M(toRight?0xedc09a:0xe0b88a);   // skin
-    const mHr=M(toRight?0x0c0608:0x1c0e0c);   // hair
-    const mSu=M(toRight?0x14101e:0x0e1a14);   // suit
-    const mWh=M(0xf4f2f0);                    // white shirt
-    const mEy=M(0x060408);                    // eyes
-    const mLp=M(0xd03852);                    // lips
-    const mAc=M(toRight?0xc9aa71:0x2faa5e);  // accent (gold dealer / green player)
-
-    const G=new THREE.Group();
-
-    /* helper – create mesh, set position/rotation/scale, add to group */
-    function add(geo,mat,x,y,z,rx,ry,rz,sx,sy,sz){
-      const m=new THREE.Mesh(geo,mat);
-      m.position.set(x||0,y||0,z||0);
-      if(rx||ry||rz)m.rotation.set(rx||0,ry||0,rz||0);
-      if(sx)m.scale.set(sx,sy!=null?sy:1,sz!=null?sz:1);
-      G.add(m);
-    }
-
-    /* ── head ── */
-    add(new THREE.SphereGeometry(.3,22,16),mSk,0,.76);
-
-    /* ── hair cap (top dome) ── */
-    add(new THREE.SphereGeometry(.316,22,10,0,6.28,0,1.78),mHr,0,.76);
-
-    /* ── hair sides (long strands) ── */
-    const hsg=new THREE.CylinderGeometry(.083,.052,.72,7);
-    add(hsg,mHr,-.235,.39,-.02,0,0,.17);
-    add(hsg,mHr, .235,.39,-.02,0,0,-.17);
-
-    /* ── hair back bulk ── */
-    add(new THREE.CylinderGeometry(.26,.18,.48,10),mHr,0,.49,-.14);
-
-    /* ── eyes ── */
-    const eg=new THREE.SphereGeometry(.046,8,6);
-    add(eg,mEy,-.115,.8,.266);
-    add(eg,mEy, .115,.8,.266);
-
-    /* ── eyebrows (thin boxes, slight arch) ── */
-    const bwg=new THREE.BoxGeometry(.12,.016,.05);
-    const mBw=M(toRight?0x0a0608:0x180e0c);
-    add(bwg,mBw,-.115,.892,.25,0,0,.09);
-    add(bwg,mBw, .115,.892,.25,0,0,-.09);
-
-    /* ── nose (subtle) ── */
-    add(new THREE.SphereGeometry(.028,6,4),mSk,0,.757,.305);
-
-    /* ── lips ── */
-    add(new THREE.SphereGeometry(.052,8,4),mLp,0,.662,.278,0,0,0,1.52,.5,.82);
-
-    /* ── neck ── */
-    add(new THREE.CylinderGeometry(.1,.12,.22,10),mSk,0,.48);
-
-    /* ── torso / jacket ── */
-    add(new THREE.BoxGeometry(.72,.62,.33),mSu,0,.1);
-
-    /* ── shoulder caps ── */
-    const shg=new THREE.SphereGeometry(.2,10,7,0,6.28,0,1.62);
-    add(shg,mSu,-.375,.3,0,0,0,-.92);
-    add(shg,mSu, .375,.3,0,0,0, .92);
-
-    /* ── white collar / shirt ── */
-    add(new THREE.BoxGeometry(.17,.33,.37),mWh,0,.19,.01);
-
-    /* ── V-collar shape ── */
-    add(new THREE.BoxGeometry(.06,.18,.03),mWh,-.04,.28,.17,0,0,.28);
-    add(new THREE.BoxGeometry(.06,.18,.03),mWh, .04,.28,.17,0,0,-.28);
-
-    /* ── accent (tie for dealer, pin for player) ── */
-    add(new THREE.BoxGeometry(.055,.27,.032),mAc,0,.11,.185);
-
-    /* face the table */
-    G.rotation.y=toRight?.28:-.28;
-    sc.add(G);
-
-    const off=Math.random()*6.28;
-    let lt=0;
-    function tick(now){
-      requestAnimationFrame(tick);
-      if(now-lt<50)return; // 20 fps cap
-      lt=now;
-      const t=now*.001;
-      G.position.y=Math.sin(t*.65+off)*.022;       // gentle breathing
-      G.rotation.y=(toRight?.28:-.28)+Math.sin(t*.32+off)*.03; // subtle sway
-      rdr.render(sc,cam);
-    }
-    requestAnimationFrame(tick);
-  }
-
-  /* init after splash finishes */
-  setTimeout(()=>{
-    mkChar('dealerPortrait',true);
-    mkChar('playerPortrait',false);
-  },2200);
 })();
 
 /* ═══════════════ SPLASH ═══════════════ */
