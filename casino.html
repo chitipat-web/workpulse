@@ -456,6 +456,11 @@ body{
 .ke-score.pok{animation:pokPop .4s cubic-bezier(.18,.9,.32,1.2) both}
 .ke-hand-name{font-size:11px;font-family:'Cinzel',serif;font-weight:700;letter-spacing:2px;text-align:center;color:var(--gold2);min-height:16px;margin-bottom:4px}
 .ke-hint{text-align:center;font-size:12px;color:var(--text2);font-family:'Sarabun',sans-serif;padding:5px 0 2px;min-height:22px}
+.ke-paytable{background:rgba(0,0,0,.25);border:1px solid var(--border);border-radius:14px;padding:12px 14px;margin-top:10px}
+.ke-pt-title{font-family:'Cinzel',serif;font-size:10px;font-weight:700;letter-spacing:3px;color:var(--gold);text-transform:uppercase;text-align:center;margin-bottom:8px}
+.ke-pt-row{display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid rgba(255,255,255,.05);font-family:'Sarabun',sans-serif;font-size:13px;color:var(--text2)}
+.ke-pt-row:last-child{border-bottom:none}
+.ke-pt-mult{font-family:'Orbitron',monospace;font-weight:700;font-size:13px;color:var(--gold)}
 
 /* ───── TABLE ROWS (multiplayer / results) ───── */
 .mp-status{text-align:center;font-size:12px;padding:6px;color:var(--text2);border-radius:8px;margin-bottom:10px;background:var(--s1);border:1px solid var(--border)}
@@ -788,6 +793,15 @@ body{
       <div class="action-btns" id="keActionRow" style="display:none">
         <button class="btn-play draw" onclick="keDraw()">🃏 จั่ว</button>
         <button class="btn-play stay" onclick="keStay()">✋ ยืน</button>
+      </div>
+      <div class="ke-paytable">
+        <div class="ke-pt-title">ไพ่พิเศษ</div>
+        <div class="ke-pt-row"><span>ตอง</span><span class="ke-pt-mult">×5</span></div>
+        <div class="ke-pt-row"><span>สเตรทฟลัช</span><span class="ke-pt-mult">×4</span></div>
+        <div class="ke-pt-row"><span>สามลึง (J/Q/K)</span><span class="ke-pt-mult">×3</span></div>
+        <div class="ke-pt-row"><span>สี (ดอกเดียว)</span><span class="ke-pt-mult">×2</span></div>
+        <div class="ke-pt-row"><span>สเตรท (เรียง)</span><span class="ke-pt-mult">×2</span></div>
+        <div class="ke-pt-row"><span>ป๊อก 9 / ป๊อก 8</span><span class="ke-pt-mult">×2</span></div>
       </div>
     </div>
 
@@ -1464,12 +1478,15 @@ function keSpecial(h){
     if(s===8)return{mult:2,name:'ป๊อก 8',isPok:true};
     return{mult:1,name:'',isPok:false};
   }
+  // 3-card special hands (highest to lowest)
   if(h[0].rank===h[1].rank&&h[1].rank===h[2].rank)return{mult:5,name:'ตอง',isPok:false};
   const sameSuit=h[0].suit===h[1].suit&&h[1].suit===h[2].suit;
   const v=h.map(c=>c.val).sort((a,b)=>a-b);
-  const straight=(v[1]===v[0]+1&&v[2]===v[1]+1)||(v[0]===1&&v[1]===12&&v[2]===13);
-  if(sameSuit&&straight)return{mult:3,name:'สเตรทฟลัช',isPok:false};
+  const isStraight=(v[1]===v[0]+1&&v[2]===v[1]+1)||(v[0]===1&&v[1]===2&&v[2]===3);
+  if(sameSuit&&isStraight)return{mult:4,name:'สเตรทฟลัช',isPok:false};
   if(h.filter(c=>c.val>=11).length===3)return{mult:3,name:'สามลึง',isPok:false};
+  if(sameSuit)return{mult:2,name:'สี',isPok:false};
+  if(isStraight)return{mult:2,name:'สเตรท',isPok:false};
   return{mult:1,name:'',isPok:false};
 }
 const keScore=h=>h.reduce((s,c)=>s+(c.val>=10?0:c.val),0)%10;
