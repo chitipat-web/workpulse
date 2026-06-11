@@ -434,6 +434,16 @@ body{
 .hl-card-area{display:flex;justify-content:center;margin:8px 0;min-height:102px}
 .hl-prev-next{display:flex;align-items:center;justify-content:center;gap:18px}
 .hl-arrow{font-size:24px;color:var(--gold)}
+/* ───── 9 KE ───── */
+@keyframes pokPop{0%{transform:scale(.4);opacity:0}65%{transform:scale(1.18);opacity:1}100%{transform:scale(1);opacity:1}}
+.ke-score{width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Orbitron',monospace;font-weight:900;font-size:26px;margin:8px auto 2px;border:2.5px solid;transition:background .3s,border-color .3s,color .3s}
+.ke-score.s-hidden{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.12);color:rgba(255,255,255,.25)}
+.ke-score.s-lo{background:rgba(255,91,110,.1);border-color:#ff5b6e;color:#ff5b6e}
+.ke-score.s-mid{background:rgba(47,170,94,.14);border-color:#2faa5e;color:#2faa5e}
+.ke-score.s-hi{background:rgba(201,170,113,.18);border-color:var(--gold);color:var(--gold)}
+.ke-score.pok{animation:pokPop .4s cubic-bezier(.18,.9,.32,1.2) both}
+.ke-hand-name{font-size:11px;font-family:'Cinzel',serif;font-weight:700;letter-spacing:2px;text-align:center;color:var(--gold2);min-height:16px;margin-bottom:4px}
+.ke-hint{text-align:center;font-size:12px;color:var(--text2);font-family:'Sarabun',sans-serif;padding:5px 0 2px;min-height:22px}
 
 /* ───── TABLE ROWS (multiplayer / results) ───── */
 .mp-status{text-align:center;font-size:12px;padding:6px;color:var(--text2);border-radius:8px;margin-bottom:10px;background:var(--s1);border:1px solid var(--border)}
@@ -742,18 +752,21 @@ body{
     <!-- 9 KE -->
     <div class="screen" id="screen-ke">
       <button class="back-btn" onclick="gotoTab('lobby')">← กลับ</button>
-      <div class="game-head">🀄 ไพ่ 9 เก</div>
+      <div class="game-head">🀄 เก้าเก</div>
       <div class="game-table">
         <div class="table-top">
           <div class="table-lbl">DEALER · เจ้ามือ</div>
           <div class="hand" id="keDealerCards"></div>
-          <div class="score-big" id="keDealerScore">?</div>
+          <div class="ke-score s-hidden" id="keDealerScore">?</div>
+          <div class="ke-hand-name" id="keDealerName"></div>
         </div>
         <div class="table-divider"></div>
         <div class="table-bot">
           <div class="table-lbl">YOU · คุณ</div>
           <div class="hand" id="kePlayerCards"></div>
-          <div class="score-big" id="kePlayerScore">—</div>
+          <div class="ke-score s-hidden" id="kePlayerScore">—</div>
+          <div class="ke-hand-name" id="kePlayerName"></div>
+          <div class="ke-hint" id="keHint"></div>
         </div>
       </div>
       <div id="keResult"></div>
@@ -761,7 +774,7 @@ body{
       <div class="chip-tray" id="keChips"></div>
       <button class="btn-gold" id="keDealBtn" onclick="keDeal()">แจกไพ่</button>
       <div class="action-btns" id="keActionRow" style="display:none">
-        <button class="btn-play draw" onclick="keDraw()">🃏 จั่วใบที่ 3</button>
+        <button class="btn-play draw" onclick="keDraw()">🃏 จั่ว</button>
         <button class="btn-play stay" onclick="keStay()">✋ ยืน</button>
       </div>
     </div>
@@ -1430,30 +1443,42 @@ let keDeck,kePlayer,keDealer,keBet,keInPlay=false;
 function keSpecial(h){
   if(h.length===2){
     const s=keScore(h);
-    if(s===9)return{mult:2,name:'ป๊อก 9'};
-    if(s===8)return{mult:2,name:'ป๊อก 8'};
-    return{mult:1,name:''};
+    if(s===9)return{mult:2,name:'ป๊อก 9',isPok:true};
+    if(s===8)return{mult:2,name:'ป๊อก 8',isPok:true};
+    return{mult:1,name:'',isPok:false};
   }
-  if(h[0].rank===h[1].rank&&h[1].rank===h[2].rank)return{mult:5,name:'ตอง'};
+  if(h[0].rank===h[1].rank&&h[1].rank===h[2].rank)return{mult:5,name:'ตอง',isPok:false};
   const sameSuit=h[0].suit===h[1].suit&&h[1].suit===h[2].suit;
   const v=h.map(c=>c.val).sort((a,b)=>a-b);
   const straight=(v[1]===v[0]+1&&v[2]===v[1]+1)||(v[0]===1&&v[1]===12&&v[2]===13);
-  if(sameSuit&&straight)return{mult:3,name:'สเตรทฟลัช'};
-  if(h.filter(c=>c.val>=11).length===3)return{mult:3,name:'สามลึง'};
-  return{mult:1,name:''};
+  if(sameSuit&&straight)return{mult:3,name:'สเตรทฟลัช',isPok:false};
+  if(h.filter(c=>c.val>=11).length===3)return{mult:3,name:'สามลึง',isPok:false};
+  return{mult:1,name:'',isPok:false};
 }
 const keScore=h=>h.reduce((s,c)=>s+(c.val>=10?0:c.val),0)%10;
+function keScoreClass(s,pok){return pok?'s-hi pok':s>=8?'s-hi':s>=6?'s-mid':'s-lo';}
 function keActionRow(show){
   document.getElementById('keActionRow').style.display=show?'':'none';
   document.getElementById('keDealBtn').style.display=show?'none':'';
 }
+function keSetScore(elId,nameId,score,sp,hidden){
+  const el=document.getElementById(elId);
+  if(hidden){el.textContent='?';el.className='ke-score s-hidden';document.getElementById(nameId).textContent='';return;}
+  el.textContent=score;
+  el.className='ke-score '+keScoreClass(score,sp.isPok);
+  document.getElementById(nameId).textContent=sp.name+(sp.mult>1&&!sp.isPok?' ×'+sp.mult:'');
+}
 function keRender(rv){
   renderHand('kePlayerCards',kePlayer);
   renderHand('keDealerCards',keDealer,!rv);
-  const psp=keSpecial(kePlayer);
-  document.getElementById('kePlayerScore').textContent=keScore(kePlayer)+(psp.name?' '+psp.name:'');
-  if(rv){const dsp=keSpecial(keDealer);document.getElementById('keDealerScore').textContent=keScore(keDealer)+(dsp.name?' '+dsp.name:'');}
-  else document.getElementById('keDealerScore').textContent='?';
+  const psp=keSpecial(kePlayer),ps=keScore(kePlayer);
+  keSetScore('kePlayerScore','kePlayerName',ps,psp,false);
+  if(rv){const dsp=keSpecial(keDealer);keSetScore('keDealerScore','keDealerName',keScore(keDealer),dsp,false);}
+  else{keSetScore('keDealerScore','keDealerName',0,{mult:1,name:'',isPok:false},true);}
+  const hint=document.getElementById('keHint');
+  if(!rv&&kePlayer.length===2&&!psp.isPok){
+    hint.textContent=ps>=7?'⭐ คะแนนสูง — แนะนำ ยืน':ps>=5?'💡 คะแนนกลาง — แล้วแต่คุณ':'🃏 คะแนนต่ำ — แนะนำ จั่ว';
+  }else{hint.textContent='';}
 }
 function keDeal(){
   if(keInPlay)return;
@@ -1461,23 +1486,33 @@ function keDeal(){
   addCredits(-keBet);keDeck=newDeck();
   kePlayer=[keDeck.pop(),keDeck.pop()];
   keDealer=[keDeck.pop(),keDeck.pop()];
-  keInPlay=true;document.getElementById('keResult').innerHTML='';
+  keInPlay=true;
+  document.getElementById('keResult').innerHTML='';
   document.getElementById('kePlayerCards').innerHTML='';document.getElementById('keDealerCards').innerHTML='';
-  document.getElementById('kePlayerScore').textContent='—';document.getElementById('keDealerScore').textContent='?';
+  document.getElementById('kePlayerScore').className='ke-score s-hidden';document.getElementById('kePlayerScore').textContent='—';
+  document.getElementById('keDealerScore').className='ke-score s-hidden';document.getElementById('keDealerScore').textContent='?';
+  document.getElementById('kePlayerName').textContent='';document.getElementById('keDealerName').textContent='';
+  document.getElementById('keHint').textContent='';
   SFX.deal();
   keRender(false);
-  const pNat=keSpecial(kePlayer).name,dNat=keSpecial(keDealer).name;
-  if(pNat||dNat){keActionRow(false);setTimeout(keShowdown,900);}
-  else{setTimeout(()=>keActionRow(true),650);}
+  const pNat=keSpecial(kePlayer),dNat=keSpecial(keDealer);
+  if(pNat.isPok||dNat.isPok){
+    if(pNat.isPok)setTimeout(()=>showToast('🎴 '+pNat.name+'!','gold'),550);
+    keActionRow(false);setTimeout(keShowdown,1100);
+  }else{
+    setTimeout(()=>keActionRow(true),700);
+  }
 }
 function keDraw(){
   keActionRow(false);
+  document.getElementById('keHint').textContent='';
   kePlayer.push(keDeck.pop());
   keRender(false);SFX.deal();
   setTimeout(keDealerPlay,600);
 }
 function keStay(){
   keActionRow(false);
+  document.getElementById('keHint').textContent='';
   setTimeout(keDealerPlay,300);
 }
 function keDealerPlay(){
@@ -1491,29 +1526,32 @@ function keShowdown(){
   keInPlay=false;keRender(true);
   const ps=keScore(kePlayer),ds=keScore(keDealer);
   const psp=keSpecial(kePlayer),dsp=keSpecial(keDealer);
-  const pNat=kePlayer.length===2&&psp.name,dNat=keDealer.length===2&&dsp.name;
+  const pNat=kePlayer.length===2&&psp.isPok,dNat=keDealer.length===2&&dsp.isPok;
   let oc;
   if(pNat&&!dNat)oc=1;
   else if(!pNat&&dNat)oc=-1;
-  else if(pNat&&dNat){oc=ps>ds?1:ps<ds?-1:-1;}
+  else if(pNat&&dNat){oc=ps>ds?1:ps===ds?0:-1;}
   else if(psp.mult>dsp.mult)oc=1;
   else if(psp.mult<dsp.mult)oc=-1;
   else if(ps>ds)oc=1;
   else if(ps<ds)oc=-1;
   else oc=-1;
   const el=document.getElementById('keResult');
-  keActionRow(false);
-  document.getElementById('keDealBtn').disabled=false;
+  keActionRow(false);document.getElementById('keDealBtn').disabled=false;
   if(oc===1){
     const w=keBet*psp.mult;addCredits(keBet+w);
     recordResult(true,w);fireParticles(w>=300);SFX.win();
-    el.innerHTML=`<div class="result-box win"><div class="re">🎉</div><div class="rt">ชนะ!</div><div class="rd" style="color:var(--win)">+${w.toLocaleString('th-TH')}</div>${psp.name?`<div style="color:var(--gold2);font-size:12px;margin-top:4px">${psp.name} ×${psp.mult}</div>`:''}</div>`;
+    el.innerHTML=`<div class="result-box win"><div class="re">🎉</div><div class="rt">ชนะ!</div><div class="rd" style="color:var(--win)">+${w.toLocaleString('th-TH')}</div>${psp.name?`<div style="color:var(--gold2);font-size:12px;margin-top:4px">${psp.name}${psp.mult>1?' ×'+psp.mult:''}</div>`:''}</div>`;
     showToast('🎉 ชนะ +'+w.toLocaleString('th-TH'),'win');
+  }else if(oc===0){
+    addCredits(keBet);
+    el.innerHTML=`<div class="result-box tie"><div class="re">🤝</div><div class="rt">เสมอ ป๊อกชนป๊อก</div><div class="rd" style="color:var(--gold2)">±0</div></div>`;
+    showToast('🤝 เสมอ คืนเดิมพัน','gold');
   }else{
     const m=dsp.mult;const loss=keBet*m;
     if(m>1)addCredits(-Math.min(keBet*(m-1),credits));
     recordResult(false,loss);SFX.lose();
-    el.innerHTML=`<div class="result-box lose"><div class="re">😢</div><div class="rt">แพ้</div><div class="rd" style="color:var(--lose)">-${loss.toLocaleString('th-TH')}</div>${m>1?`<div style="color:var(--text2);font-size:12px;margin-top:4px">เจ้ามือ ${dsp.name} ×${m}</div>`:''}</div>`;
+    el.innerHTML=`<div class="result-box lose"><div class="re">😢</div><div class="rt">แพ้</div><div class="rd" style="color:var(--lose)">-${loss.toLocaleString('th-TH')}</div>${dsp.name?`<div style="color:var(--text2);font-size:12px;margin-top:4px">เจ้ามือ ${dsp.name}${dsp.mult>1?' ×'+m:''}</div>`:''}</div>`;
     showToast('😢 แพ้ -'+loss.toLocaleString('th-TH'),'lose');
   }
 }
