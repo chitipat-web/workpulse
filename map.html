@@ -8,7 +8,7 @@
 <meta name="theme-color" content="#09090f">
 <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600;700&family=Sarabun:wght@400;500;600&display=swap" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/maplibre-gl@5.6.0/dist/maplibre-gl.css" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/maplibre-gl@5.6.0/dist/maplibre-gl.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/maplibre-gl@5.6.0/dist/maplibre-gl.js" crossorigin="anonymous"></script>
 <style>
   :root{
     --bg:#09090f;
@@ -116,7 +116,7 @@
 <div class="loading" id="loading">
   <div class="globe">🌍</div>
   <p id="loadingMsg">กำลังโหลดแผนที่โลก 3D...</p>
-  <p style="position:absolute;bottom:14px;right:16px;font-size:10px;color:#3a3a4a">v3</p>
+  <p style="position:absolute;bottom:14px;right:16px;font-size:10px;color:#3a3a4a">v4</p>
 </div>
 
 <div class="topbar">
@@ -140,14 +140,21 @@ function hideLoading() { loadingEl.classList.add('hide'); }
 function showFail(html) {
   loadingEl.classList.remove('hide');
   loadingEl.querySelector('.globe').style.animation = 'none';
-  loadingMsg.innerHTML = html;
+  loadingMsg.innerHTML = html +
+    '<br><small style="font-size:9px;color:#555;word-break:break-all">' + navigator.userAgent.slice(0, 130) + '</small>';
 }
 
 // จับ error ทุกชนิดขึ้นจอ — ห้ามค้างเงียบ ๆ เด็ดขาด
 window.addEventListener('error', e => {
   if (!loadingEl.classList.contains('hide')) {
-    showFail('เกิดข้อผิดพลาด 😢 ลองรีเฟรชใหม่<br><small style="font-size:10px;color:#666">' +
-      (e.message || 'unknown') + '</small>');
+    showFail('เกิดข้อผิดพลาด 😢 ลองรีเฟรชใหม่<br><small style="font-size:10px;color:#888;word-break:break-all">' +
+      (e.message || 'unknown') + '<br>' + ((e.filename || '').split('/').pop()) + ':' + (e.lineno || '?') + '</small>');
+  }
+});
+window.addEventListener('unhandledrejection', e => {
+  if (!loadingEl.classList.contains('hide')) {
+    showFail('เกิดข้อผิดพลาด 😢 ลองรีเฟรชใหม่<br><small style="font-size:10px;color:#888;word-break:break-all">' +
+      ((e.reason && e.reason.message) || e.reason || 'unknown') + '</small>');
   }
 });
 
@@ -182,18 +189,25 @@ const CITIES = [
   { name: '🇸🇬 สิงคโปร์',   center: [103.8520, 1.2840],  zoom: 15.8, bearing: 0 },   // มารีนาเบย์
 ];
 
-const map = new maplibregl.Map({
-  container: 'map',
-  // OpenFreeMap — แผนที่โลกจริงจาก OpenStreetMap, ฟรี ไม่ต้องใช้ API key
-  style: 'https://tiles.openfreemap.org/styles/liberty',
-  center: [100.5018, 13.7563],
-  zoom: 1.6,
-  pitch: 0,
-  bearing: 0,
-  maxPitch: 75,
-  hash: true,
-  attributionControl: { compact: true }
-});
+let map;
+try {
+  map = new maplibregl.Map({
+    container: 'map',
+    // OpenFreeMap — แผนที่โลกจริงจาก OpenStreetMap, ฟรี ไม่ต้องใช้ API key
+    style: 'https://tiles.openfreemap.org/styles/liberty',
+    center: [100.5018, 13.7563],
+    zoom: 1.6,
+    pitch: 0,
+    bearing: 0,
+    maxPitch: 75,
+    hash: true,
+    attributionControl: { compact: true }
+  });
+} catch (err) {
+  showFail('สร้างแผนที่ไม่สำเร็จ 😢<br><small style="font-size:10px;color:#888;word-break:break-all">' +
+    ((err && err.message) || err) + '</small>');
+  throw err;
+}
 
 map.on('error', e => {
   console.error('[map]', e.error || e);
@@ -214,21 +228,26 @@ map.addControl(new maplibregl.ScaleControl({ unit: 'metric' }), 'bottom-left');
 let buildingsOn = true;
 
 map.on('style.load', () => {
-  // โหมดลูกโลกจริง (globe projection)
-  map.setProjection({ type: 'globe' });
+  // แต่ละส่วนพังได้โดยไม่ลากทั้งหน้าไปด้วย — globe ใช้ไม่ได้ก็ยังเหลือแผนที่แบน + ตึก 3D
+  try {
+    map.setProjection({ type: 'globe' });
+  } catch (e) { console.warn('[globe]', e); }
 
-  // ชั้นบรรยากาศ + ท้องฟ้ารอบลูกโลก
-  map.setSky({
-    'sky-color': '#0b1530',
-    'horizon-color': '#7da3cf',
-    'fog-color': '#e8edf4',
-    'sky-horizon-blend': 0.6,
-    'horizon-fog-blend': 0.6,
-    'fog-ground-blend': 0.7,
-    'atmosphere-blend': ['interpolate', ['linear'], ['zoom'], 0, 1, 6, 1, 9, 0.2, 12, 0]
-  });
+  try {
+    map.setSky({
+      'sky-color': '#0b1530',
+      'horizon-color': '#7da3cf',
+      'fog-color': '#e8edf4',
+      'sky-horizon-blend': 0.6,
+      'horizon-fog-blend': 0.6,
+      'fog-ground-blend': 0.7,
+      'atmosphere-blend': ['interpolate', ['linear'], ['zoom'], 0, 1, 6, 1, 9, 0.2, 12, 0]
+    });
+  } catch (e) { console.warn('[sky]', e); }
 
-  addBuildings3D();
+  try {
+    addBuildings3D();
+  } catch (e) { console.warn('[3d]', e); }
 });
 
 // ===== ตึก 3D (fill-extrusion จากข้อมูลความสูงอาคาร OpenStreetMap) =====
