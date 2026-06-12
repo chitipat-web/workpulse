@@ -166,7 +166,7 @@
 <div class="loading" id="loading">
   <div class="globe">🌍</div>
   <p id="loadingMsg">กำลังโหลดแผนที่โลก 3D...</p>
-  <p style="position:absolute;bottom:14px;right:16px;font-size:10px;color:#3a3a4a">v13</p>
+  <p style="position:absolute;bottom:14px;right:16px;font-size:10px;color:#3a3a4a">v14</p>
 </div>
 
 <div class="topbar">
@@ -486,43 +486,75 @@ function recordFix(lng, lat, accuracy) {
 
 function startWatch() {
   if (watchId !== null) return;
-  watchId = navigator.geolocation.watchPosition(pos => {
-    const { longitude, latitude, heading, speed, accuracy } = pos.coords;
+  if (IS_NATIVE_APP) { startNativeWatch(); return; }
+  watchId = navigator.geolocation.watchPosition(onFix, onGeoError,
+    { enableHighAccuracy: true, maximumAge: 2000, timeout: 20000 });
+}
 
-    if (!meMarker) {
-      const dot = document.createElement('div');
-      dot.className = 'me-dot';
-      meMarker = new maplibregl.Marker({ element: dot }).setLngLat([longitude, latitude]).addTo(map);
-    } else {
-      meMarker.setLngLat([longitude, latitude]);
+function onFix(pos) {
+  const { longitude, latitude, heading, speed, accuracy } = pos.coords;
+
+  if (!meMarker) {
+    const dot = document.createElement('div');
+    dot.className = 'me-dot';
+    meMarker = new maplibregl.Marker({ element: dot }).setLngLat([longitude, latitude]).addTo(map);
+  } else {
+    meMarker.setLngLat([longitude, latitude]);
+  }
+
+  if (recording) recordFix(longitude, latitude, accuracy);
+
+  if (!following) return;
+  if (firstFix) {
+    firstFix = false;
+    toast('เจอแล้ว! กำลังบินไปหาคุณ 📍');
+    map.flyTo({ center: [longitude, latitude], zoom: 17, pitch: buildingsOn ? 60 : 0, duration: 3500, essential: true });
+  } else {
+    const cam = { center: [longitude, latitude], duration: 900 };
+    // หันแผนที่ตามทิศที่เคลื่อนที่ (GPS บอกทิศได้เฉพาะตอนกำลังขยับ)
+    if (heading !== null && !Number.isNaN(heading) && speed > 0.8) cam.bearing = heading;
+    map.easeTo(cam);
+  }
+}
+
+function onGeoError(err) {
+  stopFollow();
+  setRecording(false);
+  stopWatch();
+  toast(err && err.code === 1
+    ? 'ไม่ได้รับอนุญาตให้ใช้ตำแหน่ง — เปิดสิทธิ์ Location ให้เบราว์เซอร์ในตั้งค่าเครื่องก่อนนะ'
+    : 'หาตำแหน่งไม่เจอ ลองใหม่อีกครั้ง 🛰️', 6000);
+}
+
+// ===== โหมดแอปจริง (Capacitor) — GPS ทำงานต่อแม้พับจอ =====
+const IS_NATIVE_APP = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
+function startNativeWatch() {
+  const BG = window.Capacitor.Plugins.BackgroundGeolocation;
+  BG.addWatcher({
+    backgroundTitle: 'Lala Map กำลังบันทึกเส้นทาง',
+    backgroundMessage: 'แตะเพื่อกลับเข้าแอป',
+    requestPermissions: true,
+    stale: false,
+    distanceFilter: 5
+  }, (loc, error) => {
+    if (error) {
+      if (error.code === 'NOT_AUTHORIZED' &&
+          confirm('แอปต้องใช้สิทธิ์ตำแหน่ง — เปิดหน้าตั้งค่าเลยไหม?')) {
+        BG.openSettings();
+      }
+      onGeoError({ code: error.code === 'NOT_AUTHORIZED' ? 1 : 2 });
+      return;
     }
-
-    if (recording) recordFix(longitude, latitude, accuracy);
-
-    if (!following) return;
-    if (firstFix) {
-      firstFix = false;
-      toast('เจอแล้ว! กำลังบินไปหาคุณ 📍');
-      map.flyTo({ center: [longitude, latitude], zoom: 17, pitch: buildingsOn ? 60 : 0, duration: 3500, essential: true });
-    } else {
-      const cam = { center: [longitude, latitude], duration: 900 };
-      // หันแผนที่ตามทิศที่เคลื่อนที่ (GPS บอกทิศได้เฉพาะตอนกำลังขยับ)
-      if (heading !== null && !Number.isNaN(heading) && speed > 0.8) cam.bearing = heading;
-      map.easeTo(cam);
-    }
-  }, err => {
-    stopFollow();
-    setRecording(false);
-    stopWatch();
-    toast(err.code === 1
-      ? 'ไม่ได้รับอนุญาตให้ใช้ตำแหน่ง — เปิดสิทธิ์ Location ให้เบราว์เซอร์ในตั้งค่าเครื่องก่อนนะ'
-      : 'หาตำแหน่งไม่เจอ ลองใหม่อีกครั้ง 🛰️', 6000);
-  }, { enableHighAccuracy: true, maximumAge: 2000, timeout: 20000 });
+    onFix({ coords: {
+      longitude: loc.longitude, latitude: loc.latitude,
+      heading: loc.bearing, speed: loc.speed, accuracy: loc.accuracy
+    } });
+  }).then(id => { watchId = id; });
 }
 
 function toggleFollow() {
   if (following) { stopFollow(); toast('หยุดตาม GPS แล้ว'); return; }
-  if (!('geolocation' in navigator)) { toast('เครื่องนี้ไม่รองรับ GPS 😢'); return; }
+  if (!IS_NATIVE_APP && !('geolocation' in navigator)) { toast('เครื่องนี้ไม่รองรับ GPS 😢'); return; }
   following = true;
   btnFollow.classList.add('on');
   stopSpin();
@@ -537,7 +569,13 @@ function stopFollow() {
 }
 
 function stopWatch() {
-  if (watchId !== null) { navigator.geolocation.clearWatch(watchId); watchId = null; }
+  if (watchId === null) return;
+  if (IS_NATIVE_APP) {
+    window.Capacitor.Plugins.BackgroundGeolocation.removeWatcher({ id: watchId }).catch(() => {});
+  } else {
+    navigator.geolocation.clearWatch(watchId);
+  }
+  watchId = null;
 }
 
 // ===== ปุ่มอัดเส้นทาง =====
@@ -564,12 +602,14 @@ function toggleRec() {
     toast('หยุดบันทึกแล้ว ⏹ วันนี้ได้ ' + (dayDistance(todayKey()) / 1000).toFixed(2) + ' กม.', 5000);
     return;
   }
-  if (!('geolocation' in navigator)) { toast('เครื่องนี้ไม่รองรับ GPS 😢'); return; }
+  if (!IS_NATIVE_APP && !('geolocation' in navigator)) { toast('เครื่องนี้ไม่รองรับ GPS 😢'); return; }
   setRecording(true);
   startWatch();
-  toast('wakeLock' in navigator
-    ? 'เริ่มบันทึก ⏺ กันจอดับให้แล้ว — เปิดหน้านี้ค้างไว้ระหว่างเดินทางนะ'
-    : 'เริ่มบันทึกการเดินทาง ⏺ — ต้องเปิดหน้านี้ค้างไว้และอย่าให้จอดับนะ', 6000);
+  toast(IS_NATIVE_APP
+    ? 'เริ่มบันทึก ⏺ — โหมดแอป บันทึกต่อได้แม้พับจอ/ล็อกจอ 🎉'
+    : ('wakeLock' in navigator
+      ? 'เริ่มบันทึก ⏺ กันจอดับให้แล้ว — เปิดหน้านี้ค้างไว้ระหว่างเดินทางนะ'
+      : 'เริ่มบันทึกการเดินทาง ⏺ — ต้องเปิดหน้านี้ค้างไว้และอย่าให้จอดับนะ'), 6000);
 }
 
 // ===== แผงประวัติรายวัน =====

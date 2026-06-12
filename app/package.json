@@ -1,0 +1,14 @@
+{
+  "name": "lala-map-app",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Lala Map - 3D world map with background travel tracking",
+  "dependencies": {
+    "@capacitor/core": "^6.1.2",
+    "@capacitor/ios": "^6.1.2",
+    "@capacitor-community/background-geolocation": "^1.2.23"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^6.1.2"
+  }
+}

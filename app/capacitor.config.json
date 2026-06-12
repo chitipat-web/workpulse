@@ -1,0 +1,8 @@
+{
+  "appId": "io.github.chitipatweb.lalamap",
+  "appName": "Lala Map",
+  "webDir": "www",
+  "ios": {
+    "contentInset": "never"
+  }
+}
