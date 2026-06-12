@@ -7,8 +7,8 @@
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#09090f">
 <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600;700&family=Sarabun:wght@400;500;600&display=swap" rel="stylesheet">
-<link href="https://unpkg.com/maplibre-gl@5.6.0/dist/maplibre-gl.css" rel="stylesheet">
-<script src="https://unpkg.com/maplibre-gl@5.6.0/dist/maplibre-gl.js"></script>
+<link href="https://cdn.jsdelivr.net/npm/maplibre-gl@5.6.0/dist/maplibre-gl.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/maplibre-gl@5.6.0/dist/maplibre-gl.js"></script>
 <style>
   :root{
     --bg:#09090f;
@@ -115,7 +115,7 @@
 
 <div class="loading" id="loading">
   <div class="globe">🌍</div>
-  <p>กำลังโหลดแผนที่โลก 3D...</p>
+  <p id="loadingMsg">กำลังโหลดแผนที่โลก 3D...</p>
 </div>
 
 <div class="topbar">
@@ -133,6 +133,16 @@
 <div class="chips" id="chips"></div>
 
 <script>
+const loadingEl = document.getElementById('loading');
+const loadingMsg = document.getElementById('loadingMsg');
+function hideLoading() { loadingEl.classList.add('hide'); }
+
+// ไลบรารีแผนที่โหลดไม่ขึ้น (เน็ตหลุด / CDN ล่ม) — บอกผู้ใช้แทนที่จะค้างเฉย ๆ
+if (typeof maplibregl === 'undefined') {
+  loadingMsg.innerHTML = 'โหลดตัวแผนที่ไม่สำเร็จ 😢<br>เช็คอินเทอร์เน็ตแล้วลองรีเฟรชใหม่';
+  throw new Error('maplibre-gl failed to load');
+}
+
 // ===== เมืองตัวอย่าง — จุดที่มีตึก 3D สวย ๆ =====
 const CITIES = [
   { name: '🇹🇭 กรุงเทพฯ',  center: [100.5390, 13.7263], zoom: 15.8, bearing: -30 }, // สาทร-สีลม
@@ -278,11 +288,21 @@ function stopSpin() { spinning = false; }
 map.on('moveend', spinGlobe);
 ['mousedown', 'touchstart', 'wheel', 'dblclick'].forEach(e => map.on(e, stopSpin));
 
+// โชว์ลูกโลกทันทีที่วาดเฟรมแรก — ไม่ต้องรอ tiles โหลดครบ
+map.once('render', hideLoading);
+
 map.on('load', () => {
-  document.getElementById('loading').classList.add('hide');
+  hideLoading();
   spinGlobe();
   setTimeout(() => document.getElementById('hint').classList.add('hide'), 6000);
 });
+
+// กันค้าง: ถ้าผ่านไป 15 วิแล้วยังไม่ขึ้นแผนที่ ให้แจ้งผู้ใช้
+setTimeout(() => {
+  if (!loadingEl.classList.contains('hide')) {
+    loadingMsg.innerHTML = 'โหลดช้าผิดปกติ — เน็ตอาจอ่อน 📶<br>ลองรีเฟรชหน้านี้อีกครั้ง';
+  }
+}, 15000);
 
 // Service worker (PWA เดิมของแอป)
 if ('serviceWorker' in navigator) {
