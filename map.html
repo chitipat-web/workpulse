@@ -116,6 +116,7 @@
 <div class="loading" id="loading">
   <div class="globe">🌍</div>
   <p id="loadingMsg">กำลังโหลดแผนที่โลก 3D...</p>
+  <p style="position:absolute;bottom:14px;right:16px;font-size:10px;color:#3a3a4a">v3</p>
 </div>
 
 <div class="topbar">
@@ -136,11 +137,38 @@
 const loadingEl = document.getElementById('loading');
 const loadingMsg = document.getElementById('loadingMsg');
 function hideLoading() { loadingEl.classList.add('hide'); }
+function showFail(html) {
+  loadingEl.classList.remove('hide');
+  loadingEl.querySelector('.globe').style.animation = 'none';
+  loadingMsg.innerHTML = html;
+}
 
-// ไลบรารีแผนที่โหลดไม่ขึ้น (เน็ตหลุด / CDN ล่ม) — บอกผู้ใช้แทนที่จะค้างเฉย ๆ
+// จับ error ทุกชนิดขึ้นจอ — ห้ามค้างเงียบ ๆ เด็ดขาด
+window.addEventListener('error', e => {
+  if (!loadingEl.classList.contains('hide')) {
+    showFail('เกิดข้อผิดพลาด 😢 ลองรีเฟรชใหม่<br><small style="font-size:10px;color:#666">' +
+      (e.message || 'unknown') + '</small>');
+  }
+});
+
+// กันค้าง: ถ้าผ่านไป 15 วิแล้วยังไม่ขึ้นแผนที่ ให้แจ้งผู้ใช้
+setTimeout(() => {
+  if (!loadingEl.classList.contains('hide')) {
+    showFail('โหลดช้าผิดปกติ — เน็ตอาจอ่อน 📶<br>ลองรีเฟรชหน้านี้อีกครั้ง');
+  }
+}, 15000);
+
+// ไลบรารีแผนที่โหลดไม่ขึ้น (เน็ตหลุด / CDN ล่ม)
 if (typeof maplibregl === 'undefined') {
-  loadingMsg.innerHTML = 'โหลดตัวแผนที่ไม่สำเร็จ 😢<br>เช็คอินเทอร์เน็ตแล้วลองรีเฟรชใหม่';
+  showFail('โหลดตัวแผนที่ไม่สำเร็จ 😢<br>เช็คอินเทอร์เน็ตแล้วลองรีเฟรชใหม่');
   throw new Error('maplibre-gl failed to load');
+}
+
+// อุปกรณ์ไม่รองรับ WebGL2 (เช่น เปิด Lockdown Mode บน iPhone)
+if (!document.createElement('canvas').getContext('webgl2')) {
+  showFail('เบราว์เซอร์นี้ไม่รองรับ WebGL2 ที่ใช้วาดแผนที่ 3D 😢<br>' +
+    '<small style="font-size:11px;color:#888">ถ้าใช้ iPhone ลองปิด Lockdown Mode หรือเปิดด้วยเบราว์เซอร์อื่น</small>');
+  throw new Error('WebGL2 not supported');
 }
 
 // ===== เมืองตัวอย่าง — จุดที่มีตึก 3D สวย ๆ =====
@@ -165,6 +193,14 @@ const map = new maplibregl.Map({
   maxPitch: 75,
   hash: true,
   attributionControl: { compact: true }
+});
+
+map.on('error', e => {
+  console.error('[map]', e.error || e);
+  if (!loadingEl.classList.contains('hide') && e.error) {
+    showFail('โหลดข้อมูลแผนที่ไม่สำเร็จ 😢 ลองรีเฟรชใหม่<br><small style="font-size:10px;color:#666">' +
+      e.error.message + '</small>');
+  }
 });
 
 map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), 'right');

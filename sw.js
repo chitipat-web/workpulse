@@ -1,5 +1,5 @@
 // ทีมงานลาล่า — Service Worker
-const CACHE_NAME = 'lala-team-v2';
+const CACHE_NAME = 'lala-team-v3';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
