@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>แผนที่โลกเสมือนจริง — Royal Lala</title>
+<meta name="theme-color" content="#09090f">
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600;700&family=Sarabun:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#09090f;
+    --gold:#c9aa71;
+    --gold-dim:rgba(201,170,113,.35);
+    --text:#e8dcc8;
+    --text2:#9a8f7a;
+    --panel:rgba(13,13,20,.88);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%;overflow:hidden;background:var(--bg);font-family:'Prompt','Sarabun',sans-serif;color:var(--text)}
+  #map{position:absolute;inset:0}
+  #map gmp-map-3d{width:100%;height:100%}
+
+  .topbar{
+    position:absolute;top:0;left:0;right:0;z-index:10;
+    display:flex;align-items:center;gap:10px;
+    padding:calc(10px + env(safe-area-inset-top)) 14px 10px;
+    background:linear-gradient(180deg,rgba(9,9,15,.92),rgba(9,9,15,0));
+    pointer-events:none;
+  }
+  .topbar>*{pointer-events:auto}
+  .back-btn{
+    display:flex;align-items:center;gap:6px;
+    background:var(--panel);border:1px solid var(--gold-dim);color:var(--text);
+    font-family:inherit;font-size:14px;font-weight:500;
+    padding:8px 14px;border-radius:22px;cursor:pointer;
+    backdrop-filter:blur(8px);text-decoration:none;
+  }
+  .title{font-size:16px;font-weight:600;text-shadow:0 1px 6px rgba(0,0,0,.8)}
+  .title small{display:block;font-size:11px;font-weight:400;color:var(--text2);letter-spacing:1.5px}
+
+  .actions{
+    position:absolute;left:10px;top:calc(70px + env(safe-area-inset-top));z-index:10;
+    display:flex;flex-direction:column;gap:8px;
+  }
+  .act-btn{
+    width:44px;height:44px;border-radius:12px;
+    background:var(--panel);border:1px solid var(--gold-dim);color:var(--text);
+    font-size:19px;cursor:pointer;backdrop-filter:blur(8px);
+    display:flex;align-items:center;justify-content:center;
+  }
+  .act-btn.on{background:rgba(201,170,113,.25);border-color:var(--gold);color:var(--gold)}
+  .act-btn:active{transform:scale(.94)}
+
+  .chips{
+    position:absolute;left:0;right:0;bottom:0;z-index:10;
+    display:flex;gap:8px;overflow-x:auto;
+    padding:10px 14px calc(14px + env(safe-area-inset-bottom));
+    background:linear-gradient(0deg,rgba(9,9,15,.9),rgba(9,9,15,0));
+    scrollbar-width:none;
+  }
+  .chips::-webkit-scrollbar{display:none}
+  .chip{
+    flex:0 0 auto;display:flex;align-items:center;gap:6px;
+    background:var(--panel);border:1px solid var(--gold-dim);color:var(--text);
+    font-family:inherit;font-size:13px;font-weight:500;
+    padding:9px 16px;border-radius:22px;cursor:pointer;
+    backdrop-filter:blur(8px);white-space:nowrap;
+  }
+  .chip.active{background:rgba(201,170,113,.25);border-color:var(--gold);color:var(--gold)}
+  .chip:active{transform:scale(.95)}
+
+  .hint{
+    position:absolute;left:50%;bottom:calc(72px + env(safe-area-inset-bottom));z-index:10;
+    transform:translateX(-50%);max-width:90vw;text-align:center;
+    background:var(--panel);border:1px solid var(--gold-dim);
+    color:var(--text2);font-size:12px;
+    padding:8px 16px;border-radius:18px;backdrop-filter:blur(8px);
+    opacity:1;transition:opacity .6s;pointer-events:none;
+  }
+  .hint.hide{opacity:0}
+
+  /* ===== หน้า setup / loading ===== */
+  .overlay{
+    position:absolute;inset:0;z-index:20;overflow-y:auto;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;
+    background:var(--bg);transition:opacity .5s;padding:24px;
+  }
+  .overlay.hide{opacity:0;pointer-events:none}
+  .overlay .globe{font-size:52px;animation:spin 2.5s linear infinite}
+  .overlay p{color:var(--text2);font-size:14px;text-align:center}
+  @keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+
+  .setup-card{
+    width:100%;max-width:420px;
+    background:#101018;border:1px solid var(--gold-dim);border-radius:18px;
+    padding:22px;display:flex;flex-direction:column;gap:14px;
+  }
+  .setup-card h2{font-size:18px;color:var(--gold)}
+  .setup-card p{font-size:13px;color:var(--text2);line-height:1.7;text-align:left}
+  .setup-card ol{font-size:13px;color:var(--text2);line-height:1.9;padding-left:20px;text-align:left}
+  .setup-card a{color:#7da3cf}
+  .setup-card input{
+    width:100%;padding:12px 14px;border-radius:12px;
+    background:#09090f;border:1px solid var(--gold-dim);color:var(--text);
+    font-family:'JetBrains Mono',monospace;font-size:13px;outline:none;
+  }
+  .setup-card input:focus{border-color:var(--gold)}
+  .btn-gold{
+    width:100%;padding:13px;border:none;border-radius:12px;cursor:pointer;
+    background:linear-gradient(135deg,#d8bc85,#b08d52);color:#1a1206;
+    font-family:inherit;font-size:15px;font-weight:600;
+  }
+  .btn-gold:active{transform:scale(.98)}
+  .btn-ghost{
+    width:100%;padding:11px;border-radius:12px;cursor:pointer;
+    background:none;border:1px solid var(--gold-dim);color:var(--text2);
+    font-family:inherit;font-size:13px;
+  }
+  details{text-align:left}
+  details summary{font-size:13px;color:var(--gold);cursor:pointer;padding:4px 0}
+</style>
+</head>
+<body>
+
+<div id="map"></div>
+
+<div class="overlay" id="overlay">
+  <!-- เนื้อหาเปลี่ยนตามสถานะ: setup / loading / error -->
+</div>
+
+<div class="topbar">
+  <a class="back-btn" href="map.html">←</a>
+  <div class="title">🛰️ แผนที่เสมือนจริง<small>GOOGLE PHOTOREALISTIC 3D</small></div>
+</div>
+
+<div class="actions">
+  <button class="act-btn" id="btnFollow" onclick="toggleFollow()" title="ตามตำแหน่ง GPS ของฉัน">🧭</button>
+  <button class="act-btn" onclick="resetKey()" title="เปลี่ยน API key">🔑</button>
+</div>
+
+<div class="hint hide" id="hint"></div>
+
+<div class="chips" id="chips"></div>
+
+<script>
+const KEY_LS = 'gmaps3d_key';
+const overlay = document.getElementById('overlay');
+const hintEl = document.getElementById('hint');
+let map3d = null;
+
+const CITIES = [
+  { name: '🇹🇭 กรุงเทพฯ',  lat: 13.7263, lng: 100.5390, heading: -30 },
+  { name: '🇯🇵 โตเกียว',    lat: 35.6896, lng: 139.7006, heading: 20 },
+  { name: '🇺🇸 นิวยอร์ก',   lat: 40.7484, lng: -73.9857, heading: -15 },
+  { name: '🇦🇪 ดูไบ',       lat: 25.1972, lng: 55.2744,  heading: 40 },
+  { name: '🇫🇷 ปารีส',      lat: 48.8584, lng: 2.2945,   heading: 60 },
+  { name: '🇬🇧 ลอนดอน',    lat: 51.5050, lng: -0.0190,  heading: -45 },
+  { name: '🇸🇬 สิงคโปร์',   lat: 1.2840,  lng: 103.8520, heading: 0 },
+  { name: '🇮🇱 อิสราเอล',   lat: 32.0742, lng: 34.7895,  heading: -20 },
+];
+
+let toastTimer;
+function toast(msg, ms = 4000) {
+  hintEl.textContent = msg;
+  hintEl.classList.remove('hide');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => hintEl.classList.add('hide'), ms);
+}
+
+function showLoading() {
+  overlay.classList.remove('hide');
+  overlay.innerHTML = '<div class="globe">🛰️</div><p>กำลังโหลดโลกเสมือนจริง...</p>';
+}
+
+function showError(msg) {
+  overlay.classList.remove('hide');
+  overlay.innerHTML = `
+    <div style="font-size:46px">😢</div>
+    <p style="max-width:340px;line-height:1.8">${msg}</p>
+    <div style="display:flex;gap:10px;width:100%;max-width:340px">
+      <button class="btn-ghost" onclick="resetKey()">🔑 ใส่ key ใหม่</button>
+      <button class="btn-gold" onclick="location.reload()">ลองอีกครั้ง</button>
+    </div>`;
+}
+
+function showSetup() {
+  overlay.classList.remove('hide');
+  overlay.innerHTML = `
+    <div class="setup-card">
+      <h2>🛰️ เปิดใช้โหมดเสมือนจริง</h2>
+      <p>โหมดนี้ใช้ <b>Google Photorealistic 3D</b> — เห็นตึกจริง พื้นผิวจริง เหมือน Google Earth
+      ต้องใช้ API key ของคุณเอง (Google ให้โควต้าใช้ฟรีรายเดือน)</p>
+      <details>
+        <summary>📖 วิธีสร้าง API key (ครั้งเดียวจบ)</summary>
+        <ol>
+          <li>เข้า <a href="https://console.cloud.google.com" target="_blank">console.cloud.google.com</a> แล้วล็อกอิน Google</li>
+          <li>สร้างโปรเจกต์ใหม่ (ตั้งชื่ออะไรก็ได้)</li>
+          <li>ไปที่ <b>APIs &amp; Services → Library</b> ค้นหาแล้วกด Enable ทั้ง 2 ตัว:<br>• <b>Map Tiles API</b><br>• <b>Maps JavaScript API</b></li>
+          <li>ผูกบัตรที่เมนู <b>Billing</b> (จำเป็น แต่มีโควต้าฟรีทุกเดือน ใช้คนเดียวแทบไม่เสียเงิน)</li>
+          <li>ไปที่ <b>APIs &amp; Services → Credentials → Create credentials → API key</b></li>
+          <li>คัดลอก key (ขึ้นต้นด้วย AIza...) มาวางด้านล่าง</li>
+        </ol>
+        <p style="margin-top:6px">💡 แนะนำ: กดแก้ไข key แล้วตั้ง Website restrictions เป็น<br><code style="color:#7da3cf">chitipat-web.github.io/*</code> กันคนอื่นแอบใช้</p>
+      </details>
+      <input id="keyInput" placeholder="วาง API key ที่นี่ (AIza...)" autocomplete="off">
+      <button class="btn-gold" onclick="saveKey()">เริ่มใช้งาน 🚀</button>
+      <a class="btn-ghost" href="map.html" style="text-align:center;text-decoration:none">← กลับไปแผนที่แบบปกติ (ฟรี ไม่ใช้ key)</a>
+    </div>`;
+}
+
+function saveKey() {
+  const k = document.getElementById('keyInput').value.trim();
+  if (!/^AIza[\w-]{30,}$/.test(k)) { toast('รูปแบบ key ไม่ถูกต้อง — ต้องขึ้นต้นด้วย AIza'); return; }
+  localStorage.setItem(KEY_LS, k);
+  location.reload();
+}
+
+function resetKey() {
+  localStorage.removeItem(KEY_LS);
+  location.reload();
+}
+
+// key ส่งมาทาง URL ก็ได้: map-real.html?key=AIza...
+const urlKey = new URLSearchParams(location.search).get('key');
+if (urlKey) {
+  localStorage.setItem(KEY_LS, urlKey.trim());
+  history.replaceState(null, '', location.pathname);
+}
+const apiKey = localStorage.getItem(KEY_LS);
+
+// Google เรียก callback นี้เมื่อ key ใช้ไม่ได้
+window.gm_authFailure = () => {
+  showError('API key ใช้ไม่ได้ — เช็คว่า key ถูกต้อง เปิด Maps JavaScript API + Map Tiles API แล้ว และผูก Billing เรียบร้อย');
+};
+
+// บางกรณี Google ไม่เรียก gm_authFailure แต่พ่น error ลง console เงียบ ๆ — ดักมาแปลให้
+const GMAPS_ERRORS = {
+  InvalidKeyMapError: 'API key ไม่ถูกต้อง — เช็คว่าคัดลอกมาครบทุกตัวอักษร',
+  ExpiredKeyMapError: 'API key หมดอายุแล้ว — สร้างใหม่ใน Google Cloud Console',
+  ApiNotActivatedMapError: 'ยังไม่ได้เปิด Maps JavaScript API — ไปที่ APIs & Services → Library แล้วกด Enable',
+  BillingNotEnabledMapError: 'ยังไม่ได้ผูก Billing — เข้าเมนู Billing ใน Google Cloud Console แล้วผูกบัตรก่อน (มีโควต้าฟรีรายเดือน)',
+  RefererNotAllowedMapError: 'key นี้ถูกจำกัดเว็บไซต์ไว้ — เพิ่ม chitipat-web.github.io/* ใน Website restrictions ของ key',
+};
+const origConsoleError = console.error.bind(console);
+console.error = (...args) => {
+  const s = args.join(' ');
+  for (const code in GMAPS_ERRORS) {
+    if (s.includes(code)) { showError(GMAPS_ERRORS[code] + '<br><small style="color:#666">' + code + '</small>'); break; }
+  }
+  origConsoleError(...args);
+};
+
+if (!apiKey) {
+  showSetup();
+} else {
+  showLoading();
+  const s = document.createElement('script');
+  s.src = 'https://maps.googleapis.com/maps/api/js?key=' + encodeURIComponent(apiKey) +
+    '&v=beta&libraries=maps3d&loading=async&callback=gmapsReady';
+  s.onerror = () => showError('โหลด Google Maps ไม่สำเร็จ — เช็คอินเทอร์เน็ตแล้วลองใหม่');
+  document.head.appendChild(s);
+  setTimeout(() => {
+    if (!map3d && !overlay.innerHTML.includes('😢')) {
+      showError('โหลดช้าผิดปกติ — เน็ตอาจอ่อน ลองรีเฟรชใหม่');
+    }
+  }, 25000);
+}
+
+window.gmapsReady = async () => {
+  try {
+    const { Map3DElement } = await google.maps.importLibrary('maps3d');
+    map3d = new Map3DElement({
+      center: { lat: 13.7263, lng: 100.5390, altitude: 12000000 },
+      range: 12000000, tilt: 0, heading: 0,
+      mode: 'HYBRID'
+    });
+    map3d.addEventListener('gmp-error', e => {
+      showError('Google ปฏิเสธการแสดงแผนที่ — ส่วนใหญ่เพราะยังไม่เปิด Map Tiles API หรือยังไม่ผูก Billing<br><small style="color:#666">' + (e.message || '') + '</small>');
+    });
+    document.getElementById('map').appendChild(map3d);
+    overlay.classList.add('hide');
+    toast('กดปุ่มเมืองด้านล่าง แล้วซูมดูตึกจริงได้เลย 🏙️', 6000);
+  } catch (err) {
+    showError('เปิดโหมด 3D ไม่สำเร็จ<br><small style="color:#666">' + (err.message || err) + '</small>');
+  }
+};
+
+function flyTo(lat, lng, heading, range = 1600) {
+  if (!map3d) return;
+  map3d.flyCameraTo({
+    endCamera: { center: { lat, lng, altitude: 120 }, tilt: 67, range, heading },
+    durationMillis: 5000
+  });
+}
+
+const chipsEl = document.getElementById('chips');
+CITIES.forEach((c, i) => {
+  const b = document.createElement('button');
+  b.className = 'chip';
+  b.textContent = c.name;
+  b.onclick = () => {
+    stopFollow();
+    [...chipsEl.children].forEach((el, j) => el.classList.toggle('active', j === i));
+    flyTo(c.lat, c.lng, c.heading);
+  };
+  chipsEl.appendChild(b);
+});
+
+// ===== ตาม GPS =====
+const btnFollow = document.getElementById('btnFollow');
+let watchId = null, following = false, firstFix = true;
+
+function toggleFollow() {
+  if (following) { stopFollow(); toast('หยุดตาม GPS แล้ว'); return; }
+  if (!('geolocation' in navigator)) { toast('เครื่องนี้ไม่รองรับ GPS 😢'); return; }
+  following = true;
+  btnFollow.classList.add('on');
+  if (watchId !== null) return;
+  firstFix = true;
+  toast('กำลังหาตำแหน่ง... 🛰️', 10000);
+  watchId = navigator.geolocation.watchPosition(pos => {
+    if (!following || !map3d) return;
+    const { latitude: lat, longitude: lng, heading, speed } = pos.coords;
+    if (firstFix) {
+      firstFix = false;
+      toast('เจอแล้ว! กำลังบินไปหาคุณ 📍');
+      flyTo(lat, lng, 0, 900);
+    } else {
+      map3d.flyCameraTo({
+        endCamera: {
+          center: { lat, lng, altitude: 120 }, tilt: 67, range: 900,
+          heading: (heading !== null && !Number.isNaN(heading) && speed > 0.8) ? heading : map3d.heading
+        },
+        durationMillis: 900
+      });
+    }
+  }, err => {
+    stopFollow();
+    if (watchId !== null) { navigator.geolocation.clearWatch(watchId); watchId = null; }
+    toast(err.code === 1
+      ? 'ไม่ได้รับอนุญาตให้ใช้ตำแหน่ง — เปิดสิทธิ์ Location ให้เบราว์เซอร์ในตั้งค่าเครื่องก่อนนะ'
+      : 'หาตำแหน่งไม่เจอ ลองใหม่อีกครั้ง 🛰️', 6000);
+  }, { enableHighAccuracy: true, maximumAge: 2000, timeout: 20000 });
+}
+
+function stopFollow() {
+  following = false;
+  btnFollow.classList.remove('on');
+}
+</script>
+</body>
+</html>
