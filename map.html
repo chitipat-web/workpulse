@@ -84,6 +84,18 @@
   .hist-info span{font-size:12px;color:var(--text2)}
   .hist-del{background:none;border:none;font-size:16px;cursor:pointer;opacity:.7;padding:6px}
   .hist-empty{color:var(--text2);font-size:13px;text-align:center;padding:20px 0}
+  .cp-p{font-size:13px;color:var(--text2);line-height:1.7;margin:6px 0}
+  .cp-btn{
+    width:100%;padding:13px 14px;border-radius:12px;cursor:pointer;text-align:left;
+    border:1px solid var(--gold-dim);background:rgba(201,170,113,.1);color:var(--text);
+    font-family:inherit;font-size:14px;margin-top:8px;
+  }
+  .cp-btn:active{transform:scale(.98)}
+  .sync-code{
+    font-size:30px;font-weight:700;letter-spacing:6px;color:var(--gold);text-align:center;
+    padding:12px;background:#09090f;border:1px dashed var(--gold);border-radius:12px;margin:8px 0;
+    font-family:'JetBrains Mono',monospace;
+  }
 
   /* ===== City chips (bottom) ===== */
   .chips{
@@ -154,7 +166,7 @@
 <div class="loading" id="loading">
   <div class="globe">🌍</div>
   <p id="loadingMsg">กำลังโหลดแผนที่โลก 3D...</p>
-  <p style="position:absolute;bottom:14px;right:16px;font-size:10px;color:#3a3a4a">v11</p>
+  <p style="position:absolute;bottom:14px;right:16px;font-size:10px;color:#3a3a4a">v12</p>
 </div>
 
 <div class="topbar">
@@ -163,7 +175,7 @@
 </div>
 
 <div class="actions">
-  <button class="act-btn" id="btnLogin" onclick="toggleLogin()" title="ล็อกอินด้วย Gmail เพื่อซิงก์เส้นทาง">👤</button>
+  <button class="act-btn" id="btnLogin" onclick="openCloudPanel()" title="ซิงก์เส้นทางข้ามเครื่อง">👤</button>
   <button class="act-btn" id="btnFollow" onclick="toggleFollow()" title="ตามตำแหน่ง GPS ของฉัน">🧭</button>
   <button class="act-btn" id="btnRec" onclick="toggleRec()" title="บันทึกการเดินทางวันนี้">⏺</button>
   <button class="act-btn" id="btnHist" onclick="toggleHist()" title="ประวัติการเดินทาง">📅</button>
@@ -176,6 +188,11 @@
 <div class="hist-panel" id="histPanel">
   <div class="hist-head"><b>📅 การเดินทางของฉัน</b><button onclick="toggleHist()">✕</button></div>
   <div id="histList"></div>
+</div>
+
+<div class="hist-panel" id="cloudPanel">
+  <div class="hist-head"><b>☁️ ซิงก์ข้ามเครื่อง</b><button onclick="closeCloudPanel()">✕</button></div>
+  <div id="cloudBody"></div>
 </div>
 
 <div class="hint" id="hint">ลาก 2 นิ้ว (หรือคลิกขวา) เพื่อหมุน/เอียงมุมมอง</div>
@@ -589,7 +606,7 @@ function delTrack(day) {
   if (!confirm('ลบเส้นทางของ ' + thaiDate(day) + ' ทิ้งถาวร?')) return;
   delete tracks[day];
   saveTracks();
-  if (fbUser && db) trackRef(day).delete().catch(e => console.warn('[cloud-del]', e));
+  if (cloudActive()) trackRef(day).delete().catch(e => console.warn('[cloud-del]', e));
   renderHist();
   if (viewDay === day) viewDay = null;
   updateTrackLine(viewDay || todayKey());
@@ -605,6 +622,7 @@ const FB_CONFIG = {
   appId: "1:763680675092:web:1ba1fff65f9133b38a5e01"
 };
 let db = null, fbUser = null, unsubCloud = null;
+let syncCode = localStorage.getItem('lala-sync') || null;
 let pushTimer = null;
 const dirtyDays = new Set();
 
@@ -615,12 +633,8 @@ try {
     firebase.auth().onAuthStateChanged(u => {
       fbUser = u;
       updateLoginBtn();
-      if (u) {
-        toast('ล็อกอินแล้ว: ' + (u.displayName || u.email) + ' ☁️', 5000);
-        startCloudSync();
-      } else {
-        stopCloudSync();
-      }
+      if (u) toast('ล็อกอินแล้ว: ' + (u.displayName || u.email) + ' ☁️', 5000);
+      if (u || syncCode) startCloudSync(); else stopCloudSync();
     });
     // กลับมาจากหน้า login แบบ redirect (มือถือ)
     firebase.auth().getRedirectResult().catch(e => {
@@ -638,39 +652,110 @@ function updateLoginBtn() {
       ? '<img src="' + fbUser.photoURL + '" alt="me" referrerpolicy="no-referrer">'
       : '✅';
     b.classList.add('on');
-    b.title = 'ล็อกอินเป็น ' + (fbUser.displayName || fbUser.email) + ' — กดเพื่อออกจากระบบ';
+    b.title = 'ล็อกอินเป็น ' + (fbUser.displayName || fbUser.email);
+  } else if (syncCode) {
+    b.textContent = '☁️';
+    b.classList.add('on');
+    b.title = 'กำลังซิงก์ด้วยรหัส ' + syncCode;
   } else {
     b.textContent = '👤';
     b.classList.remove('on');
-    b.title = 'ล็อกอินด้วย Gmail เพื่อซิงก์เส้นทาง';
+    b.title = 'ซิงก์เส้นทางข้ามเครื่อง';
   }
 }
 
-function toggleLogin() {
-  if (!db) { toast('ระบบคลาวด์ยังโหลดไม่เสร็จ — เช็คเน็ตแล้วรีเฟรช', 5000); return; }
-  if (fbUser) {
-    if (confirm('ออกจากระบบ ' + (fbUser.displayName || fbUser.email) + '?\n(เส้นทางในเครื่องยังอยู่ครบ แค่หยุดซิงก์)')) {
-      firebase.auth().signOut();
-      toast('ออกจากระบบแล้ว');
-    }
+// ===== แผงซิงก์ข้ามเครื่อง =====
+function openCloudPanel() { renderCloud(); document.getElementById('cloudPanel').classList.add('open'); }
+function closeCloudPanel() { document.getElementById('cloudPanel').classList.remove('open'); }
+function renderCloud() {
+  const el = document.getElementById('cloudBody');
+  if (!db) {
+    el.innerHTML = '<p class="cp-p">ระบบคลาวด์ยังโหลดไม่เสร็จ — เช็คอินเทอร์เน็ตแล้วรีเฟรชหน้านี้</p>';
     return;
   }
+  if (fbUser) {
+    el.innerHTML =
+      '<p class="cp-p">ล็อกอินเป็น <b>' + (fbUser.displayName || fbUser.email) + '</b><br>เส้นทางทุกวันซิงก์ขึ้นคลาวด์อัตโนมัติ ✅</p>' +
+      '<button class="cp-btn" onclick="signOutGoogle()">🚪 ออกจากระบบ (ข้อมูลในเครื่องยังอยู่)</button>';
+  } else if (syncCode) {
+    el.innerHTML =
+      '<p class="cp-p">เส้นทางกำลังซิงก์เรียลไทม์ด้วยรหัสนี้ — เปิดแผนที่บน<b>เครื่องอื่น</b> กด 👤 แล้วใส่รหัสเดียวกัน จะเห็นเส้นทางชุดเดียวกันทันที</p>' +
+      '<div class="sync-code">' + syncCode + '</div>' +
+      '<button class="cp-btn" onclick="copySyncCode()">📋 คัดลอกรหัส</button>' +
+      '<button class="cp-btn" onclick="stopSyncCode()">⏹ เลิกซิงก์เครื่องนี้ (ข้อมูลไม่หาย)</button>';
+  } else {
+    el.innerHTML =
+      '<p class="cp-p">เก็บเส้นทางขึ้นคลาวด์ และดูจากหลายเครื่องแบบเรียลไทม์</p>' +
+      '<button class="cp-btn" onclick="createSyncCode()">✨ สร้างรหัสซิงก์ใหม่ <small style="color:var(--text2)">— ง่ายสุด ใช้ได้ทันที</small></button>' +
+      '<button class="cp-btn" onclick="enterSyncCode()">⌨️ มีรหัสอยู่แล้ว (เอามาจากเครื่องแรก)</button>' +
+      '<button class="cp-btn" onclick="signInGoogle()">🔵 ล็อกอินด้วย Google <small style="color:var(--text2)">— ต้องตั้งค่า Firebase console ก่อน</small></button>';
+  }
+}
+function setSyncCode(c) {
+  syncCode = c;
+  if (c) localStorage.setItem('lala-sync', c); else localStorage.removeItem('lala-sync');
+  updateLoginBtn();
+  if (c || fbUser) startCloudSync(); else stopCloudSync();
+  renderCloud();
+}
+function createSyncCode() {
+  const A = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789'; // ตัดตัวที่อ่านสับสน (0/O, 1/I) ออก
+  let c = '';
+  for (let i = 0; i < 6; i++) c += A[Math.floor(Math.random() * A.length)];
+  setSyncCode(c);
+  toast('สร้างรหัสซิงก์แล้ว ☁️ จดรหัสไว้ใช้กับเครื่องอื่นนะ', 5000);
+}
+function enterSyncCode() {
+  const c = (prompt('ใส่รหัสซิงก์ 6 ตัว (ดูได้จากปุ่ม 👤 บนเครื่องแรก):') || '').trim().toUpperCase();
+  if (!c) return;
+  if (!/^[A-Z0-9]{4,10}$/.test(c)) { toast('รหัสไม่ถูกต้อง — เป็นตัวอักษร/ตัวเลข 6 ตัว'); return; }
+  setSyncCode(c);
+  toast('เชื่อมต่อแล้ว กำลังดึงเส้นทางจากคลาวด์... ☁️', 5000);
+}
+function copySyncCode() {
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(syncCode).then(() => toast('คัดลอกรหัสแล้ว 📋')).catch(() => prompt('คัดลอกรหัสนี้:', syncCode));
+  } else {
+    prompt('คัดลอกรหัสนี้:', syncCode);
+  }
+}
+function stopSyncCode() {
+  if (!confirm('เลิกซิงก์เครื่องนี้? (ข้อมูลบนคลาวด์และในเครื่องยังอยู่ครบ)')) return;
+  setSyncCode(null);
+  toast('เลิกซิงก์แล้ว');
+}
+function signOutGoogle() {
+  firebase.auth().signOut();
+  toast('ออกจากระบบแล้ว');
+  setTimeout(renderCloud, 300);
+}
+function signInGoogle() {
   const prov = new firebase.auth.GoogleAuthProvider();
-  firebase.auth().signInWithPopup(prov).catch(e => {
+  firebase.auth().signInWithPopup(prov).then(() => {
+    closeCloudPanel();
+  }).catch(e => {
     if (['auth/popup-blocked', 'auth/popup-closed-by-user', 'auth/cancelled-popup-request',
          'auth/operation-not-supported-in-this-environment'].includes(e.code)) {
       // มือถือบางตัวบล็อกป๊อปอัพ — เปลี่ยนเป็นพาไปหน้า login แล้วเด้งกลับ
       firebase.auth().signInWithRedirect(prov);
-    } else if (e.code === 'auth/unauthorized-domain') {
-      toast('โดเมนนี้ยังไม่ได้รับอนุญาตใน Firebase — เพิ่ม chitipat-web.github.io ใน Authorized domains ก่อน', 8000);
+    } else if (e.code === 'auth/unauthorized-domain' || e.code === 'auth/operation-not-allowed') {
+      toast('Google login ยังไม่ถูกเปิดใน Firebase console — ใช้ "รหัสซิงก์" แทนได้เลย ง่ายกว่า', 7000);
     } else {
       toast('ล็อกอินไม่สำเร็จ: ' + (e.code || e.message), 6000);
     }
   });
 }
 
+function cloudActive() { return !!(db && (fbUser || syncCode)); }
 function trackRef(day) {
-  return db.collection('users').doc(fbUser.uid).collection('tracks').doc(day);
+  return fbUser
+    ? db.collection('users').doc(fbUser.uid).collection('tracks').doc(day)
+    : db.collection('syncs').doc(syncCode).collection('tracks').doc(day);
+}
+function tracksCol() {
+  return fbUser
+    ? db.collection('users').doc(fbUser.uid).collection('tracks')
+    : db.collection('syncs').doc(syncCode).collection('tracks');
 }
 
 // รวมจุดสองชุดโดยใช้เวลาเป็นตัวกันซ้ำ
@@ -681,14 +766,14 @@ function mergePoints(a, b) {
 }
 
 function queuePush(day) {
-  if (!fbUser || !db) return;
+  if (!cloudActive()) return;
   dirtyDays.add(day);
   if (!pushTimer) pushTimer = setTimeout(flushPush, 12000); // ส่งเป็นชุดทุก ~12 วิ ประหยัดโควต้า
 }
 
 async function flushPush() {
   pushTimer = null;
-  if (!fbUser || !db) { dirtyDays.clear(); return; }
+  if (!cloudActive()) { dirtyDays.clear(); return; }
   const days = [...dirtyDays];
   dirtyDays.clear();
   for (const d of days) {
@@ -704,11 +789,12 @@ async function flushPush() {
 
 function startCloudSync() {
   stopCloudSync();
+  if (!cloudActive()) return;
   // ดันข้อมูลในเครื่องทั้งหมดขึ้นไปก่อน
   Object.keys(tracks).forEach(d => dirtyDays.add(d));
   if (dirtyDays.size && !pushTimer) pushTimer = setTimeout(flushPush, 3000);
   // ฟังการเปลี่ยนแปลงจากคลาวด์เรียลไทม์ (เครื่องอื่นอัดอยู่ก็เห็นที่นี่ทันที)
-  unsubCloud = db.collection('users').doc(fbUser.uid).collection('tracks').onSnapshot(snap => {
+  unsubCloud = tracksCol().onSnapshot(snap => {
     let changed = false;
     snap.forEach(doc => {
       let pts = [];
