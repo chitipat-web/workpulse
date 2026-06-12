@@ -129,7 +129,7 @@
 <div class="loading" id="loading">
   <div class="globe">🌍</div>
   <p id="loadingMsg">กำลังโหลดแผนที่โลก 3D...</p>
-  <p style="position:absolute;bottom:14px;right:16px;font-size:10px;color:#3a3a4a">v8</p>
+  <p style="position:absolute;bottom:14px;right:16px;font-size:10px;color:#3a3a4a">v9</p>
 </div>
 
 <div class="topbar">
@@ -141,7 +141,8 @@
   <button class="act-btn" id="btnFollow" onclick="toggleFollow()" title="ตามตำแหน่ง GPS ของฉัน">🧭</button>
   <button class="act-btn on" id="btn3d" onclick="toggle3D()" title="สลับมุมมอง 2D / 3D">🏙️</button>
   <button class="act-btn" id="btnGlobe" onclick="goGlobe()" title="กลับไปดูลูกโลก">🌐</button>
-  <button class="act-btn" onclick="location.href='map-real.html'" title="โหมดภาพถ่ายเสมือนจริง (Google 3D)">🛰️</button>
+  <button class="act-btn" id="btnSat" onclick="toggleSat()" title="ภาพถ่ายดาวเทียม + ภูเขา 3D">🛰️</button>
+  <button class="act-btn" onclick="location.href='map-real.html'" title="โหมดภาพถ่ายเสมือนจริง (Google 3D)">🌆</button>
 </div>
 
 <div class="hint" id="hint">ลาก 2 นิ้ว (หรือคลิกขวา) เพื่อหมุน/เอียงมุมมอง</div>
@@ -203,6 +204,9 @@ const CITIES = [
   { name: '🇬🇧 ลอนดอน',    center: [-0.0190, 51.5050],  zoom: 15.5, bearing: -45 }, // แคนารีวอร์ฟ
   { name: '🇸🇬 สิงคโปร์',   center: [103.8520, 1.2840],  zoom: 15.8, bearing: 0 },   // มารีนาเบย์
   { name: '🇮🇱 อิสราเอล',   center: [34.7895, 32.0742],  zoom: 15.5, bearing: -20 }, // เทลอาวีฟ (Azrieli)
+  // ภูเขา — เปิดโหมดดาวเทียม + ภูมิประเทศ 3D อัตโนมัติ
+  { name: '🏔️ แมทเทอร์ฮอร์น', center: [7.6859, 45.9929], zoom: 12.3, bearing: 205, pitch: 72, sat: true },
+  { name: '🇹🇭 ดอยอินทนนท์',  center: [98.5300, 18.5700], zoom: 11.8, bearing: -60, pitch: 70, sat: true },
 ];
 
 let map;
@@ -305,6 +309,43 @@ function addBuildings3D() {
   });
 }
 
+// ===== โหมดดาวเทียม: ภาพถ่ายจริง (Esri) + ภูมิประเทศ 3D (AWS Terrain) — ฟรี ไม่ใช้ key =====
+let satOn = false;
+function toggleSat() {
+  satOn = !satOn;
+  document.getElementById('btnSat').classList.toggle('on', satOn);
+
+  if (satOn) {
+    if (!map.getSource('esri-sat')) {
+      map.addSource('esri-sat', {
+        type: 'raster',
+        tiles: ['https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'],
+        tileSize: 256, maxzoom: 19,
+        attribution: 'Esri, Maxar, Earthstar Geographics'
+      });
+    }
+    if (!map.getSource('aws-terrain')) {
+      map.addSource('aws-terrain', {
+        type: 'raster-dem',
+        tiles: ['https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png'],
+        encoding: 'terrarium', tileSize: 256, maxzoom: 13,
+        attribution: 'Terrain: Mapzen/AWS'
+      });
+    }
+    if (!map.getLayer('esri-sat')) {
+      // สอดใต้เลเยอร์ตัวหนังสือ — ภาพดาวเทียมอยู่ล่าง ชื่อสถานที่ยังลอยอยู่บน
+      const firstSymbol = map.getStyle().layers.find(l => l.type === 'symbol');
+      map.addLayer({ id: 'esri-sat', type: 'raster', source: 'esri-sat' }, firstSymbol && firstSymbol.id);
+    } else {
+      map.setLayoutProperty('esri-sat', 'visibility', 'visible');
+    }
+    try { map.setTerrain({ source: 'aws-terrain', exaggeration: 1.15 }); } catch (e) { console.warn('[terrain]', e); }
+  } else {
+    if (map.getLayer('esri-sat')) map.setLayoutProperty('esri-sat', 'visibility', 'none');
+    try { map.setTerrain(null); } catch (e) {}
+  }
+}
+
 function toggle3D() {
   buildingsOn = !buildingsOn;
   document.getElementById('btn3d').classList.toggle('on', buildingsOn);
@@ -404,9 +445,10 @@ CITIES.forEach((c, i) => {
     stopSpin();
     stopFollow();
     setActiveChip(i);
+    if (c.sat && !satOn) toggleSat(); // จุดชมภูเขาต้องใช้ภาพดาวเทียม + ภูมิประเทศ 3D
     map.flyTo({
       center: c.center, zoom: c.zoom, bearing: c.bearing,
-      pitch: buildingsOn ? 62 : 0,
+      pitch: c.pitch !== undefined ? c.pitch : (buildingsOn ? 62 : 0),
       duration: 4500, essential: true
     });
   };
