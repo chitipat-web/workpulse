@@ -45,9 +45,9 @@
   }
   .title small{display:block;font-size:11px;font-weight:400;color:var(--text2);letter-spacing:1.5px}
 
-  /* ===== Action buttons (right side) ===== */
+  /* ===== Action buttons (left side, ใต้ปุ่มกลับ) ===== */
   .actions{
-    position:absolute;right:10px;top:calc(70px + env(safe-area-inset-top));z-index:10;
+    position:absolute;left:10px;top:calc(70px + env(safe-area-inset-top));z-index:10;
     display:flex;flex-direction:column;gap:8px;
   }
   .act-btn{
@@ -102,7 +102,8 @@
   .loading p{color:var(--text2);font-size:14px}
   @keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
 
-  /* MapLibre controls — ปรับให้เข้าธีมมืด */
+  /* MapLibre controls — ปรับให้เข้าธีมมืด + เลื่อนลงพ้น topbar */
+  .maplibregl-ctrl-top-right{top:calc(58px + env(safe-area-inset-top))}
   .maplibregl-ctrl-group{background:var(--panel)!important;backdrop-filter:blur(8px);border:1px solid var(--gold-dim)}
   .maplibregl-ctrl-group button{filter:invert(.85)}
   .maplibregl-ctrl-attrib{background:rgba(9,9,15,.6)!important;color:var(--text2)!important;font-size:10px}
@@ -116,7 +117,7 @@
 <div class="loading" id="loading">
   <div class="globe">🌍</div>
   <p id="loadingMsg">กำลังโหลดแผนที่โลก 3D...</p>
-  <p style="position:absolute;bottom:14px;right:16px;font-size:10px;color:#3a3a4a">v4</p>
+  <p style="position:absolute;bottom:14px;right:16px;font-size:10px;color:#3a3a4a">v5</p>
 </div>
 
 <div class="topbar">
@@ -217,12 +218,12 @@ map.on('error', e => {
   }
 });
 
-map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), 'right');
+map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), 'top-right');
 map.addControl(new maplibregl.GeolocateControl({
   positionOptions: { enableHighAccuracy: true },
   trackUserLocation: true,
   fitBoundsOptions: { maxZoom: 16.5 }
-}), 'right');
+}), 'top-right');
 map.addControl(new maplibregl.ScaleControl({ unit: 'metric' }), 'bottom-left');
 
 let buildingsOn = true;
