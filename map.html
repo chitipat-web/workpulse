@@ -166,7 +166,7 @@
 <div class="loading" id="loading">
   <div class="globe">🌍</div>
   <p id="loadingMsg">กำลังโหลดแผนที่โลก 3D...</p>
-  <p style="position:absolute;bottom:14px;right:16px;font-size:10px;color:#3a3a4a">v12</p>
+  <p style="position:absolute;bottom:14px;right:16px;font-size:10px;color:#3a3a4a">v13</p>
 </div>
 
 <div class="topbar">
@@ -541,10 +541,22 @@ function stopWatch() {
 }
 
 // ===== ปุ่มอัดเส้นทาง =====
+// Wake Lock — กันหน้าจอดับระหว่างอัด (เว็บเก็บ GPS ไม่ได้ตอนจอดับ)
+let wakeLock = null;
+async function acquireWakeLock() {
+  try {
+    if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen');
+  } catch (e) { console.warn('[wakelock]', e); }
+}
+function releaseWakeLock() {
+  if (wakeLock) { wakeLock.release().catch(() => {}); wakeLock = null; }
+}
+
 function setRecording(on) {
   recording = on;
   localStorage.setItem('lala-rec', on ? '1' : '0');
   btnRec.classList.toggle('rec', on);
+  if (on) acquireWakeLock(); else releaseWakeLock();
 }
 function toggleRec() {
   if (recording) {
@@ -555,7 +567,9 @@ function toggleRec() {
   if (!('geolocation' in navigator)) { toast('เครื่องนี้ไม่รองรับ GPS 😢'); return; }
   setRecording(true);
   startWatch();
-  toast('เริ่มบันทึกการเดินทาง ⏺ — ต้องเปิดหน้านี้ค้างไว้ระหว่างเดินทางนะ', 6000);
+  toast('wakeLock' in navigator
+    ? 'เริ่มบันทึก ⏺ กันจอดับให้แล้ว — เปิดหน้านี้ค้างไว้ระหว่างเดินทางนะ'
+    : 'เริ่มบันทึกการเดินทาง ⏺ — ต้องเปิดหน้านี้ค้างไว้และอย่าให้จอดับนะ', 6000);
 }
 
 // ===== แผงประวัติรายวัน =====
@@ -816,12 +830,14 @@ function stopCloudSync() {
   if (unsubCloud) { unsubCloud(); unsubCloud = null; }
 }
 
-// สลับแอป/พับจอ — รีบส่งของที่ค้างขึ้นคลาวด์ก่อน
+// สลับแอป/พับจอ — รีบส่งของที่ค้างขึ้นคลาวด์ก่อน แล้วขอกันจอดับคืนตอนกลับมา
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'hidden' && pushTimer) {
     clearTimeout(pushTimer);
     flushPush();
   }
+  // Wake lock หลุดเองทุกครั้งที่สลับแอป — ขอใหม่ถ้ายังอัดอยู่
+  if (document.visibilityState === 'visible' && recording) acquireWakeLock();
 });
 
 // ผู้ใช้ลากแผนที่เอง = เลิกล็อกกล้อง (จุดตำแหน่งยังอยู่ กดเข็มทิศเพื่อล็อกใหม่)
@@ -872,7 +888,7 @@ map.on('load', () => {
   initTrackLayer();
   // เปิดแอปมาใหม่: วาดเส้นทางวันนี้ + อัดต่ออัตโนมัติถ้าเปิดบันทึกค้างไว้
   updateTrackLine(todayKey());
-  if (recording) { btnRec.classList.add('rec'); startWatch(); }
+  if (recording) { btnRec.classList.add('rec'); startWatch(); acquireWakeLock(); }
   setTimeout(() => document.getElementById('hint').classList.add('hide'), 6000);
 });
 
