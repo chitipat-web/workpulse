@@ -11,16 +11,6 @@ platform :ios do
       key_filepath: File.expand_path("~/private_keys/AuthKey_#{ENV['ASC_KEY_ID']}.p8")
     )
 
-    # สร้าง app record บน App Store Connect (idempotent — มีอยู่แล้วก็ข้าม)
-    # produce เวอร์ชันนี้ไม่รับ api_key ตรง ๆ — ใช้ Spaceship token ที่ตั้งไว้ด้านบนแทน
-    produce(
-      app_identifier: APP_ID,
-      app_name: "Lala Map",
-      sku: "lala-map-001",
-      language: "en-US",
-      team_id: TEAM_ID
-    )
-
     # เลขบิลด์ไม่ซ้ำทุกครั้งที่รัน กัน TestFlight ปฏิเสธว่าซ้ำ
     increment_build_number(
       build_number: ENV["GITHUB_RUN_NUMBER"] || "1",
@@ -34,11 +24,13 @@ platform :ios do
       path: "App.xcodeproj"
     )
 
+    # -allowProvisioningUpdates + api_key = สร้างใบรับรอง/โพรไฟล์ + ลงทะเบียน Bundle ID อัตโนมัติ
     build_app(
       workspace: "App.xcworkspace",
       scheme: "App",
       configuration: "Release",
       export_method: "app-store",
+      api_key: api_key,
       xcargs: "-allowProvisioningUpdates",
       export_options: {
         signingStyle: "automatic",
@@ -46,9 +38,16 @@ platform :ios do
       }
     )
 
-    upload_to_testflight(
-      api_key: api_key,
-      skip_waiting_for_build_processing: true
-    )
+    # อัปขึ้น TestFlight — ขั้นนี้ต้องมี app record บน App Store Connect ก่อน
+    # (สร้างด้วยมือครั้งเดียว เพราะ API key สร้างแอปใหม่ไม่ได้) ถ้ายังไม่มีจะเตือนแล้วข้าม
+    begin
+      upload_to_testflight(
+        api_key: api_key,
+        skip_waiting_for_build_processing: true
+      )
+    rescue => e
+      UI.important("ยังอัปขึ้น TestFlight ไม่ได้ (ปกติถ้ายังไม่ได้สร้าง app record): #{e.message}")
+      UI.important("Build + ลงทะเบียนแอปสำเร็จแล้ว — ไปสร้าง app record บน App Store Connect แล้วรันอีกครั้ง")
+    end
   end
 end
