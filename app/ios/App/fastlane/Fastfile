@@ -1,0 +1,53 @@
+default_platform(:ios)
+
+TEAM_ID = "YU352X7M2K"
+APP_ID = "io.github.chitipatweb.lalamap"
+
+platform :ios do
+  lane :beta do
+    api_key = app_store_connect_api_key(
+      key_id: ENV["ASC_KEY_ID"],
+      issuer_id: ENV["ASC_ISSUER_ID"],
+      key_filepath: File.expand_path("~/private_keys/AuthKey_#{ENV['ASC_KEY_ID']}.p8")
+    )
+
+    # สร้าง app record บน App Store Connect (idempotent — มีอยู่แล้วก็ข้าม)
+    produce(
+      api_key: api_key,
+      app_identifier: APP_ID,
+      app_name: "Lala Map",
+      sku: "lala-map-001",
+      language: "en-US"
+    )
+
+    # เลขบิลด์ไม่ซ้ำทุกครั้งที่รัน กัน TestFlight ปฏิเสธว่าซ้ำ
+    increment_build_number(
+      build_number: ENV["GITHUB_RUN_NUMBER"] || "1",
+      xcodeproj: "App.xcodeproj"
+    )
+
+    # บอก Xcode ให้เซ็นแบบอัตโนมัติด้วยทีมนี้
+    update_code_signing_settings(
+      use_automatic_signing: true,
+      team_id: TEAM_ID,
+      path: "App.xcodeproj"
+    )
+
+    build_app(
+      workspace: "App.xcworkspace",
+      scheme: "App",
+      configuration: "Release",
+      export_method: "app-store",
+      xcargs: "-allowProvisioningUpdates",
+      export_options: {
+        signingStyle: "automatic",
+        teamID: TEAM_ID
+      }
+    )
+
+    upload_to_testflight(
+      api_key: api_key,
+      skip_waiting_for_build_processing: true
+    )
+  end
+end
