@@ -5,10 +5,12 @@ APP_ID = "io.github.chitipatweb.lalamap"
 
 platform :ios do
   lane :beta do
+    key_path = File.expand_path("~/private_keys/AuthKey_#{ENV['ASC_KEY_ID']}.p8")
+
     api_key = app_store_connect_api_key(
       key_id: ENV["ASC_KEY_ID"],
       issuer_id: ENV["ASC_ISSUER_ID"],
-      key_filepath: File.expand_path("~/private_keys/AuthKey_#{ENV['ASC_KEY_ID']}.p8")
+      key_filepath: key_path
     )
 
     # เลขบิลด์ไม่ซ้ำทุกครั้งที่รัน กัน TestFlight ปฏิเสธว่าซ้ำ
@@ -24,21 +26,27 @@ platform :ios do
       path: "App.xcodeproj"
     )
 
-    # -allowProvisioningUpdates + api_key = สร้างใบรับรอง/โพรไฟล์ + ลงทะเบียน Bundle ID อัตโนมัติ
+    # ส่งกุญแจ App Store Connect API ให้ xcodebuild โดยตรง — fastlane เวอร์ชันนี้
+    # ไม่รับ api_key ใน build_app เลยต้องแนบผ่าน xcargs (ใช้ทั้งตอน archive และ export)
+    auth = "-allowProvisioningUpdates " \
+           "-authenticationKeyPath #{key_path} " \
+           "-authenticationKeyID #{ENV['ASC_KEY_ID']} " \
+           "-authenticationKeyIssuerID #{ENV['ASC_ISSUER_ID']}"
+
     build_app(
       workspace: "App.xcworkspace",
       scheme: "App",
       configuration: "Release",
       export_method: "app-store",
-      api_key: api_key,
-      xcargs: "-allowProvisioningUpdates",
+      xcargs: auth,
+      export_xcargs: auth,
       export_options: {
         signingStyle: "automatic",
         teamID: TEAM_ID
       }
     )
 
-    # อัปขึ้น TestFlight — ขั้นนี้ต้องมี app record บน App Store Connect ก่อน
+    # อัปขึ้น TestFlight — ต้องมี app record บน App Store Connect ก่อน
     # (สร้างด้วยมือครั้งเดียว เพราะ API key สร้างแอปใหม่ไม่ได้) ถ้ายังไม่มีจะเตือนแล้วข้าม
     begin
       upload_to_testflight(
