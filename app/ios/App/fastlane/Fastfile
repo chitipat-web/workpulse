@@ -38,6 +38,7 @@ platform :ios do
     )
 
     # ลงทะเบียน Bundle ID ผ่าน App Store Connect API ถ้ายังไม่มี (sigh สร้างเองไม่ได้)
+    # ยิง API ตรงเพราะ BundleId.create ของ fastlane 2.235 ไม่ส่งฟิลด์ platform ที่ Apple บังคับ
     require "spaceship"
     Spaceship::ConnectAPI.token = Spaceship::ConnectAPI::Token.create(
       key_id: ENV["ASC_KEY_ID"],
@@ -45,7 +46,17 @@ platform :ios do
       filepath: key_path
     )
     unless Spaceship::ConnectAPI::BundleId.all.any? { |b| b.identifier == APP_ID }
-      Spaceship::ConnectAPI::BundleId.create(name: "Lala Map", identifier: APP_ID, seed_id: TEAM_ID)
+      Spaceship::ConnectAPI::Provisioning::Client.instance.post("bundleIds", {
+        data: {
+          type: "bundleIds",
+          attributes: {
+            identifier: APP_ID,
+            name: "LalaMap",
+            seedId: TEAM_ID,
+            platform: "IOS"
+          }
+        }
+      })
       UI.success("ลงทะเบียน Bundle ID #{APP_ID} แล้ว")
     end
 
