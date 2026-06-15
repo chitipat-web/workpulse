@@ -1,7 +1,36 @@
+require "jwt"
+require "openssl"
+require "net/http"
+require "json"
+
 default_platform(:ios)
 
 TEAM_ID = "YU352X7M2K"
 APP_ID = "io.github.chitipatweb.lalamap"
+
+# สร้าง JWT สำหรับเรียก App Store Connect REST API โดยตรง
+def asc_jwt
+  key = OpenSSL::PKey.read(File.read(File.expand_path("~/private_keys/AuthKey_#{ENV['ASC_KEY_ID']}.p8")))
+  now = Time.now.to_i
+  JWT.encode(
+    { iss: ENV["ASC_ISSUER_ID"], iat: now, exp: now + 1200, aud: "appstoreconnect-v1" },
+    key, "ES256", { kid: ENV["ASC_KEY_ID"], typ: "JWT" }
+  )
+end
+
+def asc_request(method, path, body = nil)
+  uri = URI("https://api.appstoreconnect.apple.com#{path}")
+  http = Net::HTTP.new(uri.host, 443)
+  http.use_ssl = true
+  klass = { get: Net::HTTP::Get, post: Net::HTTP::Post, delete: Net::HTTP::Delete }[method]
+  req = klass.new(uri)
+  req["Authorization"] = "Bearer #{asc_jwt}"
+  req["Content-Type"] = "application/json"
+  req.body = body.to_json if body
+  res = http.request(req)
+  data = (res.body && !res.body.empty?) ? JSON.parse(res.body) : {}
+  [res.code.to_i, data]
+end
 
 platform :ios do
   lane :beta do
@@ -18,7 +47,6 @@ platform :ios do
       xcodeproj: "App.xcodeproj"
     )
 
-    # คีย์เชนชั่วคราวบนเครื่อง CI สำหรับเก็บใบรับรอง
     keychain_name = "ci.keychain"
     keychain_password = "ci_temp_password"
     create_keychain(
@@ -30,36 +58,26 @@ platform :ios do
       lock_when_sleeps: false
     )
 
-    # ===== จัดการฝั่ง Apple Developer Portal ผ่าน App Store Connect API =====
-    require "spaceship"
-    Spaceship::ConnectAPI.token = Spaceship::ConnectAPI::Token.create(
-      key_id: ENV["ASC_KEY_ID"],
-      issuer_id: ENV["ASC_ISSUER_ID"],
-      filepath: key_path
-    )
-    pclient = Spaceship::ConnectAPI::Provisioning::Client.instance
-
-    # ลบใบรับรอง Distribution เก่าทิ้งก่อน (CI ไม่เก็บกุญแจส่วนตัว ใบเก่าใช้ไม่ได้
-    # และกันชนเพดานจำนวนใบรับรองของบัญชี)
-    Spaceship::ConnectAPI::Certificate.all.each do |c|
-      next unless c.certificate_type.to_s.include?("DISTRIBUTION")
-      pclient.delete("certificates/#{c.id}")
-      UI.message("ลบใบรับรองเก่า #{c.id}")
+    # ===== จัดการ Apple Developer Portal ผ่าน REST API โดยตรง =====
+    # ลบใบรับรอง Distribution เก่า (CI ไม่เก็บกุญแจส่วนตัว ใบเก่าใช้ไม่ได้ + กันชนเพดาน)
+    _, certs = asc_request(:get, "/v1/certificates?limit=200")
+    (certs["data"] || []).each do |c|
+      next unless c.dig("attributes", "certificateType").to_s.include?("DISTRIBUTION")
+      asc_request(:delete, "/v1/certificates/#{c['id']}")
+      UI.message("ลบใบรับรองเก่า #{c['id']}")
     end
 
-    # ลงทะเบียน Bundle ID ถ้ายังไม่มี (ยิง API ตรง เพราะ helper ของ fastlane 2.235
-    # ไม่ส่งฟิลด์ platform ที่ Apple บังคับ)
-    unless Spaceship::ConnectAPI::BundleId.all.any? { |b| b.identifier == APP_ID }
-      pclient.post("bundleIds", {
-        data: {
-          type: "bundleIds",
-          attributes: { identifier: APP_ID, name: "LalaMap", seedId: TEAM_ID, platform: "IOS" }
-        }
+    # ลงทะเบียน Bundle ID ถ้ายังไม่มี
+    _, bids = asc_request(:get, "/v1/bundleIds?filter%5Bidentifier%5D=#{APP_ID}&limit=200")
+    unless (bids["data"] || []).any? { |b| b.dig("attributes", "identifier") == APP_ID }
+      code, resp = asc_request(:post, "/v1/bundleIds", {
+        data: { type: "bundleIds", attributes: { identifier: APP_ID, name: "LalaMap", platform: "IOS", seedId: TEAM_ID } }
       })
+      UI.user_error!("ลงทะเบียน Bundle ID ไม่สำเร็จ (#{code}): #{resp}") unless [200, 201].include?(code)
       UI.success("ลงทะเบียน Bundle ID #{APP_ID} แล้ว")
     end
 
-    # ใบรับรอง Distribution ใหม่ (เพิ่งเคลียร์ที่ว่างแล้ว)
+    # ใบรับรอง Distribution ใหม่
     cert(
       api_key: api_key,
       keychain_path: File.expand_path("~/Library/Keychains/#{keychain_name}-db"),
@@ -72,7 +90,6 @@ platform :ios do
       app_identifier: APP_ID
     )
 
-    # เซ็นแบบ manual ด้วยโพรไฟล์ที่เพิ่งสร้าง
     update_code_signing_settings(
       use_automatic_signing: false,
       path: "App.xcodeproj",
