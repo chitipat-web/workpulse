@@ -13,36 +13,56 @@ platform :ios do
       key_filepath: key_path
     )
 
-    # เลขบิลด์ไม่ซ้ำทุกครั้งที่รัน กัน TestFlight ปฏิเสธว่าซ้ำ
     increment_build_number(
       build_number: ENV["GITHUB_RUN_NUMBER"] || "1",
       xcodeproj: "App.xcodeproj"
     )
 
-    # บอก Xcode ให้เซ็นแบบอัตโนมัติด้วยทีมนี้
-    update_code_signing_settings(
-      use_automatic_signing: true,
-      team_id: TEAM_ID,
-      path: "App.xcodeproj"
+    # คีย์เชนชั่วคราวบนเครื่อง CI สำหรับเก็บใบรับรอง
+    keychain_name = "ci.keychain"
+    keychain_password = "ci_temp_password"
+    create_keychain(
+      name: keychain_name,
+      password: keychain_password,
+      default_keychain: true,
+      unlock: true,
+      timeout: 3600,
+      lock_when_sleeps: false
     )
 
-    # ส่งกุญแจ App Store Connect API ให้ xcodebuild โดยตรง — fastlane เวอร์ชันนี้
-    # ไม่รับ api_key ใน build_app เลยต้องแนบผ่าน xcargs (ใช้ทั้งตอน archive และ export)
-    auth = "-allowProvisioningUpdates " \
-           "-authenticationKeyPath #{key_path} " \
-           "-authenticationKeyID #{ENV['ASC_KEY_ID']} " \
-           "-authenticationKeyIssuerID #{ENV['ASC_ISSUER_ID']}"
+    # ใบรับรอง Distribution (สร้างใหม่อัตโนมัติถ้าบัญชียังไม่มี)
+    cert(
+      api_key: api_key,
+      keychain_path: File.expand_path("~/Library/Keychains/#{keychain_name}-db"),
+      keychain_password: keychain_password
+    )
+
+    # โพรไฟล์แบบ App Store — ไม่ต้องมีอุปกรณ์ลงทะเบียน
+    sigh(
+      api_key: api_key,
+      app_identifier: APP_ID
+    )
+
+    # เซ็นแบบ manual ด้วยโพรไฟล์ที่เพิ่งสร้าง (เลี่ยงการเซ็นอัตโนมัติที่ไปขอ dev profile)
+    update_code_signing_settings(
+      use_automatic_signing: false,
+      path: "App.xcodeproj",
+      team_id: TEAM_ID,
+      code_sign_identity: "Apple Distribution",
+      profile_name: lane_context[SharedValues::SIGH_NAME]
+    )
 
     build_app(
       workspace: "App.xcworkspace",
       scheme: "App",
       configuration: "Release",
       export_method: "app-store",
-      xcargs: auth,
-      export_xcargs: auth,
       export_options: {
-        signingStyle: "automatic",
-        teamID: TEAM_ID
+        signingStyle: "manual",
+        teamID: TEAM_ID,
+        provisioningProfiles: {
+          APP_ID => lane_context[SharedValues::SIGH_NAME]
+        }
       }
     )
 
@@ -55,7 +75,7 @@ platform :ios do
       )
     rescue => e
       UI.important("ยังอัปขึ้น TestFlight ไม่ได้ (ปกติถ้ายังไม่ได้สร้าง app record): #{e.message}")
-      UI.important("Build + ลงทะเบียนแอปสำเร็จแล้ว — ไปสร้าง app record บน App Store Connect แล้วรันอีกครั้ง")
+      UI.important("Build สำเร็จแล้ว — ไปสร้าง app record บน App Store Connect แล้วรันอีกครั้ง")
     end
   end
 end
