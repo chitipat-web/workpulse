@@ -12,12 +12,13 @@ platform :ios do
     )
 
     # สร้าง app record บน App Store Connect (idempotent — มีอยู่แล้วก็ข้าม)
+    # produce เวอร์ชันนี้ไม่รับ api_key ตรง ๆ — ใช้ Spaceship token ที่ตั้งไว้ด้านบนแทน
     produce(
-      api_key: api_key,
       app_identifier: APP_ID,
       app_name: "Lala Map",
       sku: "lala-map-001",
-      language: "en-US"
+      language: "en-US",
+      team_id: TEAM_ID
     )
 
     # เลขบิลด์ไม่ซ้ำทุกครั้งที่รัน กัน TestFlight ปฏิเสธว่าซ้ำ
