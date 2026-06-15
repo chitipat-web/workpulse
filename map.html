@@ -6,6 +6,8 @@
 <title>แผนที่โลก 3D — Royal Lala</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#09090f">
+<link rel="apple-touch-icon" href="app-icon.png">
+<link rel="icon" href="app-icon.png">
 <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600;700&family=Sarabun:wght@400;500;600&display=swap" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/maplibre-gl@5.6.0/dist/maplibre-gl.css" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/maplibre-gl@5.6.0/dist/maplibre-gl.js" crossorigin="anonymous"></script>
@@ -65,6 +67,76 @@
   .act-btn.rec{background:rgba(255,91,110,.22);border-color:#ff5b6e;animation:recblink 1.6s infinite}
   @keyframes recblink{50%{box-shadow:0 0 12px rgba(255,91,110,.65)}}
   .act-btn:active{transform:scale(.94)}
+
+  /* ===== ช่องค้นหาสถานที่ ===== */
+  .searchbar{
+    flex:1;display:flex;align-items:center;gap:8px;
+    background:var(--panel);border:1px solid var(--gold-dim);
+    border-radius:22px;padding:8px 14px;backdrop-filter:blur(8px);
+    max-width:none;
+  }
+  .searchbar:focus-within{border-color:var(--gold)}
+  .search-ico{font-size:14px;opacity:.8}
+  .searchbar input{
+    flex:1;min-width:0;background:none;border:none;outline:none;color:var(--text);
+    font-family:inherit;font-size:14px;
+  }
+  .searchbar input::placeholder{color:var(--text2)}
+  .searchbar input::-webkit-search-cancel-button{display:none}
+  .search-clear{display:none;background:none;border:none;color:var(--text2);font-size:14px;cursor:pointer;padding:2px 4px}
+  .search-clear.show{display:block}
+  .search-results{
+    position:absolute;left:14px;right:14px;top:calc(60px + env(safe-area-inset-top));z-index:11;
+    background:var(--panel);border:1px solid var(--gold-dim);border-radius:14px;
+    backdrop-filter:blur(12px);overflow:hidden;display:none;
+    box-shadow:0 10px 30px rgba(0,0,0,.5);
+  }
+  .search-results.show{display:block}
+  .sr-item{padding:12px 16px;cursor:pointer;border-bottom:1px solid rgba(201,170,113,.12);font-size:14px;display:flex;gap:10px;align-items:center}
+  .sr-item:last-child{border-bottom:none}
+  .sr-item:active{background:rgba(201,170,113,.15)}
+  .sr-item .sr-name{flex:1;min-width:0}
+  .sr-item b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .sr-item span{font-size:12px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block}
+  .sr-empty{padding:14px 16px;color:var(--text2);font-size:13px;text-align:center}
+
+  /* ===== Dashboard สรุป ===== */
+  .stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:6px 0 14px}
+  .stat-card{background:#0b0b14;border:1px solid var(--gold-dim);border-radius:14px;padding:14px}
+  .stat-card .sv{font-size:24px;font-weight:700;color:var(--gold);font-family:'JetBrains Mono',monospace}
+  .stat-card .sl{font-size:12px;color:var(--text2);margin-top:2px}
+  .stat-card.wide{grid-column:1 / -1}
+  .chart-title{font-size:13px;color:var(--text2);margin:4px 0 8px}
+  .chart{display:flex;align-items:flex-end;gap:5px;height:110px;padding-top:6px}
+  .bar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;height:100%;justify-content:flex-end}
+  .bar{width:100%;max-width:22px;border-radius:4px 4px 0 0;background:linear-gradient(180deg,#d8bc85,#9c7b44);min-height:2px;transition:height .4s}
+  .bar-lbl{font-size:9px;color:var(--text2)}
+
+  /* ===== หน้าแนะนำครั้งแรก (onboarding) ===== */
+  .onboarding{
+    position:absolute;inset:0;z-index:30;display:none;
+    align-items:center;justify-content:center;padding:26px;
+    background:radial-gradient(ellipse at 50% 35%,#171c2e,#06070c);
+  }
+  .onboarding.show{display:flex}
+  .ob-card{width:100%;max-width:380px;text-align:center}
+  .ob-slides{overflow:hidden}
+  .ob-slide{display:none}
+  .ob-slide.active{display:block;animation:obfade .4s ease}
+  @keyframes obfade{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+  .ob-emoji{font-size:74px;margin-bottom:18px;filter:drop-shadow(0 6px 18px rgba(201,170,113,.35))}
+  .ob-slide h2{font-size:24px;color:var(--gold);margin-bottom:10px}
+  .ob-slide p{font-size:15px;color:var(--text2);line-height:1.7;min-height:80px}
+  .ob-dots{display:flex;gap:8px;justify-content:center;margin:20px 0 24px}
+  .ob-dot{width:8px;height:8px;border-radius:50%;background:var(--gold-dim);transition:.25s}
+  .ob-dot.active{background:var(--gold);width:24px;border-radius:4px}
+  .ob-skip{display:block;width:100%;margin-top:12px;background:none;border:none;color:var(--text2);font-family:inherit;font-size:14px;cursor:pointer}
+  .btn-gold{
+    width:100%;padding:14px;border:none;border-radius:14px;cursor:pointer;
+    background:linear-gradient(135deg,#d8bc85,#b08d52);color:#1a1206;
+    font-family:inherit;font-size:16px;font-weight:600;
+  }
+  .btn-gold:active{transform:scale(.98)}
 
   /* ===== แผงประวัติการเดินทาง ===== */
   .hist-panel{
@@ -166,18 +238,24 @@
 <div class="loading" id="loading">
   <div class="globe">🌍</div>
   <p id="loadingMsg">กำลังโหลดแผนที่โลก 3D...</p>
-  <p style="position:absolute;bottom:14px;right:16px;font-size:10px;color:#3a3a4a">v14</p>
+  <p style="position:absolute;bottom:14px;right:16px;font-size:10px;color:#3a3a4a">v15</p>
 </div>
 
 <div class="topbar">
   <a class="back-btn" href="casino.html">←</a>
-  <div class="title">🌍 แผนที่โลก 3D<small>REAL WORLD · 3D BUILDINGS</small></div>
+  <div class="searchbar">
+    <span class="search-ico">🔍</span>
+    <input id="searchInput" type="search" autocomplete="off" placeholder="ค้นหาสถานที่ / ที่อยู่..." enterkeyhint="search">
+    <button class="search-clear" id="searchClear" onclick="clearSearch()">✕</button>
+  </div>
 </div>
+<div class="search-results" id="searchResults"></div>
 
 <div class="actions">
   <button class="act-btn" id="btnLogin" onclick="openCloudPanel()" title="ซิงก์เส้นทางข้ามเครื่อง">👤</button>
   <button class="act-btn" id="btnFollow" onclick="toggleFollow()" title="ตามตำแหน่ง GPS ของฉัน">🧭</button>
   <button class="act-btn" id="btnRec" onclick="toggleRec()" title="บันทึกการเดินทางวันนี้">⏺</button>
+  <button class="act-btn" id="btnStats" onclick="toggleStats()" title="สรุปการเดินทาง">📊</button>
   <button class="act-btn" id="btnHist" onclick="toggleHist()" title="ประวัติการเดินทาง">📅</button>
   <button class="act-btn on" id="btn3d" onclick="toggle3D()" title="สลับมุมมอง 2D / 3D">🏙️</button>
   <button class="act-btn" id="btnGlobe" onclick="goGlobe()" title="กลับไปดูลูกโลก">🌐</button>
@@ -193,6 +271,25 @@
 <div class="hist-panel" id="cloudPanel">
   <div class="hist-head"><b>☁️ ซิงก์ข้ามเครื่อง</b><button onclick="closeCloudPanel()">✕</button></div>
   <div id="cloudBody"></div>
+</div>
+
+<div class="hist-panel" id="statsPanel">
+  <div class="hist-head"><b>📊 สรุปการเดินทาง</b><button onclick="toggleStats()">✕</button></div>
+  <div id="statsBody"></div>
+</div>
+
+<div class="onboarding" id="onboarding">
+  <div class="ob-card">
+    <div class="ob-slides" id="obSlides">
+      <div class="ob-slide"><div class="ob-emoji">🌍</div><h2>แผนที่โลก 3D</h2><p>สำรวจโลกจริงแบบลูกโลกหมุนได้ พร้อมตึก 3D และภาพถ่ายดาวเทียม</p></div>
+      <div class="ob-slide"><div class="ob-emoji">🧭</div><h2>ตามตำแหน่งคุณ</h2><p>กดเข็มทิศเพื่อให้แผนที่บินตามตัวคุณ หันตามทิศที่เดินทางจริง</p></div>
+      <div class="ob-slide"><div class="ob-emoji">⏺</div><h2>บันทึกการเดินทาง</h2><p>อัดเส้นทางแต่ละวันอัตโนมัติ ดูสถิติย้อนหลัง และซิงก์ข้ามเครื่องได้</p></div>
+      <div class="ob-slide"><div class="ob-emoji">🔍</div><h2>ค้นหาได้ทุกที่</h2><p>พิมพ์ชื่อสถานที่หรือที่อยู่ แล้วบินไปได้ทันที</p></div>
+    </div>
+    <div class="ob-dots" id="obDots"></div>
+    <button class="btn-gold" id="obNext" onclick="obAdvance()">ถัดไป</button>
+    <button class="ob-skip" onclick="finishOnboarding()">ข้าม</button>
+  </div>
 </div>
 
 <div class="hint" id="hint">ลาก 2 นิ้ว (หรือคลิกขวา) เพื่อหมุน/เอียงมุมมอง</div>
@@ -410,6 +507,146 @@ function goGlobe() {
   stopFollow();
   setActiveChip(-1);
   map.flyTo({ center: [100.5018, 13.7563], zoom: 1.6, pitch: 0, bearing: 0, duration: 2500 });
+}
+
+// ===== ค้นหาสถานที่ (OpenStreetMap Nominatim — ฟรี ไม่ใช้ key) =====
+const searchInput = document.getElementById('searchInput');
+const searchResults = document.getElementById('searchResults');
+const searchClear = document.getElementById('searchClear');
+let searchTimer = null, searchMarker = null;
+
+searchInput.addEventListener('input', () => {
+  const q = searchInput.value.trim();
+  searchClear.classList.toggle('show', q.length > 0);
+  clearTimeout(searchTimer);
+  if (q.length < 2) { searchResults.classList.remove('show'); return; }
+  searchTimer = setTimeout(() => runSearch(q), 350); // หน่วงไว้ ไม่ยิงทุกตัวอักษร
+});
+searchInput.addEventListener('focus', () => {
+  if (searchResults.innerHTML) searchResults.classList.add('show');
+});
+
+async function runSearch(q) {
+  searchResults.innerHTML = '<div class="sr-empty">กำลังค้นหา...</div>';
+  searchResults.classList.add('show');
+  try {
+    const url = 'https://nominatim.openstreetmap.org/search?format=json&limit=6&accept-language=th&q=' + encodeURIComponent(q);
+    const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
+    const data = await res.json();
+    if (!data.length) { searchResults.innerHTML = '<div class="sr-empty">ไม่พบสถานที่นี้ ลองพิมพ์ใหม่</div>'; return; }
+    searchResults.innerHTML = data.map(p => {
+      const name = (p.display_name || '').split(',')[0];
+      const rest = (p.display_name || '').split(',').slice(1).join(',').trim();
+      return `<div class="sr-item" onclick="gotoPlace(${p.lon},${p.lat},'${name.replace(/'/g, "\\'")}')">
+        <span>📍</span><div class="sr-name"><b>${name}</b><span>${rest}</span></div></div>`;
+    }).join('');
+  } catch (e) {
+    searchResults.innerHTML = '<div class="sr-empty">ค้นหาไม่สำเร็จ — เช็คเน็ตแล้วลองใหม่</div>';
+  }
+}
+
+function gotoPlace(lng, lat, name) {
+  searchResults.classList.remove('show');
+  searchInput.blur();
+  stopSpin();
+  stopFollow();
+  setActiveChip(-1);
+  lng = +lng; lat = +lat;
+  if (searchMarker) searchMarker.remove();
+  const el = document.createElement('div');
+  el.textContent = '📍';
+  el.style.cssText = 'font-size:30px;filter:drop-shadow(0 3px 5px rgba(0,0,0,.6));transform:translateY(-6px)';
+  searchMarker = new maplibregl.Marker({ element: el, anchor: 'bottom' }).setLngLat([lng, lat]).addTo(map);
+  map.flyTo({ center: [lng, lat], zoom: 16, pitch: buildingsOn ? 55 : 0, duration: 3500, essential: true });
+  toast('📍 ' + name, 4000);
+}
+
+function clearSearch() {
+  searchInput.value = '';
+  searchClear.classList.remove('show');
+  searchResults.classList.remove('show');
+  if (searchMarker) { searchMarker.remove(); searchMarker = null; }
+}
+
+// แตะที่แผนที่ = ปิดผลค้นหา
+document.getElementById('map').addEventListener('touchstart', () => searchResults.classList.remove('show'), { passive: true });
+
+// ===== Dashboard สรุปการเดินทาง =====
+function weekKeys(n) {
+  const out = [];
+  for (let i = n - 1; i >= 0; i--) {
+    const d = new Date(); d.setDate(d.getDate() - i);
+    out.push(d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'));
+  }
+  return out;
+}
+function sumKm(dayList) { return dayList.reduce((s, d) => s + dayDistance(d), 0) / 1000; }
+
+function renderStats() {
+  const body = document.getElementById('statsBody');
+  const allDays = Object.keys(tracks).filter(d => (tracks[d] || []).length);
+  if (!allDays.length) {
+    body.innerHTML = '<p class="hist-empty">ยังไม่มีข้อมูลการเดินทาง<br>กดปุ่ม ⏺ เพื่อเริ่มบันทึก แล้วสถิติจะขึ้นที่นี่</p>';
+    return;
+  }
+  const last7 = weekKeys(7), last30 = weekKeys(30), last14 = weekKeys(14);
+  const weekKm = sumKm(last7), monthKm = sumKm(last30);
+  const allKm = sumKm(allDays);
+  const longest = Math.max(...allDays.map(d => dayDistance(d) / 1000));
+  const maxBar = Math.max(...last14.map(d => dayDistance(d) / 1000), 0.001);
+
+  const bars = last14.map(d => {
+    const km = dayDistance(d) / 1000;
+    const h = Math.round((km / maxBar) * 100);
+    const dd = new Date(d + 'T12:00:00').getDate();
+    return `<div class="bar-col"><div class="bar" style="height:${km > 0 ? Math.max(h, 4) : 0}%"></div><div class="bar-lbl">${dd}</div></div>`;
+  }).join('');
+
+  body.innerHTML = `
+    <div class="stat-grid">
+      <div class="stat-card"><div class="sv">${weekKm.toFixed(1)}</div><div class="sl">กม. · 7 วันล่าสุด</div></div>
+      <div class="stat-card"><div class="sv">${monthKm.toFixed(1)}</div><div class="sl">กม. · 30 วันล่าสุด</div></div>
+      <div class="stat-card"><div class="sv">${allKm.toFixed(1)}</div><div class="sl">กม. · รวมทั้งหมด</div></div>
+      <div class="stat-card"><div class="sv">${allDays.length}</div><div class="sl">วันที่บันทึก</div></div>
+      <div class="stat-card wide"><div class="sv">${longest.toFixed(2)}</div><div class="sl">กม. · ทริปที่ไกลที่สุดในหนึ่งวัน</div></div>
+    </div>
+    <div class="chart-title">ระยะทางราย 14 วัน (กม.)</div>
+    <div class="chart">${bars}</div>`;
+}
+function toggleStats() {
+  const p = document.getElementById('statsPanel');
+  if (p.classList.toggle('open')) { closeOtherPanels('statsPanel'); renderStats(); }
+}
+function closeOtherPanels(keep) {
+  ['histPanel', 'cloudPanel', 'statsPanel'].forEach(id => {
+    if (id !== keep) document.getElementById(id).classList.remove('open');
+  });
+}
+
+// ===== หน้าแนะนำครั้งแรก (onboarding) =====
+let obIndex = 0;
+const obSlideEls = () => document.querySelectorAll('#obSlides .ob-slide');
+function obShow(i) {
+  const slides = obSlideEls();
+  obIndex = Math.max(0, Math.min(i, slides.length - 1));
+  slides.forEach((s, j) => s.classList.toggle('active', j === obIndex));
+  document.querySelectorAll('#obDots .ob-dot').forEach((d, j) => d.classList.toggle('active', j === obIndex));
+  document.getElementById('obNext').textContent = obIndex === slides.length - 1 ? 'เริ่มใช้งาน 🚀' : 'ถัดไป';
+}
+function obAdvance() {
+  if (obIndex >= obSlideEls().length - 1) { finishOnboarding(); return; }
+  obShow(obIndex + 1);
+}
+function finishOnboarding() {
+  localStorage.setItem('lala-onboarded', '1');
+  document.getElementById('onboarding').classList.remove('show');
+}
+function maybeShowOnboarding() {
+  if (localStorage.getItem('lala-onboarded')) return;
+  const dots = document.getElementById('obDots');
+  dots.innerHTML = [...obSlideEls()].map(() => '<div class="ob-dot"></div>').join('');
+  obShow(0);
+  document.getElementById('onboarding').classList.add('show');
 }
 
 // ===== ข้อความแจ้งเตือนชั่วคราว =====
@@ -636,7 +873,7 @@ function renderHist() {
 }
 function toggleHist() {
   const p = document.getElementById('histPanel');
-  if (p.classList.toggle('open')) renderHist();
+  if (p.classList.toggle('open')) { closeOtherPanels('histPanel'); renderHist(); }
 }
 function viewTrack(day) {
   viewDay = day === todayKey() ? null : day;
@@ -719,7 +956,7 @@ function updateLoginBtn() {
 }
 
 // ===== แผงซิงก์ข้ามเครื่อง =====
-function openCloudPanel() { renderCloud(); document.getElementById('cloudPanel').classList.add('open'); }
+function openCloudPanel() { closeOtherPanels('cloudPanel'); renderCloud(); document.getElementById('cloudPanel').classList.add('open'); }
 function closeCloudPanel() { document.getElementById('cloudPanel').classList.remove('open'); }
 function renderCloud() {
   const el = document.getElementById('cloudBody');
@@ -930,6 +1167,7 @@ map.on('load', () => {
   updateTrackLine(todayKey());
   if (recording) { btnRec.classList.add('rec'); startWatch(); acquireWakeLock(); }
   setTimeout(() => document.getElementById('hint').classList.add('hide'), 6000);
+  maybeShowOnboarding();
 });
 
 // กันค้าง: ถ้าผ่านไป 15 วิแล้วยังไม่ขึ้นแผนที่ ให้แจ้งผู้ใช้
