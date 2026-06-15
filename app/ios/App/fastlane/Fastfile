@@ -37,6 +37,18 @@ platform :ios do
       keychain_password: keychain_password
     )
 
+    # ลงทะเบียน Bundle ID ผ่าน App Store Connect API ถ้ายังไม่มี (sigh สร้างเองไม่ได้)
+    require "spaceship"
+    Spaceship::ConnectAPI.token = Spaceship::ConnectAPI::Token.create(
+      key_id: ENV["ASC_KEY_ID"],
+      issuer_id: ENV["ASC_ISSUER_ID"],
+      filepath: key_path
+    )
+    unless Spaceship::ConnectAPI::BundleId.all.any? { |b| b.identifier == APP_ID }
+      Spaceship::ConnectAPI::BundleId.create(name: "Lala Map", identifier: APP_ID, seed_id: TEAM_ID)
+      UI.success("ลงทะเบียน Bundle ID #{APP_ID} แล้ว")
+    end
+
     # โพรไฟล์แบบ App Store — ไม่ต้องมีอุปกรณ์ลงทะเบียน
     sigh(
       api_key: api_key,
