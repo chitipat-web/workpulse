@@ -30,35 +30,41 @@ platform :ios do
       lock_when_sleeps: false
     )
 
-    # ใบรับรอง Distribution (สร้างใหม่อัตโนมัติถ้าบัญชียังไม่มี)
-    cert(
-      api_key: api_key,
-      keychain_path: File.expand_path("~/Library/Keychains/#{keychain_name}-db"),
-      keychain_password: keychain_password
-    )
-
-    # ลงทะเบียน Bundle ID ผ่าน App Store Connect API ถ้ายังไม่มี (sigh สร้างเองไม่ได้)
-    # ยิง API ตรงเพราะ BundleId.create ของ fastlane 2.235 ไม่ส่งฟิลด์ platform ที่ Apple บังคับ
+    # ===== จัดการฝั่ง Apple Developer Portal ผ่าน App Store Connect API =====
     require "spaceship"
     Spaceship::ConnectAPI.token = Spaceship::ConnectAPI::Token.create(
       key_id: ENV["ASC_KEY_ID"],
       issuer_id: ENV["ASC_ISSUER_ID"],
       filepath: key_path
     )
+    pclient = Spaceship::ConnectAPI::Provisioning::Client.instance
+
+    # ลบใบรับรอง Distribution เก่าทิ้งก่อน (CI ไม่เก็บกุญแจส่วนตัว ใบเก่าใช้ไม่ได้
+    # และกันชนเพดานจำนวนใบรับรองของบัญชี)
+    Spaceship::ConnectAPI::Certificate.all.each do |c|
+      next unless c.certificate_type.to_s.include?("DISTRIBUTION")
+      pclient.delete("certificates/#{c.id}")
+      UI.message("ลบใบรับรองเก่า #{c.id}")
+    end
+
+    # ลงทะเบียน Bundle ID ถ้ายังไม่มี (ยิง API ตรง เพราะ helper ของ fastlane 2.235
+    # ไม่ส่งฟิลด์ platform ที่ Apple บังคับ)
     unless Spaceship::ConnectAPI::BundleId.all.any? { |b| b.identifier == APP_ID }
-      Spaceship::ConnectAPI::Provisioning::Client.instance.post("bundleIds", {
+      pclient.post("bundleIds", {
         data: {
           type: "bundleIds",
-          attributes: {
-            identifier: APP_ID,
-            name: "LalaMap",
-            seedId: TEAM_ID,
-            platform: "IOS"
-          }
+          attributes: { identifier: APP_ID, name: "LalaMap", seedId: TEAM_ID, platform: "IOS" }
         }
       })
       UI.success("ลงทะเบียน Bundle ID #{APP_ID} แล้ว")
     end
+
+    # ใบรับรอง Distribution ใหม่ (เพิ่งเคลียร์ที่ว่างแล้ว)
+    cert(
+      api_key: api_key,
+      keychain_path: File.expand_path("~/Library/Keychains/#{keychain_name}-db"),
+      keychain_password: keychain_password
+    )
 
     # โพรไฟล์แบบ App Store — ไม่ต้องมีอุปกรณ์ลงทะเบียน
     sigh(
@@ -66,7 +72,7 @@ platform :ios do
       app_identifier: APP_ID
     )
 
-    # เซ็นแบบ manual ด้วยโพรไฟล์ที่เพิ่งสร้าง (เลี่ยงการเซ็นอัตโนมัติที่ไปขอ dev profile)
+    # เซ็นแบบ manual ด้วยโพรไฟล์ที่เพิ่งสร้าง
     update_code_signing_settings(
       use_automatic_signing: false,
       path: "App.xcodeproj",
