@@ -138,6 +138,24 @@
   }
   .btn-gold:active{transform:scale(.98)}
 
+  /* ===== รูปถ่ายบนแผนที่ ===== */
+  .photo-pin{
+    width:42px;height:42px;border-radius:10px;border:2px solid var(--gold);
+    background-size:cover;background-position:center;cursor:pointer;
+    box-shadow:0 3px 10px rgba(0,0,0,.5);
+  }
+  .lightbox{
+    position:absolute;inset:0;z-index:40;display:none;
+    align-items:center;justify-content:center;padding:20px;
+    background:rgba(0,0,0,.92);backdrop-filter:blur(4px);
+  }
+  .lightbox.show{display:flex}
+  .lb-inner{max-width:100%;max-height:100%;display:flex;flex-direction:column;gap:12px;align-items:center}
+  .lb-inner img{max-width:100%;max-height:78vh;border-radius:12px;object-fit:contain}
+  .lb-bar{display:flex;align-items:center;gap:14px;color:var(--text2);font-size:13px}
+  .lb-bar button{background:rgba(255,91,110,.18);border:1px solid #ff5b6e;color:#ff8a98;
+    font-family:inherit;font-size:13px;padding:8px 16px;border-radius:20px;cursor:pointer}
+
   /* ===== แผงประวัติการเดินทาง ===== */
   .hist-panel{
     position:absolute;left:0;right:0;bottom:0;z-index:16;
@@ -238,7 +256,7 @@
 <div class="loading" id="loading">
   <div class="globe">🌍</div>
   <p id="loadingMsg">กำลังโหลดแผนที่โลก 3D...</p>
-  <p style="position:absolute;bottom:14px;right:16px;font-size:10px;color:#3a3a4a">v15</p>
+  <p style="position:absolute;bottom:14px;right:16px;font-size:10px;color:#3a3a4a">v16</p>
 </div>
 
 <div class="topbar">
@@ -255,6 +273,7 @@
   <button class="act-btn" id="btnLogin" onclick="openCloudPanel()" title="ซิงก์เส้นทางข้ามเครื่อง">👤</button>
   <button class="act-btn" id="btnFollow" onclick="toggleFollow()" title="ตามตำแหน่ง GPS ของฉัน">🧭</button>
   <button class="act-btn" id="btnRec" onclick="toggleRec()" title="บันทึกการเดินทางวันนี้">⏺</button>
+  <button class="act-btn" id="btnPhoto" onclick="addPhoto()" title="แปะรูปถ่ายตรงตำแหน่งนี้">📷</button>
   <button class="act-btn" id="btnStats" onclick="toggleStats()" title="สรุปการเดินทาง">📊</button>
   <button class="act-btn" id="btnHist" onclick="toggleHist()" title="ประวัติการเดินทาง">📅</button>
   <button class="act-btn on" id="btn3d" onclick="toggle3D()" title="สลับมุมมอง 2D / 3D">🏙️</button>
@@ -276,6 +295,17 @@
 <div class="hist-panel" id="statsPanel">
   <div class="hist-head"><b>📊 สรุปการเดินทาง</b><button onclick="toggleStats()">✕</button></div>
   <div id="statsBody"></div>
+</div>
+
+<input type="file" id="photoInput" accept="image/*" capture="environment" style="display:none">
+<div class="lightbox" id="lightbox" onclick="closeLightbox(event)">
+  <div class="lb-inner">
+    <img id="lbImg" src="" alt="">
+    <div class="lb-bar">
+      <span id="lbCaption"></span>
+      <button onclick="deleteCurrentPhoto()">🗑 ลบ</button>
+    </div>
+  </div>
 </div>
 
 <div class="onboarding" id="onboarding">
@@ -368,6 +398,7 @@ try {
     bearing: 0,
     maxPitch: 75,
     hash: true,
+    preserveDrawingBuffer: true,
     attributionControl: { compact: true }
   });
 } catch (err) {
@@ -649,6 +680,137 @@ function maybeShowOnboarding() {
   document.getElementById('onboarding').classList.add('show');
 }
 
+// ===== แชร์เส้นทาง (รูปภาพ + ไฟล์ GPX) =====
+function buildGPX(day) {
+  const pts = tracks[day] || [];
+  return '<?xml version="1.0" encoding="UTF-8"?>\n' +
+    '<gpx version="1.1" creator="Lala Map" xmlns="http://www.topografix.com/GPX/1/1">\n' +
+    '<trk><name>Lala Map ' + day + '</name><trkseg>\n' +
+    pts.map(p => `<trkpt lat="${p[1]}" lon="${p[0]}"><time>${new Date(p[2]).toISOString()}</time></trkpt>`).join('\n') +
+    '\n</trkseg></trk>\n</gpx>';
+}
+function downloadBlob(blob, name) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = name;
+  document.body.appendChild(a); a.click(); a.remove();
+}
+async function shareRoute(day) {
+  document.getElementById('histPanel').classList.remove('open'); // เปิดแผนที่ให้แคปได้
+  viewTrack(day); // ซูมให้พอดีเส้นทาง
+  toast('กำลังเตรียมรูปเส้นทาง... 📤', 3000);
+  await new Promise(res => { let done = false; const f = () => { if (!done) { done = true; res(); } }; map.once('idle', f); setTimeout(f, 4500); });
+  const stats = thaiDate(day).replace(' · วันนี้', '') + ' · ' + (dayDistance(day) / 1000).toFixed(2) + ' กม.';
+  const gpx = buildGPX(day);
+  map.getCanvas().toBlob(async (blob) => {
+    const files = [];
+    if (blob) files.push(new File([blob], 'lala-' + day + '.png', { type: 'image/png' }));
+    files.push(new File([gpx], 'lala-' + day + '.gpx', { type: 'application/gpx+xml' }));
+    try {
+      if (navigator.canShare && navigator.canShare({ files })) {
+        await navigator.share({ title: 'เส้นทางของฉัน 🗺️', text: 'เส้นทาง ' + stats, files });
+        return;
+      }
+      if (navigator.share) { await navigator.share({ title: 'เส้นทางของฉัน 🗺️', text: 'เส้นทาง ' + stats }); return; }
+    } catch (e) { if (e && e.name === 'AbortError') return; }
+    if (blob) downloadBlob(blob, 'lala-' + day + '.png');
+    downloadBlob(new Blob([gpx], { type: 'application/gpx+xml' }), 'lala-' + day + '.gpx');
+    toast('บันทึกรูป + ไฟล์ GPX ลงเครื่องแล้ว');
+  }, 'image/png');
+}
+
+// ===== แปะรูปถ่ายบนแผนที่ (เก็บใน IndexedDB — รองรับรูปเยอะกว่า localStorage) =====
+let photoDB = null;
+function openPhotoDB() {
+  return new Promise((res, rej) => {
+    if (photoDB) return res(photoDB);
+    const req = indexedDB.open('lala-photos', 1);
+    req.onupgradeneeded = () => req.result.createObjectStore('photos', { keyPath: 'id', autoIncrement: true });
+    req.onsuccess = () => { photoDB = req.result; res(photoDB); };
+    req.onerror = () => rej(req.error);
+  });
+}
+async function dbAllPhotos() {
+  const db = await openPhotoDB();
+  return new Promise(res => { const r = db.transaction('photos').objectStore('photos').getAll(); r.onsuccess = () => res(r.result || []); r.onerror = () => res([]); });
+}
+async function dbAddPhoto(obj) {
+  const db = await openPhotoDB();
+  return new Promise((res, rej) => { const r = db.transaction('photos', 'readwrite').objectStore('photos').add(obj); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); });
+}
+async function dbDelPhoto(id) {
+  const db = await openPhotoDB();
+  return new Promise(res => { const r = db.transaction('photos', 'readwrite').objectStore('photos').delete(id); r.onsuccess = () => res(); r.onerror = () => res(); });
+}
+
+const photoInput = document.getElementById('photoInput');
+let pendingPhotoLngLat = null;
+
+function addPhoto() {
+  if (meMarker) { const ll = meMarker.getLngLat(); pendingPhotoLngLat = [ll.lng, ll.lat]; }
+  else { const c = map.getCenter(); pendingPhotoLngLat = [c.lng, c.lat]; toast('ยังไม่รู้ตำแหน่ง GPS — ใช้จุดกลางจอแทน (กด 🧭 เพื่อใช้ตำแหน่งจริง)', 4000); }
+  photoInput.value = '';
+  photoInput.click();
+}
+photoInput.addEventListener('change', async () => {
+  const file = photoInput.files && photoInput.files[0];
+  if (!file || !pendingPhotoLngLat) return;
+  try {
+    const thumb = await resizeImage(file, 1280, 0.72);
+    const [lng, lat] = pendingPhotoLngLat;
+    const id = await dbAddPhoto({ day: todayKey(), lng, lat, ts: Date.now(), thumb });
+    addPhotoMarker({ id, lng, lat, thumb, ts: Date.now() });
+    toast('แปะรูปลงแผนที่แล้ว 📷 (แตะรูปบนแผนที่เพื่อดู)');
+  } catch (e) { toast('บันทึกรูปไม่สำเร็จ: ' + (e.message || e), 5000); }
+});
+function resizeImage(file, maxDim, quality) {
+  return new Promise((res, rej) => {
+    const img = new Image();
+    img.onload = () => {
+      let w = img.width, h = img.height;
+      const scale = Math.min(1, maxDim / Math.max(w, h));
+      w = Math.round(w * scale); h = Math.round(h * scale);
+      const cv = document.createElement('canvas'); cv.width = w; cv.height = h;
+      cv.getContext('2d').drawImage(img, 0, 0, w, h);
+      res(cv.toDataURL('image/jpeg', quality));
+    };
+    img.onerror = rej;
+    img.src = URL.createObjectURL(file);
+  });
+}
+
+const photoMarkers = [];
+function addPhotoMarker(p) {
+  const el = document.createElement('div');
+  el.className = 'photo-pin';
+  el.style.backgroundImage = 'url(' + p.thumb + ')';
+  el.onclick = () => openLightbox(p);
+  const mk = new maplibregl.Marker({ element: el, anchor: 'center' }).setLngLat([p.lng, p.lat]).addTo(map);
+  photoMarkers.push({ mk, p });
+}
+async function loadPhotoMarkers() {
+  try { (await dbAllPhotos()).forEach(addPhotoMarker); } catch (e) { console.warn('[photos]', e); }
+}
+
+let lbCurrent = null;
+function openLightbox(p) {
+  lbCurrent = p;
+  document.getElementById('lbImg').src = p.thumb;
+  document.getElementById('lbCaption').textContent = new Date(p.ts).toLocaleString('th-TH');
+  document.getElementById('lightbox').classList.add('show');
+}
+function closeLightbox(e) {
+  if (!e || e.target.id === 'lightbox') document.getElementById('lightbox').classList.remove('show');
+}
+async function deleteCurrentPhoto() {
+  if (!lbCurrent || !confirm('ลบรูปนี้?')) return;
+  await dbDelPhoto(lbCurrent.id);
+  const i = photoMarkers.findIndex(m => m.p.id === lbCurrent.id);
+  if (i >= 0) { photoMarkers[i].mk.remove(); photoMarkers.splice(i, 1); }
+  document.getElementById('lightbox').classList.remove('show');
+  toast('ลบรูปแล้ว');
+}
+
 // ===== ข้อความแจ้งเตือนชั่วคราว =====
 const hintEl = document.getElementById('hint');
 let toastTimer;
@@ -868,6 +1030,7 @@ function renderHist() {
         <b>${thaiDate(d)}</b>
         <span>${(dayDistance(d) / 1000).toFixed(2)} กม. · ${tracks[d].length} จุด</span>
       </div>
+      <button class="hist-del" onclick="shareRoute('${d}')">📤</button>
       <button class="hist-del" onclick="delTrack('${d}')">🗑</button>
     </div>`).join('');
 }
@@ -1167,6 +1330,7 @@ map.on('load', () => {
   updateTrackLine(todayKey());
   if (recording) { btnRec.classList.add('rec'); startWatch(); acquireWakeLock(); }
   setTimeout(() => document.getElementById('hint').classList.add('hide'), 6000);
+  loadPhotoMarkers();
   maybeShowOnboarding();
 });
 
