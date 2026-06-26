@@ -4,141 +4,101 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="theme-color" content="#0ea5e9">
-<title>บันทึกยอดเงินโอนเข้า</title>
+<title>บันทึกยอดเงินโอนเข้า (Real-time)</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   :root {
-    --bg: #0f172a;
-    --card: #1e293b;
-    --card2: #273449;
-    --line: #334155;
-    --text: #f1f5f9;
-    --muted: #94a3b8;
-    --green: #22c55e;
-    --green-d: #16a34a;
-    --blue: #0ea5e9;
-    --red: #ef4444;
-    --accent: #38bdf8;
+    --bg: #0f172a; --card: #1e293b; --card2: #273449; --line: #334155;
+    --text: #f1f5f9; --muted: #94a3b8; --green: #22c55e; --green-d: #16a34a;
+    --blue: #0ea5e9; --red: #ef4444; --accent: #38bdf8; --amber: #f59e0b;
   }
   body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Sukhumvit Set", "Helvetica Neue", sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-    padding-bottom: 90px;
-    -webkit-text-size-adjust: 100%;
+    background: var(--bg); color: var(--text); min-height: 100vh;
+    padding-bottom: 90px; -webkit-text-size-adjust: 100%;
   }
   .wrap { max-width: 560px; margin: 0 auto; padding: 16px; }
 
-  header {
-    text-align: center;
-    padding: 22px 16px 16px;
-  }
+  header { text-align: center; padding: 18px 16px 12px; position: relative; }
   header h1 { font-size: 20px; font-weight: 700; }
   header p { color: var(--muted); font-size: 13px; margin-top: 4px; }
+  .gear {
+    position: absolute; top: 16px; right: 4px; background: var(--card);
+    border: 1px solid var(--line); color: var(--text); width: 40px; height: 40px;
+    border-radius: 12px; font-size: 18px; cursor: pointer;
+  }
+  /* sync status pill */
+  .syncpill {
+    display: inline-flex; align-items: center; gap: 6px; font-size: 12px;
+    background: var(--card); border: 1px solid var(--line); color: var(--muted);
+    padding: 5px 12px; border-radius: 999px; margin-top: 10px; cursor: pointer;
+  }
+  .syncpill .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); }
+  .syncpill.on .dot { background: var(--green); box-shadow: 0 0 8px var(--green); }
+  .syncpill.err .dot { background: var(--red); }
+  .syncpill.connecting .dot { background: var(--amber); animation: blink 1s infinite; }
+  @keyframes blink { 50% { opacity: .3; } }
 
-  /* Summary card */
   .summary {
-    background: linear-gradient(135deg, #0ea5e9, #2563eb);
-    border-radius: 20px;
-    padding: 22px 20px;
-    box-shadow: 0 10px 30px rgba(14,165,233,.25);
-    margin-bottom: 16px;
+    background: linear-gradient(135deg, #0ea5e9, #2563eb); border-radius: 20px;
+    padding: 22px 20px; box-shadow: 0 10px 30px rgba(14,165,233,.25); margin: 14px 0 16px;
   }
   .summary .label { font-size: 13px; opacity: .85; }
-  .summary .total {
-    font-size: 38px; font-weight: 800; letter-spacing: -1px; margin-top: 4px;
-    word-break: break-all;
-  }
+  .summary .total { font-size: 38px; font-weight: 800; letter-spacing: -1px; margin-top: 4px; word-break: break-all; }
   .summary .total small { font-size: 18px; font-weight: 600; opacity: .85; }
-  .summary .meta {
-    display: flex; gap: 14px; margin-top: 14px; font-size: 13px;
-    border-top: 1px solid rgba(255,255,255,.25); padding-top: 12px;
-  }
+  .summary .meta { display: flex; gap: 14px; margin-top: 14px; font-size: 13px; border-top: 1px solid rgba(255,255,255,.25); padding-top: 12px; }
   .summary .meta div span { display: block; opacity: .8; font-size: 11px; }
   .summary .meta div b { font-size: 15px; font-weight: 700; }
 
-  /* mini stats */
   .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
-  .stat {
-    background: var(--card); border: 1px solid var(--line);
-    border-radius: 14px; padding: 12px 14px;
-  }
+  .stat { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; }
   .stat span { color: var(--muted); font-size: 12px; }
   .stat b { display: block; font-size: 18px; font-weight: 700; margin-top: 2px; }
 
-  /* Filter bar */
   .bar { display: flex; gap: 8px; margin-bottom: 12px; }
   .bar select, .bar input {
-    flex: 1; background: var(--card); border: 1px solid var(--line);
-    color: var(--text); border-radius: 12px; padding: 11px 12px; font-size: 14px;
-    appearance: none; outline: none;
+    flex: 1; background: var(--card); border: 1px solid var(--line); color: var(--text);
+    border-radius: 12px; padding: 11px 12px; font-size: 14px; appearance: none; outline: none;
   }
 
-  /* list */
   .list { display: flex; flex-direction: column; gap: 10px; }
-  .item {
-    background: var(--card); border: 1px solid var(--line);
-    border-radius: 14px; padding: 13px 14px;
-    display: flex; align-items: center; gap: 12px;
-  }
-  .item .ava {
-    width: 42px; height: 42px; border-radius: 12px; flex-shrink: 0;
-    background: rgba(34,197,94,.15); color: var(--green);
-    display: flex; align-items: center; justify-content: center; font-size: 20px;
-  }
+  .item { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 13px 14px; display: flex; align-items: center; gap: 12px; }
+  .item .ava { width: 42px; height: 42px; border-radius: 12px; flex-shrink: 0; background: rgba(34,197,94,.15); color: var(--green); display: flex; align-items: center; justify-content: center; font-size: 20px; }
   .item .info { flex: 1; min-width: 0; }
   .item .info .name { font-weight: 600; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .item .info .sub { color: var(--muted); font-size: 12px; margin-top: 2px; }
   .item .info .note { color: var(--muted); font-size: 12px; margin-top: 2px; font-style: italic; }
   .item .amt { text-align: right; flex-shrink: 0; }
   .item .amt b { color: var(--green); font-size: 16px; font-weight: 700; }
-  .item .amt .del {
-    display: block; margin-top: 6px; color: var(--muted); font-size: 11px;
-    cursor: pointer; background: none; border: none;
-  }
+  .item .amt .del { display: block; margin-top: 6px; color: var(--muted); font-size: 11px; cursor: pointer; background: none; border: none; }
   .item .amt .del:active { color: var(--red); }
 
   .empty { text-align: center; color: var(--muted); padding: 50px 20px; }
   .empty .ic { font-size: 50px; }
   .empty p { margin-top: 10px; font-size: 14px; }
+  .group-date { color: var(--muted); font-size: 12px; font-weight: 600; margin: 10px 2px 2px; display: flex; justify-content: space-between; }
 
-  .group-date {
-    color: var(--muted); font-size: 12px; font-weight: 600;
-    margin: 10px 2px 2px; display: flex; justify-content: space-between;
-  }
-
-  /* FAB */
   .fab {
     position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
     width: calc(100% - 32px); max-width: 528px;
-    background: linear-gradient(135deg, var(--green), var(--green-d));
-    color: #fff; border: none; border-radius: 16px;
-    padding: 16px; font-size: 16px; font-weight: 700;
+    background: linear-gradient(135deg, var(--green), var(--green-d)); color: #fff;
+    border: none; border-radius: 16px; padding: 16px; font-size: 16px; font-weight: 700;
     box-shadow: 0 8px 24px rgba(34,197,94,.35); cursor: pointer;
   }
   .fab:active { transform: translateX(-50%) scale(.98); }
 
-  /* Modal */
-  .modal {
-    position: fixed; inset: 0; background: rgba(0,0,0,.6);
-    display: none; align-items: flex-end; justify-content: center; z-index: 50;
-  }
+  .modal { position: fixed; inset: 0; background: rgba(0,0,0,.6); display: none; align-items: flex-end; justify-content: center; z-index: 50; }
   .modal.show { display: flex; }
-  .sheet {
-    background: var(--card); width: 100%; max-width: 560px;
-    border-radius: 22px 22px 0 0; padding: 20px 18px calc(20px + env(safe-area-inset-bottom));
-    animation: up .25s ease;
-  }
+  .sheet { background: var(--card); width: 100%; max-width: 560px; border-radius: 22px 22px 0 0; padding: 20px 18px calc(20px + env(safe-area-inset-bottom)); animation: up .25s ease; max-height: 92vh; overflow-y: auto; }
   @keyframes up { from { transform: translateY(100%); } to { transform: translateY(0); } }
   .sheet h2 { font-size: 18px; margin-bottom: 16px; text-align: center; }
   .field { margin-bottom: 12px; }
   .field label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 6px; }
   .field input, .field select, .field textarea {
-    width: 100%; background: var(--card2); border: 1px solid var(--line);
-    color: var(--text); border-radius: 12px; padding: 13px 14px; font-size: 16px;
-    outline: none; appearance: none;
+    width: 100%; background: var(--card2); border: 1px solid var(--line); color: var(--text);
+    border-radius: 12px; padding: 13px 14px; font-size: 16px; outline: none; appearance: none; font-family: inherit;
   }
+  .field textarea { resize: vertical; min-height: 90px; font-size: 13px; }
   .field input:focus, .field select:focus, .field textarea:focus { border-color: var(--accent); }
   .field .amount-in { font-size: 24px; font-weight: 700; text-align: center; color: var(--green); }
   .row2 { display: flex; gap: 10px; }
@@ -147,19 +107,23 @@
   .btns button { flex: 1; border: none; border-radius: 14px; padding: 15px; font-size: 16px; font-weight: 700; cursor: pointer; }
   .btn-save { background: var(--green); color: #fff; }
   .btn-cancel { background: var(--card2); color: var(--text); }
+  .hint { font-size: 12px; color: var(--muted); line-height: 1.6; background: var(--card2); border-radius: 12px; padding: 12px 14px; margin-bottom: 12px; }
+  .hint b { color: var(--text); }
+  .hint a { color: var(--accent); }
+  .hint ol { margin: 6px 0 0 18px; }
+  .hint li { margin-bottom: 3px; }
 
-  .tools { display: flex; gap: 8px; justify-content: center; margin: 18px 0 4px; }
-  .tools button {
-    background: var(--card); border: 1px solid var(--line); color: var(--muted);
-    border-radius: 10px; padding: 8px 14px; font-size: 13px; cursor: pointer;
-  }
+  .tools { display: flex; gap: 8px; justify-content: center; margin: 18px 0 4px; flex-wrap: wrap; }
+  .tools button { background: var(--card); border: 1px solid var(--line); color: var(--muted); border-radius: 10px; padding: 8px 14px; font-size: 13px; cursor: pointer; }
 </style>
 </head>
 <body>
 <div class="wrap">
   <header>
+    <button class="gear" onclick="openSettings()">⚙️</button>
     <h1>💰 ยอดเงินโอนเข้า</h1>
     <p>บันทึกเงินที่โอนเข้าบัญชีธนาคาร</p>
+    <div class="syncpill" id="syncPill" onclick="openSettings()"><span class="dot"></span><span id="syncText">โหมดออฟไลน์ (เครื่องนี้)</span></div>
   </header>
 
   <div class="summary">
@@ -186,13 +150,14 @@
 
   <div class="tools">
     <button onclick="exportCSV()">⬇️ ส่งออก CSV</button>
+    <button onclick="openSettings()">🔄 ตั้งค่า Real-time</button>
     <button onclick="clearAll()">🗑️ ล้างทั้งหมด</button>
   </div>
 </div>
 
 <button class="fab" onclick="openModal()">+ เพิ่มยอดโอนเข้า</button>
 
-<!-- Modal -->
+<!-- Add/Edit Modal -->
 <div class="modal" id="modal">
   <div class="sheet">
     <h2 id="modalTitle">เพิ่มยอดโอนเข้า</h2>
@@ -210,16 +175,9 @@
         <label>ธนาคาร</label>
         <select id="fBank">
           <option value="">— เลือก —</option>
-          <option>กสิกรไทย</option>
-          <option>ไทยพาณิชย์</option>
-          <option>กรุงเทพ</option>
-          <option>กรุงไทย</option>
-          <option>กรุงศรีอยุธยา</option>
-          <option>ทหารไทยธนชาต</option>
-          <option>ออมสิน</option>
-          <option>พร้อมเพย์</option>
-          <option>TrueMoney</option>
-          <option>อื่นๆ</option>
+          <option>กสิกรไทย</option><option>ไทยพาณิชย์</option><option>กรุงเทพ</option>
+          <option>กรุงไทย</option><option>กรุงศรีอยุธยา</option><option>ทหารไทยธนชาต</option>
+          <option>ออมสิน</option><option>พร้อมเพย์</option><option>TrueMoney</option><option>อื่นๆ</option>
         </select>
       </div>
       <div class="field">
@@ -238,19 +196,57 @@
   </div>
 </div>
 
+<!-- Settings / Real-time Modal -->
+<div class="modal" id="settings">
+  <div class="sheet">
+    <h2>🔄 ตั้งค่า Real-time (Firebase)</h2>
+    <div class="hint">
+      ทำให้ <b>กรอกเครื่องนึง อีกเครื่องเห็นทันที</b> โดยต่อกับ Firebase ฟรีของ Google
+      <ol>
+        <li>เข้า <a href="https://console.firebase.google.com" target="_blank">console.firebase.google.com</a> สร้างโปรเจกต์</li>
+        <li>เมนู <b>Build → Realtime Database</b> → Create Database → เลือก <b>Start in test mode</b></li>
+        <li>เมนู <b>Project settings (⚙️) → General</b> เลื่อนลงล่าง กด <b>&lt;/&gt; Web app</b> สร้างแอป</li>
+        <li>คัดลอกบล็อก <b>firebaseConfig</b> ทั้งก้อน มาวางช่องล่างนี้</li>
+        <li>ตั้ง <b>รหัสห้อง</b> เป็นอะไรก็ได้ (ทุกเครื่องที่อยากเห็นยอดเดียวกันต้องใช้รหัสนี้)</li>
+      </ol>
+    </div>
+    <div class="field">
+      <label>Firebase config (วางทั้งก้อน หรือเฉพาะ { ... })</label>
+      <textarea id="sCfg" placeholder='{
+  "apiKey": "...",
+  "databaseURL": "https://xxx.firebaseio.com",
+  "projectId": "xxx",
+  ...
+}'></textarea>
+    </div>
+    <div class="field">
+      <label>รหัสห้อง (Room) — ตั้งเอง เช่น ร้านลาล่า2024</label>
+      <input id="sRoom" type="text" placeholder="myshop">
+    </div>
+    <div class="btns">
+      <button class="btn-cancel" onclick="closeSettings()">ปิด</button>
+      <button class="btn-save" onclick="saveSettings()">เชื่อมต่อ</button>
+    </div>
+    <div class="btns" style="margin-top:10px">
+      <button class="btn-cancel" style="flex:1" onclick="disconnectRT()">ตัดการเชื่อมต่อ (กลับโหมดออฟไลน์)</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 <script>
-const KEY = 'bank_transfers_v1';
-let data = [];
+const LKEY = 'bank_transfers_v1';      // local fallback store
+const CFGKEY = 'bank_fb_config';        // saved firebase config (JSON string)
+const ROOMKEY = 'bank_room';            // saved room code
 
-function load() {
-  try { data = JSON.parse(localStorage.getItem(KEY)) || []; }
-  catch (e) { data = []; }
-}
-function persist() { localStorage.setItem(KEY, JSON.stringify(data)); }
+let data = [];          // array of records
+let rtOn = false;       // realtime active?
+let dbRef = null;       // firebase ref
+let app = null;
 
-function fmt(n) {
-  return Number(n).toLocaleString('th-TH', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
-}
+/* ---------- helpers ---------- */
+function fmt(n) { return Number(n).toLocaleString('th-TH', { minimumFractionDigits: 0, maximumFractionDigits: 2 }); }
 function fmtShort(n) {
   n = Number(n);
   if (n >= 1e6) return (n/1e6).toFixed(n % 1e6 === 0 ? 0 : 1) + 'M ฿';
@@ -272,7 +268,123 @@ function monthLabel(ym) {
   return months[Number(m)-1] + ' ' + (Number(y)+543);
 }
 
-// Modal
+/* ---------- data layer (local or realtime) ---------- */
+function loadLocal() {
+  try { data = JSON.parse(localStorage.getItem(LKEY)) || []; } catch (e) { data = []; }
+}
+function persistLocal() { localStorage.setItem(LKEY, JSON.stringify(data)); }
+
+function putRecord(rec) {
+  if (rtOn && dbRef) {
+    dbRef.child(rec.id).set(rec);   // realtime listener will re-render
+  } else {
+    const idx = data.findIndex(x => x.id === rec.id);
+    if (idx >= 0) data[idx] = rec; else data.push(rec);
+    persistLocal(); render();
+  }
+}
+function removeRecord(id) {
+  if (rtOn && dbRef) {
+    dbRef.child(id).remove();
+  } else {
+    data = data.filter(x => x.id !== id);
+    persistLocal(); render();
+  }
+}
+
+/* ---------- realtime / firebase ---------- */
+function setSync(state, text) {
+  const p = document.getElementById('syncPill');
+  p.className = 'syncpill' + (state ? ' ' + state : '');
+  document.getElementById('syncText').textContent = text;
+}
+function parseConfig(raw) {
+  raw = raw.trim();
+  // pull out the {...} part if pasted with "const firebaseConfig = {...};"
+  const i = raw.indexOf('{'), j = raw.lastIndexOf('}');
+  if (i >= 0 && j > i) raw = raw.slice(i, j + 1);
+  // allow JS-style (unquoted keys, single quotes) -> via Function
+  try { return JSON.parse(raw); }
+  catch (e) {
+    try { return (new Function('return (' + raw + ')'))(); }
+    catch (e2) { return null; }
+  }
+}
+function connectRT(cfg, room) {
+  try {
+    if (!app) app = firebase.initializeApp(cfg);
+  } catch (e) {
+    // already initialized with different config: reload to apply fresh
+    setSync('err', 'ต้องรีโหลดหน้าเพื่อใช้ค่าใหม่');
+    setTimeout(() => location.reload(), 800);
+    return;
+  }
+  setSync('connecting', 'กำลังเชื่อมต่อ...');
+  try {
+    const db = firebase.database();
+    dbRef = db.ref('rooms/' + room + '/transfers');
+
+    // connection state indicator
+    db.ref('.info/connected').on('value', snap => {
+      if (snap.val() === true) setSync('on', 'Real-time · ห้อง: ' + room);
+      else setSync('connecting', 'กำลังเชื่อมต่อ...');
+    });
+
+    dbRef.on('value', snap => {
+      const val = snap.val() || {};
+      data = Object.values(val);
+      rtOn = true;
+      render();
+    }, err => {
+      setSync('err', 'เชื่อมต่อไม่ได้: ตรวจ config/สิทธิ์');
+      rtOn = false;
+    });
+  } catch (e) {
+    setSync('err', 'config ไม่ถูกต้อง');
+    rtOn = false;
+  }
+}
+function tryAutoConnect() {
+  const rawCfg = localStorage.getItem(CFGKEY);
+  const room = localStorage.getItem(ROOMKEY);
+  if (rawCfg && room) {
+    const cfg = parseConfig(rawCfg);
+    if (cfg) { connectRT(cfg, room); return true; }
+  }
+  return false;
+}
+
+/* ---------- settings modal ---------- */
+function openSettings() {
+  document.getElementById('settings').classList.add('show');
+  document.getElementById('sCfg').value = localStorage.getItem(CFGKEY) || '';
+  document.getElementById('sRoom').value = localStorage.getItem(ROOMKEY) || '';
+}
+function closeSettings() { document.getElementById('settings').classList.remove('show'); }
+function saveSettings() {
+  const raw = document.getElementById('sCfg').value.trim();
+  const room = document.getElementById('sRoom').value.trim();
+  if (!raw || !room) { alert('กรุณาวาง Firebase config และตั้งรหัสห้อง'); return; }
+  const cfg = parseConfig(raw);
+  if (!cfg || !cfg.apiKey) { alert('Firebase config ไม่ถูกต้อง ลองวางใหม่ทั้งก้อน'); return; }
+  if (!cfg.databaseURL) {
+    if (cfg.projectId) cfg.databaseURL = 'https://' + cfg.projectId + '-default-rtdb.firebaseio.com';
+    else { alert('ไม่พบ databaseURL — ตรวจว่าเปิด Realtime Database แล้ว'); return; }
+  }
+  localStorage.setItem(CFGKEY, JSON.stringify(cfg));
+  localStorage.setItem(ROOMKEY, room);
+  closeSettings();
+  if (app) { location.reload(); return; }   // re-init cleanly
+  connectRT(cfg, room);
+}
+function disconnectRT() {
+  localStorage.removeItem(CFGKEY);
+  localStorage.removeItem(ROOMKEY);
+  closeSettings();
+  location.reload();
+}
+
+/* ---------- add/edit modal ---------- */
 function openModal(id) {
   document.getElementById('modal').classList.add('show');
   if (id) {
@@ -296,48 +408,38 @@ function openModal(id) {
   }
 }
 function closeModal() { document.getElementById('modal').classList.remove('show'); }
-document.getElementById('modal').addEventListener('click', e => {
-  if (e.target.id === 'modal') closeModal();
-});
+document.getElementById('modal').addEventListener('click', e => { if (e.target.id === 'modal') closeModal(); });
+document.getElementById('settings').addEventListener('click', e => { if (e.target.id === 'settings') closeSettings(); });
 
 function save() {
   const amount = parseFloat(document.getElementById('fAmount').value);
   if (!amount || amount <= 0) { alert('กรุณาใส่จำนวนเงินให้ถูกต้อง'); return; }
   const rec = {
-    id: document.getElementById('editId').value || ('t' + Date.now()),
+    id: document.getElementById('editId').value || ('t' + Date.now() + Math.floor(Math.random()*1000)),
     amount: amount,
     name: document.getElementById('fName').value.trim() || 'ไม่ระบุชื่อ',
     bank: document.getElementById('fBank').value,
     date: document.getElementById('fDate').value || todayStr(),
     note: document.getElementById('fNote').value.trim()
   };
-  const idx = data.findIndex(x => x.id === rec.id);
-  if (idx >= 0) data[idx] = rec; else data.push(rec);
-  persist();
+  putRecord(rec);
   closeModal();
-  render();
 }
-
 function del(id) {
   if (!confirm('ลบรายการนี้?')) return;
-  data = data.filter(x => x.id !== id);
-  persist();
-  render();
+  removeRecord(id);
 }
-
 function clearAll() {
   if (!data.length) return;
   if (!confirm('ล้างข้อมูลทั้งหมด? ไม่สามารถกู้คืนได้')) return;
-  data = [];
-  persist();
-  render();
+  if (rtOn && dbRef) { dbRef.remove(); }
+  else { data = []; persistLocal(); render(); }
 }
-
 function exportCSV() {
   if (!data.length) { alert('ยังไม่มีข้อมูล'); return; }
   let csv = '﻿วันที่,ผู้โอน,ธนาคาร,จำนวนเงิน,โน้ต\n';
   [...data].sort((a,b) => a.date.localeCompare(b.date)).forEach(it => {
-    csv += `${it.date},"${it.name}","${it.bank}",${it.amount},"${it.note}"\n`;
+    csv += `${it.date},"${it.name}","${it.bank}",${it.amount},"${(it.note||'').replace(/"/g,'""')}"\n`;
   });
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
   const a = document.createElement('a');
@@ -346,8 +448,8 @@ function exportCSV() {
   a.click();
 }
 
+/* ---------- render ---------- */
 function render() {
-  // build month options
   const months = [...new Set(data.map(x => x.date.slice(0,7)))].sort().reverse();
   const fm = document.getElementById('filterMonth');
   const cur = fm.value;
@@ -362,38 +464,32 @@ function render() {
     if (monthSel !== 'all' && it.date.slice(0,7) !== monthSel) return false;
     if (q && !((it.name + ' ' + it.bank + ' ' + it.note).toLowerCase().includes(q))) return false;
     return true;
-  }).sort((a,b) => b.date.localeCompare(a.date) || b.id.localeCompare(a.id));
+  }).sort((a,b) => b.date.localeCompare(a.date) || String(b.id).localeCompare(String(a.id)));
 
-  // summary (based on current filter)
-  const total = rows.reduce((s,x) => s + x.amount, 0);
+  const total = rows.reduce((s,x) => s + Number(x.amount), 0);
   document.getElementById('totalAmt').textContent = fmt(total);
   document.getElementById('count').textContent = rows.length;
   document.getElementById('avg').textContent = rows.length ? fmt(Math.round(total/rows.length)) : '0';
   document.getElementById('last').textContent = rows.length ? thaiDate(rows[0].date) : '-';
-  document.getElementById('sumLabel').textContent =
-    monthSel === 'all' ? 'ยอดรวมทั้งหมด' : 'ยอดรวม ' + monthLabel(monthSel);
+  document.getElementById('sumLabel').textContent = monthSel === 'all' ? 'ยอดรวมทั้งหมด' : 'ยอดรวม ' + monthLabel(monthSel);
 
-  // this month / today (always full data)
   const tm = todayStr().slice(0,7), td = todayStr();
-  document.getElementById('thisMonth').textContent =
-    fmtShort(data.filter(x => x.date.slice(0,7) === tm).reduce((s,x) => s + x.amount, 0));
-  document.getElementById('today').textContent =
-    fmtShort(data.filter(x => x.date === td).reduce((s,x) => s + x.amount, 0));
+  document.getElementById('thisMonth').textContent = fmtShort(data.filter(x => x.date.slice(0,7) === tm).reduce((s,x) => s + Number(x.amount), 0));
+  document.getElementById('today').textContent = fmtShort(data.filter(x => x.date === td).reduce((s,x) => s + Number(x.amount), 0));
 
-  // list grouped by date
   const list = document.getElementById('list');
   if (!rows.length) {
     list.innerHTML = '<div class="empty"><div class="ic">📭</div><p>ยังไม่มีรายการ<br>กดปุ่มด้านล่างเพื่อเพิ่มยอดโอนเข้า</p></div>';
     return;
   }
   let html = '', lastDate = '';
+  const esc = s => (s||'').toString().replace(/[<>&"]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));
   rows.forEach(it => {
     if (it.date !== lastDate) {
       lastDate = it.date;
-      const dayTotal = rows.filter(x => x.date === it.date).reduce((s,x) => s + x.amount, 0);
+      const dayTotal = rows.filter(x => x.date === it.date).reduce((s,x) => s + Number(x.amount), 0);
       html += `<div class="group-date"><span>${thaiDate(it.date)}</span><span>${fmt(dayTotal)} ฿</span></div>`;
     }
-    const esc = s => (s||'').replace(/[<>&"]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));
     html += `
       <div class="item" onclick="openModal('${it.id}')">
         <div class="ava">↓</div>
@@ -414,8 +510,12 @@ function render() {
 document.getElementById('filterMonth').addEventListener('change', render);
 document.getElementById('search').addEventListener('input', render);
 
-load();
-render();
+/* ---------- boot ---------- */
+if (!tryAutoConnect()) {
+  setSync('', 'โหมดออฟไลน์ (เครื่องนี้)');
+  loadLocal();
+  render();
+}
 </script>
 </body>
 </html>
