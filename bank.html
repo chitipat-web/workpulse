@@ -240,6 +240,19 @@ const LKEY = 'bank_transfers_v1';      // local fallback store
 const CFGKEY = 'bank_fb_config';        // saved firebase config (JSON string)
 const ROOMKEY = 'bank_room';            // saved room code
 
+// Real-time แบบฝังไว้ในตัว: ทุกเครื่องที่เปิดลิงก์จะ sync อัตโนมัติ ไม่ต้องตั้งค่า
+const BAKED_CONFIG = {
+  apiKey: "AIzaSyA68TcgHOPQb8FwiOZYD36gkBJNLl3juEg",
+  authDomain: "bank-48baf.firebaseapp.com",
+  databaseURL: "https://bank-48baf-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "bank-48baf",
+  storageBucket: "bank-48baf.firebasestorage.app",
+  messagingSenderId: "273049715377",
+  appId: "1:273049715377:web:9e8f042190a69b92d91890",
+  measurementId: "G-TW7M8QZ3KW"
+};
+const BAKED_ROOM = "main";   // ห้องกลางที่ทุกเครื่องใช้ร่วมกัน
+
 let data = [];          // array of records
 let rtOn = false;       // realtime active?
 let dbRef = null;       // firebase ref
@@ -350,6 +363,11 @@ function tryAutoConnect() {
   if (rawCfg && room) {
     const cfg = parseConfig(rawCfg);
     if (cfg) { connectRT(cfg, room); return true; }
+  }
+  // ใช้ค่าที่ฝังไว้ → sync อัตโนมัติทุกเครื่องโดยไม่ต้องตั้งค่า
+  if (BAKED_CONFIG && BAKED_CONFIG.apiKey) {
+    connectRT(BAKED_CONFIG, BAKED_ROOM);
+    return true;
   }
   return false;
 }
