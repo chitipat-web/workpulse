@@ -149,6 +149,8 @@
   /* พนักงาน: ซ่อนปุ่ม ลบ/ล้าง (เพิ่มได้อย่างเดียว) */
   body.role-employee .item .amt .del { display: none; }
   body.role-employee #clearBtn, body.role-employee #restoreBtn { display: none; }
+  body.role-employee #ownerOnlySettings { display: none; }   /* ซ่อน config ทั้งหมดจากพนักงาน */
+  body.role-employee .emp-only { display: block !important; }
   body.role-employee .item { cursor: default; }
   .role-badge { display:none; font-size:11px; color:var(--amber); margin-top:6px; }
   body.role-employee .role-badge { display:block; }
@@ -261,6 +263,9 @@
       <div style="min-width:0"><div style="font-size:11px;color:var(--muted)">เข้าสู่ระบบในชื่อ</div><div id="userEmail" style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">-</div></div>
       <button onclick="googleSignOut()" style="flex-shrink:0;background:var(--card);border:1px solid var(--line);color:var(--text);border-radius:10px;padding:8px 12px;font-size:13px;cursor:pointer">ออกจากระบบ</button>
     </div>
+    <p class="emp-only" style="display:none;color:var(--muted);font-size:13px;text-align:center;margin:10px 0">โหมดพนักงาน — ไม่มีการตั้งค่าให้แก้ไข</p>
+    <div class="btns emp-only" style="display:none;margin-bottom:6px"><button class="btn-cancel" style="flex:1" onclick="closeSettings()">ปิด</button></div>
+    <div id="ownerOnlySettings">
     <h2>🔄 ตั้งค่า Real-time (Firebase)</h2>
     <div class="hint">
       ทำให้ <b>กรอกเครื่องนึง อีกเครื่องเห็นทันที</b> โดยต่อกับ Firebase ฟรีของ Google
@@ -331,6 +336,7 @@
       <button class="btn-cancel" onclick="closeSettings()">ปิด</button>
       <button class="btn-save" onclick="saveSlipOK()">บันทึก SlipOK</button>
     </div>
+    </div><!-- /ownerOnlySettings -->
   </div>
 </div>
 
