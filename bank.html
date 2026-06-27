@@ -5,8 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="theme-color" content="#03d0f5">
 <title>HURT SHOP</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  input, select, textarea, button { font-family: inherit; }
   :root {
     --bg: #0b1620; --card: #15242f; --card2: #1d3340; --line: #2c4452;
     --text: #f1f5f9; --muted: #93acba; --green: #22c55e; --green-d: #16a34a;
@@ -14,7 +18,7 @@
     --cyan: #03d0f5; --cyan-d: #0496c7;
   }
   body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Sukhumvit Set", "Helvetica Neue", sans-serif;
+    font-family: 'IBM Plex Sans Thai', -apple-system, BlinkMacSystemFont, "Segoe UI", "Sukhumvit Set", "Helvetica Neue", sans-serif;
     background: var(--bg); color: var(--text); min-height: 100vh;
     padding-bottom: 90px; -webkit-text-size-adjust: 100%;
   }
@@ -45,7 +49,7 @@
     padding: 22px 20px; box-shadow: 0 10px 30px rgba(3,208,245,.28); margin: 14px 0 16px;
   }
   .summary .label { font-size: 13px; opacity: .85; }
-  .summary .total { font-size: 38px; font-weight: 800; letter-spacing: -1px; margin-top: 4px; word-break: break-all; }
+  .summary .total { font-size: 38px; font-weight: 700; letter-spacing: -1px; margin-top: 4px; word-break: break-all; }
   .summary .total small { font-size: 18px; font-weight: 600; opacity: .85; }
   .summary .meta { display: flex; gap: 14px; margin-top: 14px; font-size: 13px; border-top: 1px solid rgba(255,255,255,.25); padding-top: 12px; }
   .summary .meta div span { display: block; opacity: .8; font-size: 11px; }
@@ -83,7 +87,7 @@
     position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
     width: calc(100% - 32px); max-width: 528px;
     background: linear-gradient(135deg, var(--cyan), var(--cyan-d)); color: #04222b;
-    border: none; border-radius: 16px; padding: 16px; font-size: 16px; font-weight: 800;
+    border: none; border-radius: 16px; padding: 16px; font-size: 16px; font-weight: 700;
     box-shadow: 0 8px 24px rgba(3,208,245,.4); cursor: pointer;
   }
   .fab:active { transform: translateX(-50%) scale(.98); }
@@ -142,7 +146,7 @@
   .login-logo { font-size: 64px; margin-bottom: 8px; }
   .login-logo-img { width: 110px; height: 110px; object-fit: cover; border-radius: 26px; margin-bottom: 12px; box-shadow: 0 8px 24px rgba(0,0,0,.35); }
   .hdr-logo { width: 30px; height: 30px; object-fit: cover; border-radius: 8px; vertical-align: -7px; margin-right: 4px; }
-  .login-box h1 { font-size: 24px; font-weight: 800; margin-bottom: 8px; }
+  .login-box h1 { font-size: 24px; font-weight: 700; margin-bottom: 8px; }
   .login-box p { color: var(--muted); font-size: 14px; margin-bottom: 26px; line-height: 1.5; }
   .g-btn {
     display: flex; align-items: center; justify-content: center; gap: 10px;
