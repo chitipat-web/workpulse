@@ -1,59 +1,81 @@
 /**
- * SlipOK Proxy — Cloudflare Worker (ฟรี)
+ * SlipOK Verify+Write Worker — Cloudflare (ฟรี)
  * ──────────────────────────────────────────────────────────────
- * ทำไมต้องมีตัวนี้: เว็บ (เบราว์เซอร์) เรียก SlipOK ตรงๆ ไม่ได้
- * เพราะ SlipOK ใช้ header "x-authorization" ซึ่ง CORS ของ SlipOK ไม่อนุญาต
- * Worker นี้ทำหน้าที่เป็น "ตัวกลาง" รับคำขอจากเว็บเรา แล้วยิงต่อไป SlipOK
+ * เซิร์ฟเวอร์ที่เชื่อถือได้: ตรวจสลิปกับ SlipOK แล้ว "เขียนรายการเข้า Firebase เอง"
+ * โดยใช้ยอดจากธนาคาร (กันพนักงานใส่เงินปลอม) + ตรวจตัวตนผู้เรียกด้วย Firebase ID token
  *
- * วิธีติดตั้ง (ครั้งเดียว ~5 นาที):
- *  1) สมัคร SlipOK ที่ slipok.com → เอา API Key + Branch ID
- *  2) เข้า dash.cloudflare.com (สมัครฟรี) → Workers & Pages → Create → Worker
- *  3) กด Edit code → ลบของเดิม วางโค้ดนี้ทั้งหมด
- *  4) แก้ 2 บรรทัดด้านล่าง: ใส่ SLIPOK_API_KEY และ SLIPOK_BRANCH_ID ของคุณ
- *  5) Deploy → ก๊อป URL ของ Worker (เช่น https://xxx.workers.dev)
- *  6) เอา URL ไปวางในเว็บ: ⚙️ → SlipOK Proxy URL → บันทึก
+ * มี 2 โหมด:
+ *  - ไม่มี idToken  → โหมดเก่า (แค่ตรวจ ส่งข้อมูลกลับ ไม่เขียน) เผื่อ backward-compat
+ *  - มี idToken     → โหมดปลอดภัย: auth → ตรวจ SlipOK → เขียน DB (ยอดจากธนาคาร)
  *
- * ความปลอดภัย: API key อยู่ใน Worker ไม่โผล่ในเบราว์เซอร์
- * (ถ้าอยากแน่นขึ้น เปลี่ยน ALLOW_ORIGIN เป็นโดเมนเว็บคุณแทน '*')
+ * วิธีติดตั้ง: ใส่ค่า 6 ตัวด้านล่าง แล้ว Deploy บน Cloudflare Workers
+ * ⚠️ ค่าความลับ (SLIPOK_API_KEY, FB_SECRET) อยู่ใน Worker เท่านั้น — ห้าม commit ค่าจริงลงสาธารณะ
  */
 
-const SLIPOK_API_KEY   = "ใส่_API_KEY_ของคุณ";     // ← แก้ตรงนี้
-const SLIPOK_BRANCH_ID = "ใส่_BRANCH_ID_ของคุณ";   // ← แก้ตรงนี้
-const ALLOW_ORIGIN     = "*";                       // หรือ "https://chitipat-web.github.io"
+const SLIPOK_API_KEY = "ใส่_SLIPOK_API_KEY";
+const SLIPOK_BRANCH  = "ใส่_BRANCH_ID";
+const FB_DB     = "https://xxx-default-rtdb.asia-southeast1.firebasedatabase.app";
+const FB_SECRET = "ใส่_FIREBASE_DATABASE_SECRET";   // กุญแจ admin (Project settings → Service accounts → Database secrets)
+const FB_APIKEY = "ใส่_FIREBASE_WEB_APIKEY";        // public web api key (ใช้ตรวจ idToken)
+const ROOM = "main";
+const ALLOWED = ["owner@gmail.com", "staff@gmail.com"]; // อีเมลที่อนุญาต
+const ALLOW_ORIGIN = "*";
 
 export default {
-  async fetch(request) {
-    const cors = {
-      "Access-Control-Allow-Origin": ALLOW_ORIGIN,
-      "Access-Control-Allow-Methods": "POST, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type",
+  async fetch(req) {
+    const cors = { "Access-Control-Allow-Origin": ALLOW_ORIGIN, "Access-Control-Allow-Methods": "POST, OPTIONS", "Access-Control-Allow-Headers": "Content-Type" };
+    if (req.method === "OPTIONS") return new Response(null, { headers: cors });
+    if (req.method !== "POST") return new Response("POST only", { status: 405, headers: cors });
+    const J = (o, s = 200) => new Response(JSON.stringify(o), { status: s, headers: { ...cors, "Content-Type": "application/json" } });
+    let body; try { body = await req.json(); } catch { return J({ ok: false, error: "bad request" }, 400); }
+
+    const verify = async (data, log) => {
+      try {
+        const r = await fetch("https://api.slipok.com/api/line/apikey/" + SLIPOK_BRANCH,
+          { method: "POST", headers: { "Content-Type": "application/json", "x-authorization": SLIPOK_API_KEY }, body: JSON.stringify({ data, log }) });
+        const j = await r.json().catch(() => ({})); const d = (j && j.data) ? j.data : j;
+        if (r.ok && j && j.success !== false && d && (d.amount != null || d.transRef)) {
+          const sName = d.sender && (d.sender.displayName || d.sender.name || (d.sender.account && d.sender.account.name));
+          const sBank = d.sendingBank || (d.sender && d.sender.bank);
+          const dt = d.transDate ? (d.transDate + (d.transTime ? "T" + d.transTime : "")) : (d.transTimestamp || "");
+          return { ok: true, transRef: d.transRef || "", amount: d.amount != null ? Number(d.amount) : null, sender: sName || "", senderBank: sBank || "", date: dt };
+        }
+        const code = j && (j.code || (j.data && j.data.code));
+        if (code === 1012) return { dup: true };
+        if (code === 1011 || code === 1008 || code === 1013) return { ok: false, notFound: true, reason: j && j.message };
+        return { ok: false, error: (j && j.message) || ("code " + (code || r.status)) };
+      } catch (e) { return { ok: false, error: "slipok unreachable" }; }
     };
-    if (request.method === "OPTIONS") return new Response(null, { headers: cors });
-    if (request.method !== "POST")
-      return new Response("POST only", { status: 405, headers: cors });
 
-    let body;
-    try { body = await request.json(); } catch { body = {}; }
+    // โหมดเก่า: ไม่มี idToken = แค่ตรวจ ส่งกลับ ไม่เขียน
+    if (!body.idToken) {
+      let v = await verify(body.data, body.log === true);
+      if (v.dup) { const r = await verify(body.data, false); if (r.ok) r.sokDup = true; v = r; }
+      return J(v.ok ? { success: true, data: { transRef: v.transRef, amount: v.amount, transDate: v.date, sender: { displayName: v.sender, bank: v.senderBank } } } : { success: false, code: v.notFound ? 1011 : 0, message: v.error || v.reason || "" }, v.ok ? 200 : 400);
+    }
 
-    const resp = await fetch(
-      "https://api.slipok.com/api/line/apikey/" + SLIPOK_BRANCH_ID,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-authorization": SLIPOK_API_KEY,
-        },
-        body: JSON.stringify({
-          data: body.data,        // payload ของ QR จากสลิป
-          log: body.log === true, // ให้ SlipOK เก็บ log + เช็คสลิปซ้ำ
-        }),
-      }
-    );
+    // โหมดใหม่: ตรวจตัวตน → ตรวจสลิป → เขียนเอง
+    let email = "";
+    try {
+      const lk = await fetch("https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=" + FB_APIKEY,
+        { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ idToken: body.idToken }) });
+      const lj = await lk.json(); const u = lj.users && lj.users[0];
+      if (u && u.emailVerified) email = (u.email || "").toLowerCase();
+    } catch (e) {}
+    if (!email || !ALLOWED.map(e => e.toLowerCase()).includes(email)) return J({ ok: false, error: "unauthorized" }, 401);
 
-    const text = await resp.text();
-    return new Response(text, {
-      status: resp.status,
-      headers: { ...cors, "Content-Type": "application/json" },
-    });
-  },
+    let v = await verify(body.data, true);
+    if (v.dup) { const r = await verify(body.data, false); if (r.ok) r.sokDup = true; v = r; }
+    if (!v.ok) return J({ ok: false, error: v.error || "", notFound: !!v.notFound, reason: v.reason || "" });
+
+    const id = (v.transRef || "").toString().replace(/[.#$\[\]\/]/g, "_").slice(0, 120);
+    if (!id) return J({ ok: false, error: "no transRef" });
+    const g = await fetch(FB_DB + "/rooms/" + ROOM + "/transfers/" + id + ".json?auth=" + FB_SECRET);
+    const exist = await g.json().catch(() => null);
+    if (exist && exist.id) return J({ ok: false, alreadyExists: true, record: exist });
+
+    const rec = { id, amount: v.amount, name: v.sender || "ไม่ระบุชื่อ", bank: v.senderBank || "", date: (v.date || "").slice(0, 10), note: (body.note || "").toString().slice(0, 200), slipRef: v.transRef, slipVerified: true, createdBy: email };
+    await fetch(FB_DB + "/rooms/" + ROOM + "/transfers/" + id + ".json?auth=" + FB_SECRET, { method: "PUT", body: JSON.stringify(rec) });
+    return J({ ok: true, record: rec });
+  }
 };
