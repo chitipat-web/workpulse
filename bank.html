@@ -113,6 +113,14 @@
   .hint ol { margin: 6px 0 0 18px; }
   .hint li { margin-bottom: 3px; }
 
+  .slipstatus { font-size: 13px; margin-top: 8px; line-height: 1.5; border-radius: 10px; padding: 0; }
+  .slipstatus.show { padding: 10px 12px; }
+  .slipstatus.ok { background: rgba(34,197,94,.12); color: #86efac; border: 1px solid rgba(34,197,94,.3); }
+  .slipstatus.dup { background: rgba(239,68,68,.12); color: #fca5a5; border: 1px solid rgba(239,68,68,.4); }
+  .slipstatus.warn { background: rgba(245,158,11,.12); color: #fcd34d; border: 1px solid rgba(245,158,11,.3); }
+  .slipstatus.busy { background: var(--card2); color: var(--muted); border: 1px solid var(--line); }
+  .item .info .slip { font-size: 11px; margin-top: 2px; display: inline-flex; align-items: center; gap: 4px; }
+  .item .info .slip.has { color: #86efac; }
   .tools { display: flex; gap: 8px; justify-content: center; margin: 18px 0 4px; flex-wrap: wrap; }
   .tools button { background: var(--card); border: 1px solid var(--line); color: var(--muted); border-radius: 10px; padding: 8px 14px; font-size: 13px; cursor: pointer; }
 </style>
@@ -189,6 +197,12 @@
       <label>โน้ต (ถ้ามี)</label>
       <input id="fNote" type="text" placeholder="รายละเอียดเพิ่มเติม">
     </div>
+    <div class="field">
+      <label>📎 ตรวจสลิป (กันสลิปซ้ำ)</label>
+      <input id="fSlip" type="file" accept="image/*" capture="environment" onchange="handleSlip(this)">
+      <input type="hidden" id="fSlipRef"><input type="hidden" id="fSlipHash">
+      <div id="slipStatus" class="slipstatus"></div>
+    </div>
     <div class="btns">
       <button class="btn-cancel" onclick="closeModal()">ยกเลิก</button>
       <button class="btn-save" onclick="save()">บันทึก</button>
@@ -235,6 +249,7 @@
 
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
 <script>
 const LKEY = 'bank_transfers_v1';      // local fallback store
 const CFGKEY = 'bank_fb_config';        // saved firebase config (JSON string)
@@ -414,6 +429,9 @@ function openModal(id) {
     document.getElementById('fBank').value = it.bank;
     document.getElementById('fDate').value = it.date;
     document.getElementById('fNote').value = it.note;
+    document.getElementById('fSlipRef').value = it.slipRef || '';
+    document.getElementById('fSlipHash').value = it.slipHash || '';
+    setSlipStatus(it.slipRef || it.slipHash ? 'ok' : '', it.slipRef || it.slipHash ? '📎 มีสลิปแนบอยู่แล้ว' : '');
   } else {
     document.getElementById('modalTitle').textContent = 'เพิ่มยอดโอนเข้า';
     document.getElementById('editId').value = '';
@@ -422,8 +440,12 @@ function openModal(id) {
     document.getElementById('fBank').value = '';
     document.getElementById('fDate').value = todayStr();
     document.getElementById('fNote').value = '';
+    document.getElementById('fSlipRef').value = '';
+    document.getElementById('fSlipHash').value = '';
+    setSlipStatus('', '');
     setTimeout(() => document.getElementById('fAmount').focus(), 200);
   }
+  document.getElementById('fSlip').value = '';
 }
 function closeModal() { document.getElementById('modal').classList.remove('show'); }
 document.getElementById('modal').addEventListener('click', e => { if (e.target.id === 'modal') closeModal(); });
@@ -438,10 +460,69 @@ function save() {
     name: document.getElementById('fName').value.trim() || 'ไม่ระบุชื่อ',
     bank: document.getElementById('fBank').value,
     date: document.getElementById('fDate').value || todayStr(),
-    note: document.getElementById('fNote').value.trim()
+    note: document.getElementById('fNote').value.trim(),
+    slipRef: document.getElementById('fSlipRef').value || '',
+    slipHash: document.getElementById('fSlipHash').value || ''
   };
   putRecord(rec);
   closeModal();
+}
+
+/* ---------- slip check (อ่าน QR + กันสลิปซ้ำ) ทำงานในเครื่อง ไม่ส่งภาพออกไปไหน ---------- */
+function setSlipStatus(cls, html) {
+  const el = document.getElementById('slipStatus');
+  el.className = 'slipstatus' + (cls ? ' show ' + cls : '');
+  el.innerHTML = html;
+}
+async function sha256(buf) {
+  const h = await crypto.subtle.digest('SHA-256', buf);
+  return [...new Uint8Array(h)].map(b => b.toString(16).padStart(2,'0')).join('');
+}
+function readQRfromImage(img) {
+  const max = 1000, scale = Math.min(1, max / Math.max(img.width, img.height));
+  const c = document.createElement('canvas');
+  c.width = Math.round(img.width * scale); c.height = Math.round(img.height * scale);
+  const ctx = c.getContext('2d');
+  ctx.drawImage(img, 0, 0, c.width, c.height);
+  const d = ctx.getImageData(0, 0, c.width, c.height);
+  try { const r = (typeof jsQR === 'function') ? jsQR(d.data, c.width, c.height) : null; return r ? r.data : ''; }
+  catch (e) { return ''; }
+}
+async function handleSlip(input) {
+  const file = input.files && input.files[0];
+  if (!file) { setSlipStatus('', ''); document.getElementById('fSlipRef').value=''; document.getElementById('fSlipHash').value=''; return; }
+  setSlipStatus('busy', '⏳ กำลังอ่านสลิป...');
+  try {
+    const buf = await file.arrayBuffer();
+    const hash = await sha256(buf);
+    // อ่าน QR
+    const url = URL.createObjectURL(new Blob([buf]));
+    const img = await new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = url; });
+    const qr = readQRfromImage(img);
+    URL.revokeObjectURL(url);
+
+    const ref = qr || '';
+    document.getElementById('fSlipRef').value = ref;
+    document.getElementById('fSlipHash').value = hash;
+
+    // ตรวจซ้ำกับรายการทั้งหมด (ข้ามทุกเครื่องผ่าน Firebase) — ยกเว้นรายการที่กำลังแก้อยู่
+    const editId = document.getElementById('editId').value;
+    const dup = data.find(x => x.id !== editId && (
+      (ref && x.slipRef && x.slipRef === ref) || (x.slipHash && x.slipHash === hash)
+    ));
+    if (dup) {
+      setSlipStatus('dup',
+        '❌ <b>สลิปนี้ถูกใช้ไปแล้ว!</b><br>เคยบันทึกเมื่อ ' + thaiDate(dup.date) +
+        ' ยอด ' + fmt(dup.amount) + ' ฿' + (dup.name ? ' (' + dup.name + ')' : '') +
+        '<br><small>ระวังสลิปซ้ำ/สลิปเก่า — ตรวจสอบก่อนบันทึก</small>');
+    } else if (ref) {
+      setSlipStatus('ok', '✅ อ่าน QR สลิปได้ และ<b>ไม่ซ้ำ</b>กับรายการเดิม<br><small>เลขอ้างอิงถูกเก็บไว้กันใช้สลิปนี้ซ้ำ</small>');
+    } else {
+      setSlipStatus('warn', '⚠️ อ่าน QR ไม่เจอ (ภาพไม่ชัด/ครอบไม่ติด QR หรือไม่ใช่สลิป)<br><small>ยังกันสลิปซ้ำได้จากภาพเดียวกัน แต่แนะนำถ่ายให้เห็น QR ชัดๆ</small>');
+    }
+  } catch (e) {
+    setSlipStatus('warn', '⚠️ อ่านไฟล์ไม่สำเร็จ ลองใหม่อีกครั้ง');
+  }
 }
 function del(id) {
   if (!confirm('ลบรายการนี้?')) return;
@@ -515,6 +596,7 @@ function render() {
           <div class="name">${esc(it.name)}</div>
           <div class="sub">${esc(it.bank) || 'ไม่ระบุธนาคาร'}</div>
           ${it.note ? `<div class="note">${esc(it.note)}</div>` : ''}
+          ${(it.slipRef || it.slipHash) ? `<div class="slip has">📎 มีสลิป${it.slipRef ? ' · QR ✓' : ''}</div>` : ''}
         </div>
         <div class="amt">
           <b>+${fmt(it.amount)}</b>
