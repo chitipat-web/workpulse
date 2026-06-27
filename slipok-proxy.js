@@ -19,7 +19,18 @@ const FB_SECRET = "ใส่_FIREBASE_DATABASE_SECRET";   // กุญแจ adm
 const FB_APIKEY = "ใส่_FIREBASE_WEB_APIKEY";        // public web api key (ใช้ตรวจ idToken)
 const ROOM = "main";
 const ALLOWED = ["owner@gmail.com", "staff@gmail.com"]; // อีเมลที่อนุญาต
-const ALLOW_ORIGIN = "*";
+const ALLOW_ORIGIN = "https://chitipat-web.github.io"; // จำกัดเฉพาะโดเมนเว็บเรา (กันเว็บอื่นเรียก)
+
+// แปลงวันที่จาก SlipOK (มักเป็น YYYYMMDD ไม่มีขีด) ให้เป็น YYYY-MM-DD
+function toYMD(s) {
+  s = (s || "").toString().trim();
+  let m = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/) || s.match(/^(\d{4})(\d{2})(\d{2})/);
+  if (m) { let y = +m[1]; if (y > 2200) y -= 543; return `${String(y).padStart(4,"0")}-${String(+m[2]).padStart(2,"0")}-${String(+m[3]).padStart(2,"0")}`; }
+  const d = new Date(s); return isNaN(d.getTime()) ? "" : d.toISOString().slice(0, 10);
+}
+// แปลงรหัสธนาคาร (เช่น 014) เป็นชื่อไทย
+const BANK_CODE = { "002":"กรุงเทพ","004":"กสิกรไทย","006":"กรุงไทย","011":"ทหารไทยธนชาต","014":"ไทยพาณิชย์","025":"กรุงศรีอยุธยา","030":"ออมสิน","065":"ธนชาต","067":"ทิสโก้","069":"เกียรตินาคินภัทร","071":"ไทยเครดิต","073":"แลนด์แอนด์เฮ้าส์","034":"ธ.ก.ส.","033":"ธอส." };
+function bankName(b) { b = (b || "").toString().trim(); const c = b.replace(/\D/g, ""); if (/^\d{2,3}$/.test(c)) return BANK_CODE[c.padStart(3,"0")] || ("ธนาคาร " + c); return b; }
 
 export default {
   async fetch(req) {
@@ -37,8 +48,8 @@ export default {
         if (r.ok && j && j.success !== false && d && (d.amount != null || d.transRef)) {
           const sName = d.sender && (d.sender.displayName || d.sender.name || (d.sender.account && d.sender.account.name));
           const sBank = d.sendingBank || (d.sender && d.sender.bank);
-          const dt = d.transDate ? (d.transDate + (d.transTime ? "T" + d.transTime : "")) : (d.transTimestamp || "");
-          return { ok: true, transRef: d.transRef || "", amount: d.amount != null ? Number(d.amount) : null, sender: sName || "", senderBank: sBank || "", date: dt };
+          const dt = toYMD(d.transDate || d.transTimestamp || "");
+          return { ok: true, transRef: d.transRef || "", amount: d.amount != null ? Number(d.amount) : null, sender: sName || "", senderBank: bankName(sBank) || "", date: dt };
         }
         const code = j && (j.code || (j.data && j.data.code));
         if (code === 1012) return { dup: true };
@@ -47,14 +58,12 @@ export default {
       } catch (e) { return { ok: false, error: "slipok unreachable" }; }
     };
 
-    // โหมดเก่า: ไม่มี idToken = แค่ตรวจ ส่งกลับ ไม่เขียน
-    if (!body.idToken) {
-      let v = await verify(body.data, body.log === true);
-      if (v.dup) { const r = await verify(body.data, false); if (r.ok) r.sokDup = true; v = r; }
-      return J(v.ok ? { success: true, data: { transRef: v.transRef, amount: v.amount, transDate: v.date, sender: { displayName: v.sender, bank: v.senderBank } } } : { success: false, code: v.notFound ? 1011 : 0, message: v.error || v.reason || "" }, v.ok ? 200 : 400);
+    // ต้องมี idToken เสมอ — กันคนภายนอกยิง Worker เผาโควต้า SlipOK (ไม่มี token = ไม่เรียก SlipOK)
+    if (!body.idToken || typeof body.idToken !== "string" || body.idToken.trim().length < 20) {
+      return J({ ok: false, error: "unauthorized" }, 401);
     }
 
-    // โหมดใหม่: ตรวจตัวตน → ตรวจสลิป → เขียนเอง
+    // ตรวจตัวตน → ตรวจสลิป → เขียนเอง
     let email = "";
     try {
       const lk = await fetch("https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=" + FB_APIKEY,
