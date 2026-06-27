@@ -113,6 +113,9 @@
   .hint ol { margin: 6px 0 0 18px; }
   .hint li { margin-bottom: 3px; }
 
+  .seg { display: flex; gap: 6px; background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 4px; margin-bottom: 12px; }
+  .seg-btn { flex: 1; background: transparent; border: none; color: var(--muted); border-radius: 9px; padding: 9px 8px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; }
+  .seg-btn.active { background: var(--green); color: #fff; }
   .slipstatus { font-size: 13px; margin-top: 8px; line-height: 1.5; border-radius: 10px; padding: 0; }
   .slipstatus.show { padding: 10px 12px; }
   .slipstatus.ok { background: rgba(34,197,94,.12); color: #86efac; border: 1px solid rgba(34,197,94,.3); }
@@ -152,6 +155,11 @@
   <div class="bar">
     <select id="filterMonth"><option value="all">ทุกเดือน</option></select>
     <input id="search" type="search" placeholder="🔍 ค้นหา ชื่อ/ธนาคาร/โน้ต">
+  </div>
+
+  <div class="seg" id="seg">
+    <button class="seg-btn active" data-v="cust" onclick="setView('cust')">👤 เฉพาะลูกค้า (มีสลิป)</button>
+    <button class="seg-btn" data-v="all" onclick="setView('all')">ทั้งหมด</button>
   </div>
 
   <div class="list" id="list"></div>
@@ -292,6 +300,15 @@ let data = [];          // array of records
 let rtOn = false;       // realtime active?
 let dbRef = null;       // firebase ref
 let app = null;
+let view = 'cust';      // 'cust' = เฉพาะลูกค้า (มีสลิป) | 'all' = ทั้งหมด
+
+// รายการ "ลูกค้า" = มีสลิปแนบ (สแกน/ยืนยันแล้ว)
+function isCustomer(it) { return !!(it.slipRef || it.slipHash || it.slipVerified); }
+function setView(v) {
+  view = v;
+  document.querySelectorAll('#seg .seg-btn').forEach(b => b.classList.toggle('active', b.dataset.v === v));
+  render();
+}
 
 /* ---------- helpers ---------- */
 function fmt(n) { return Number(n).toLocaleString('th-TH', { minimumFractionDigits: 0, maximumFractionDigits: 2 }); }
@@ -663,26 +680,33 @@ function render() {
   const monthSel = fm.value;
   const q = document.getElementById('search').value.trim().toLowerCase();
 
-  let rows = data.filter(it => {
+  // ฐานข้อมูลตาม view ที่เลือก (ลูกค้า=มีสลิป / ทั้งหมด)
+  const base = (view === 'cust') ? data.filter(isCustomer) : data;
+
+  let rows = base.filter(it => {
     if (monthSel !== 'all' && it.date.slice(0,7) !== monthSel) return false;
     if (q && !((it.name + ' ' + it.bank + ' ' + it.note).toLowerCase().includes(q))) return false;
     return true;
   }).sort((a,b) => b.date.localeCompare(a.date) || String(b.id).localeCompare(String(a.id)));
 
+  const viewLabel = (view === 'cust') ? 'ยอดลูกค้า' : 'ยอดรวมทั้งหมด';
   const total = rows.reduce((s,x) => s + Number(x.amount), 0);
   document.getElementById('totalAmt').textContent = fmt(total);
   document.getElementById('count').textContent = rows.length;
   document.getElementById('avg').textContent = rows.length ? fmt(Math.round(total/rows.length)) : '0';
   document.getElementById('last').textContent = rows.length ? thaiDate(rows[0].date) : '-';
-  document.getElementById('sumLabel').textContent = monthSel === 'all' ? 'ยอดรวมทั้งหมด' : 'ยอดรวม ' + monthLabel(monthSel);
+  document.getElementById('sumLabel').textContent = (monthSel === 'all' ? viewLabel : viewLabel + ' ' + monthLabel(monthSel));
 
   const tm = todayStr().slice(0,7), td = todayStr();
-  document.getElementById('thisMonth').textContent = fmtShort(data.filter(x => x.date.slice(0,7) === tm).reduce((s,x) => s + Number(x.amount), 0));
-  document.getElementById('today').textContent = fmtShort(data.filter(x => x.date === td).reduce((s,x) => s + Number(x.amount), 0));
+  document.getElementById('thisMonth').textContent = fmtShort(base.filter(x => x.date.slice(0,7) === tm).reduce((s,x) => s + Number(x.amount), 0));
+  document.getElementById('today').textContent = fmtShort(base.filter(x => x.date === td).reduce((s,x) => s + Number(x.amount), 0));
 
   const list = document.getElementById('list');
   if (!rows.length) {
-    list.innerHTML = '<div class="empty"><div class="ic">📭</div><p>ยังไม่มีรายการ<br>กดปุ่มด้านล่างเพื่อเพิ่มยอดโอนเข้า</p></div>';
+    const emptyMsg = (view === 'cust')
+      ? 'ยังไม่มีรายการลูกค้า<br>เพิ่มรายการแล้ว<b>แนบสลิป</b> จะนับเป็นเงินลูกค้า<br><small>หรือกดดู “ทั้งหมด” ด้านบน</small>'
+      : 'ยังไม่มีรายการ<br>กดปุ่มด้านล่างเพื่อเพิ่มยอดโอนเข้า';
+    list.innerHTML = '<div class="empty"><div class="ic">📭</div><p>' + emptyMsg + '</p></div>';
     return;
   }
   let html = '', lastDate = '';
