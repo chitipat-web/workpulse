@@ -160,6 +160,28 @@
   body.role-employee .item { cursor: default; }
   .role-badge { display:none; font-size:11px; color:var(--amber); margin-top:6px; }
   body.role-employee .role-badge { display:block; }
+
+  /* ───── จอคอม/แท็บเล็ต (กว้างขึ้น) ───── */
+  @media (min-width: 768px) {
+    body { padding-bottom: 24px; }
+    .wrap { max-width: 940px; padding: 24px 24px 40px; }
+    header { padding-top: 24px; }
+    header h1 { font-size: 24px; }
+    /* ยอดสรุป + สถิติ เรียงข้างกัน */
+    .top-row { display: flex; gap: 16px; align-items: stretch; margin-bottom: 18px; }
+    .top-row .summary { flex: 2; margin: 0; }
+    .top-row .stats { flex: 1; grid-template-columns: 1fr; gap: 16px; margin: 0; }
+    .top-row .stats .stat { display: flex; flex-direction: column; justify-content: center; }
+    /* รายการ 2 คอลัมน์ (หัววันที่/ข้อความว่าง กินเต็มแถว) */
+    .list { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; align-items: start; }
+    .list .group-date, .list .empty { grid-column: 1 / -1; }
+    /* ปุ่มเพิ่มเป็นปุ่มมุมขวาล่าง (ไม่เต็มความกว้าง) */
+    .fab { left: auto; right: 28px; transform: none; width: auto; min-width: 230px; padding: 15px 30px; }
+    .fab:active { transform: scale(.97); }
+  }
+  @media (min-width: 1100px) {
+    .list { grid-template-columns: 1fr 1fr 1fr; }  /* จอกว้างมาก = 3 คอลัมน์ */
+  }
 </style>
 </head>
 <body>
@@ -196,6 +218,7 @@
     <div class="role-badge">👤 โหมดพนักงาน — เพิ่มสลิปได้อย่างเดียว (แก้/ลบไม่ได้)</div>
   </header>
 
+  <div class="top-row">
   <div class="summary">
     <div class="label" id="sumLabel">ยอดรวมทั้งหมด</div>
     <div class="total"><span id="totalAmt">0</span> <small>บาท</small></div>
@@ -209,6 +232,7 @@
   <div class="stats">
     <div class="stat"><span>เดือนนี้</span><b id="thisMonth">0 ฿</b></div>
     <div class="stat"><span>วันนี้</span><b id="today">0 ฿</b></div>
+  </div>
   </div>
 
   <div class="bar">
