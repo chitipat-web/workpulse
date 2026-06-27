@@ -145,6 +145,13 @@
   }
   .g-btn:active { transform: scale(.98); }
   .login-signout { margin-top: 16px; background: transparent; border: none; color: var(--muted); font-size: 13px; cursor: pointer; text-decoration: underline; }
+
+  /* พนักงาน: ซ่อนปุ่ม ลบ/ล้าง (เพิ่มได้อย่างเดียว) */
+  body.role-employee .item .amt .del { display: none; }
+  body.role-employee #clearBtn { display: none; }
+  body.role-employee .item { cursor: default; }
+  .role-badge { display:none; font-size:11px; color:var(--amber); margin-top:6px; }
+  body.role-employee .role-badge { display:block; }
 </style>
 </head>
 <body>
@@ -166,6 +173,7 @@
     <h1>💰 ยอดเงินโอนเข้า</h1>
     <p>บันทึกเงินที่โอนเข้าบัญชีธนาคาร</p>
     <div class="syncpill" id="syncPill" onclick="openSettings()"><span class="dot"></span><span id="syncText">โหมดออฟไลน์ (เครื่องนี้)</span></div>
+    <div class="role-badge">👤 โหมดพนักงาน — เพิ่มสลิปได้อย่างเดียว (แก้/ลบไม่ได้)</div>
   </header>
 
   <div class="summary">
@@ -193,7 +201,7 @@
   <div class="tools">
     <button onclick="exportCSV()">⬇️ ส่งออก CSV</button>
     <button onclick="openSettings()">🔄 ตั้งค่า Real-time</button>
-    <button onclick="clearAll()">🗑️ ล้างทั้งหมด</button>
+    <button id="clearBtn" onclick="clearAll()">🗑️ ล้างทั้งหมด</button>
   </div>
 </div>
 
@@ -348,6 +356,7 @@ const BAKED_CONFIG = {
   measurementId: "G-TW7M8QZ3KW"
 };
 const BAKED_ROOM = "main";   // ห้องกลางที่ทุกเครื่องใช้ร่วมกัน
+const BAKED_SLIPOK_PROXY = "https://rudybank.chitipat-kao.workers.dev"; // ฝัง SlipOK proxy ให้ทุกเครื่องตรวจสลิปได้เลย
 
 let data = [];          // array of records
 let rtOn = false;       // realtime active?
@@ -515,6 +524,7 @@ function disconnectRT() {
 
 /* ---------- add/edit modal ---------- */
 function openModal(id) {
+  if (id && role === 'employee') return;   // พนักงานแก้ไขรายการเดิมไม่ได้
   document.getElementById('modal').classList.add('show');
   if (id) {
     const it = data.find(x => x.id === id);
@@ -610,7 +620,7 @@ async function handleSlip(input) {
 
     const editId = document.getElementById('editId').value;
     const esKey = localStorage.getItem(ESKEY);
-    const sokProxy = localStorage.getItem(SOKEY);
+    const sokProxy = localStorage.getItem(SOKEY) || BAKED_SLIPOK_PROXY;
     const provider = sokProxy ? 'slipok' : (esKey ? 'easyslip' : '');
 
     // ── ชั้นที่ 1: ยืนยันกับธนาคารจริง (SlipOK ฟรีก่อน, ไม่งั้น EasySlip) ──
@@ -749,10 +759,12 @@ async function verifyEasySlip(payload, key) {
   }
 }
 function del(id) {
+  if (role === 'employee') { alert('พนักงานลบรายการไม่ได้'); return; }
   if (!confirm('ลบรายการนี้?')) return;
   removeRecord(id);
 }
 function clearAll() {
+  if (role === 'employee') { alert('พนักงานล้างข้อมูลไม่ได้'); return; }
   if (!data.length) return;
   if (!confirm('ล้างข้อมูลทั้งหมด? ไม่สามารถกู้คืนได้')) return;
   if (rtOn && dbRef) { dbRef.remove(); }
@@ -835,14 +847,19 @@ document.getElementById('filterMonth').addEventListener('change', render);
 document.getElementById('search').addEventListener('input', render);
 
 /* ---------- auth (เข้าสู่ระบบด้วย Google) ---------- */
-// อนุญาตเฉพาะอีเมลในลิสต์นี้ (ปล่อยว่าง [] = ใครล็อกอิน Google ก็เข้าได้)
-const ALLOWED_EMAILS = ["chitipat.kao@gmail.com"];
+// บทบาทตามอีเมล: เจ้าของ = ทำได้ทุกอย่าง, พนักงาน = เพิ่มสลิปได้อย่างเดียว
+const OWNER_EMAILS = ["chitipat.kao@gmail.com"];
+const EMPLOYEE_EMAILS = ["dynosgaming01@gmail.com"];
+const ALLOWED_EMAILS = [...OWNER_EMAILS, ...EMPLOYEE_EMAILS];
 let currentUser = null;
+let role = 'owner';   // 'owner' | 'employee'
 
 function isAllowed(email) {
   if (!email) return false;
-  if (!ALLOWED_EMAILS.length) return true;
   return ALLOWED_EMAILS.map(e => e.toLowerCase()).includes(email.toLowerCase());
+}
+function isOwnerEmail(email) {
+  return OWNER_EMAILS.map(e => e.toLowerCase()).includes((email || '').toLowerCase());
 }
 function activeConfig() {
   const rawCfg = localStorage.getItem(CFGKEY);
@@ -884,7 +901,9 @@ function startApp(room) { if (started) return; started = true; connectRT(activeC
   firebase.auth().onAuthStateChanged(user => {
     if (user && isAllowed(user.email)) {
       currentUser = user;
-      const ue = document.getElementById('userEmail'); if (ue) ue.textContent = user.email;
+      role = isOwnerEmail(user.email) ? 'owner' : 'employee';
+      document.body.classList.toggle('role-employee', role === 'employee');
+      const ue = document.getElementById('userEmail'); if (ue) ue.textContent = user.email + (role === 'employee' ? ' (พนักงาน)' : '');
       hideLogin();
       startApp(ac.room);
     } else if (user) {
