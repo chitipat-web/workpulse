@@ -21,6 +21,17 @@ const ROOM = "main";
 const ALLOWED = ["owner@gmail.com", "staff@gmail.com"]; // อีเมลที่อนุญาต
 const ALLOW_ORIGIN = "*";
 
+// แปลงวันที่จาก SlipOK (มักเป็น YYYYMMDD ไม่มีขีด) ให้เป็น YYYY-MM-DD
+function toYMD(s) {
+  s = (s || "").toString().trim();
+  let m = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/) || s.match(/^(\d{4})(\d{2})(\d{2})/);
+  if (m) { let y = +m[1]; if (y > 2200) y -= 543; return `${String(y).padStart(4,"0")}-${String(+m[2]).padStart(2,"0")}-${String(+m[3]).padStart(2,"0")}`; }
+  const d = new Date(s); return isNaN(d.getTime()) ? "" : d.toISOString().slice(0, 10);
+}
+// แปลงรหัสธนาคาร (เช่น 014) เป็นชื่อไทย
+const BANK_CODE = { "002":"กรุงเทพ","004":"กสิกรไทย","006":"กรุงไทย","011":"ทหารไทยธนชาต","014":"ไทยพาณิชย์","025":"กรุงศรีอยุธยา","030":"ออมสิน","065":"ธนชาต","067":"ทิสโก้","069":"เกียรตินาคินภัทร","071":"ไทยเครดิต","073":"แลนด์แอนด์เฮ้าส์","034":"ธ.ก.ส.","033":"ธอส." };
+function bankName(b) { b = (b || "").toString().trim(); const c = b.replace(/\D/g, ""); if (/^\d{2,3}$/.test(c)) return BANK_CODE[c.padStart(3,"0")] || ("ธนาคาร " + c); return b; }
+
 export default {
   async fetch(req) {
     const cors = { "Access-Control-Allow-Origin": ALLOW_ORIGIN, "Access-Control-Allow-Methods": "POST, OPTIONS", "Access-Control-Allow-Headers": "Content-Type" };
@@ -37,8 +48,8 @@ export default {
         if (r.ok && j && j.success !== false && d && (d.amount != null || d.transRef)) {
           const sName = d.sender && (d.sender.displayName || d.sender.name || (d.sender.account && d.sender.account.name));
           const sBank = d.sendingBank || (d.sender && d.sender.bank);
-          const dt = d.transDate ? (d.transDate + (d.transTime ? "T" + d.transTime : "")) : (d.transTimestamp || "");
-          return { ok: true, transRef: d.transRef || "", amount: d.amount != null ? Number(d.amount) : null, sender: sName || "", senderBank: sBank || "", date: dt };
+          const dt = toYMD(d.transDate || d.transTimestamp || "");
+          return { ok: true, transRef: d.transRef || "", amount: d.amount != null ? Number(d.amount) : null, sender: sName || "", senderBank: bankName(sBank) || "", date: dt };
         }
         const code = j && (j.code || (j.data && j.data.code));
         if (code === 1012) return { dup: true };
