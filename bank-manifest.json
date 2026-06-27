@@ -1,0 +1,17 @@
+{
+  "name": "HURT SHOP",
+  "short_name": "HURT SHOP",
+  "description": "บันทึกยอดเงินโอนเข้า ตรวจสลิป กันเงินปลอม",
+  "start_url": "bank.html",
+  "scope": ".",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#0b1620",
+  "theme_color": "#03d0f5",
+  "lang": "th",
+  "icons": [
+    { "src": "hurt-logo.jpg", "sizes": "192x192", "type": "image/jpeg", "purpose": "any" },
+    { "src": "hurt-logo.jpg", "sizes": "512x512", "type": "image/jpeg", "purpose": "any" },
+    { "src": "hurt-logo.jpg", "sizes": "2048x2048", "type": "image/jpeg", "purpose": "any maskable" }
+  ]
+}
