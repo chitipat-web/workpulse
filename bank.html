@@ -166,6 +166,19 @@
   .role-badge { display:none; font-size:11px; color:var(--amber); margin-top:6px; }
   body.role-employee .role-badge { display:block; }
 
+  /* ───── อนิเมชันปุ่มนุ่มๆ ───── */
+  .fab, .btns button, .g-btn, .gear, .tools button, .item, .syncpill, .login-signout, .bar select, .bar input {
+    transition: transform .2s cubic-bezier(.34,1.45,.5,1), box-shadow .25s ease, background-color .2s ease, filter .2s ease, border-color .2s ease;
+  }
+  .btns button:active, .tools button:active, .gear:active, .g-btn:active, .syncpill:active { transform: scale(.93); }
+  .item:active { transform: scale(.98); }
+  @media (hover: hover) {
+    .btns .btn-save:hover, .g-btn:hover { filter: brightness(1.08); transform: translateY(-1px); }
+    .btns .btn-cancel:hover, .tools button:hover, .gear:hover { background: var(--card2); border-color: var(--accent); }
+    .item:hover { border-color: var(--accent); transform: translateY(-3px); box-shadow: 0 8px 22px rgba(0,0,0,.32); }
+    .fab:hover { filter: brightness(1.05); }
+  }
+
   /* ───── จอคอม/แท็บเล็ต (กว้างขึ้น) ───── */
   @media (min-width: 768px) {
     body { padding-bottom: 24px; }
@@ -182,6 +195,7 @@
     .list .group-date, .list .empty { grid-column: 1 / -1; }
     /* ปุ่มเพิ่มเป็นปุ่มมุมขวาล่าง (ไม่เต็มความกว้าง) */
     .fab { left: auto; right: 28px; transform: none; width: auto; min-width: 230px; padding: 15px 30px; }
+    .fab:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(3,208,245,.55); }
     .fab:active { transform: scale(.97); }
   }
   @media (min-width: 1100px) {
