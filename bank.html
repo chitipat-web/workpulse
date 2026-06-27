@@ -72,6 +72,11 @@
     border-radius: 12px; padding: 11px 12px; font-size: 14px;
     -webkit-appearance: none; appearance: none; outline: none;
   }
+  .bar select {
+    padding-right: 32px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%237c93a3' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 12px center;
+  }
   /* ปิด chrome เนทีฟของ iOS (กล่องค้นหา/ปุ่มล้าง/ขอบสีระบบ) */
   .bar input[type=search]::-webkit-search-decoration,
   .bar input[type=search]::-webkit-search-cancel-button,
@@ -156,7 +161,7 @@
   .rstat b { font-size: 16px; }
   .chart { display: flex; align-items: flex-end; gap: 3px; height: 120px; padding: 4px 0; }
   .bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; min-width: 0; }
-  .bar { width: 78%; background: linear-gradient(180deg, var(--cyan), var(--cyan-d)); border-radius: 4px 4px 0 0; min-height: 2px; }
+  .cbar { width: 78%; background: linear-gradient(180deg, var(--cyan), var(--cyan-d)); border-radius: 4px 4px 0 0; min-height: 2px; }
   .bar-col em { font-size: 9px; color: var(--muted); margin-top: 4px; font-style: normal; white-space: nowrap; }
   .toplist { display: flex; flex-direction: column; gap: 6px; }
   .toprow { display: flex; justify-content: space-between; background: var(--card2); border-radius: 9px; padding: 9px 12px; font-size: 14px; }
@@ -169,7 +174,7 @@
     #report, #report * { color: #000 !important; }
     #report .btns { display: none !important; }
     .rstat div, .toprow { background: #f0f4f7 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-    .bar { background: #03a8c8 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .cbar { background: #03a8c8 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     .toprow b { color: #0a7d3a !important; }
   }
 
@@ -1023,10 +1028,10 @@ function buildReport(){
   const todayTotal=data.filter(x=>x.date===td).reduce((s,x)=>s+Number(x.amount||0),0);
   const days=[]; for(let i=13;i>=0;i--){ const d=new Date(); d.setDate(d.getDate()-i); days.push(localDateStr(d)); }
   const dayMax=Math.max(1,...days.map(d=>byDay[d]||0));
-  const dayBars=days.map(d=>{ const v=byDay[d]||0; const h=Math.round(v/dayMax*100); return `<div class="bar-col"><div class="bar" style="height:${h}%" title="${fmt(v)}"></div><em>${Number(d.slice(8,10))}</em></div>`; }).join('');
+  const dayBars=days.map(d=>{ const v=byDay[d]||0; const h=Math.round(v/dayMax*100); return `<div class="bar-col"><div class="cbar" style="height:${h}%" title="${fmt(v)}"></div><em>${Number(d.slice(8,10))}</em></div>`; }).join('');
   const mons=[]; for(let i=5;i>=0;i--){ const d=new Date(); d.setMonth(d.getMonth()-i); mons.push(d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')); }
   const monMax=Math.max(1,...mons.map(k=>byMonth[k]||0));
-  const monBars=mons.map(k=>{ const v=byMonth[k]||0; const h=Math.round(v/monMax*100); return `<div class="bar-col"><div class="bar" style="height:${h}%" title="${fmt(v)}"></div><em>${MON_TH[Number(k.slice(5,7))-1]}</em></div>`; }).join('');
+  const monBars=mons.map(k=>{ const v=byMonth[k]||0; const h=Math.round(v/monMax*100); return `<div class="bar-col"><div class="cbar" style="height:${h}%" title="${fmt(v)}"></div><em>${MON_TH[Number(k.slice(5,7))-1]}</em></div>`; }).join('');
   const tops=Object.entries(byCust).sort((a,b)=>b[1]-a[1]).slice(0,5);
   const topHTML = tops.length ? tops.map(([n,v])=>`<div class="toprow"><span>${esc(n)}</span><b>${fmt(v)} ฿</b></div>`).join('') : '<div class="rsub">ยังไม่มีข้อมูล</div>';
   const now=new Date();
