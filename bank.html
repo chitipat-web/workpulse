@@ -8,6 +8,12 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="manifest" href="bank-manifest.json">
+<link rel="apple-touch-icon" href="hurt-logo.jpg">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="HURT SHOP">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   input, select, textarea, button { font-family: inherit; }
@@ -121,6 +127,9 @@
   .slip-primary { background: rgba(56,189,248,.08); border: 1px dashed var(--accent); border-radius: 14px; padding: 14px; margin-bottom: 12px; }
   .slip-primary label { color: var(--accent); font-weight: 600; font-size: 14px; }
   .autofill-note { font-size: 12px; color: var(--muted); text-align: center; margin-bottom: 12px; }
+  .seg { display: flex; gap: 6px; background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 4px; margin-bottom: 10px; }
+  .seg-btn { flex: 1; background: transparent; border: none; color: var(--muted); border-radius: 9px; padding: 9px 6px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; transition: background .2s, color .2s; }
+  .seg-btn.active { background: var(--cyan); color: #04222b; }
   .slipstatus { font-size: 13px; margin-top: 8px; line-height: 1.5; border-radius: 10px; padding: 0; }
   .slipstatus.show { padding: 10px 12px; }
   .slipstatus.ok { background: rgba(34,197,94,.12); color: #86efac; border: 1px solid rgba(34,197,94,.3); }
@@ -131,6 +140,33 @@
   .item .info .slip.has { color: #86efac; }
   .tools { display: flex; gap: 8px; justify-content: center; margin: 18px 0 4px; flex-wrap: wrap; }
   .tools button { background: var(--card); border: 1px solid var(--line); color: var(--muted); border-radius: 10px; padding: 8px 14px; font-size: 13px; cursor: pointer; }
+
+  /* รายงาน */
+  #reportBody h2 { font-size: 18px; margin-bottom: 4px; }
+  #reportBody .rsub { color: var(--muted); font-size: 12px; margin-bottom: 16px; }
+  #reportBody h3 { font-size: 14px; margin: 18px 0 8px; color: var(--text); }
+  .rstat { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 6px; }
+  .rstat div { background: var(--card2); border-radius: 10px; padding: 10px; text-align: center; }
+  .rstat span { display: block; font-size: 11px; color: var(--muted); }
+  .rstat b { font-size: 16px; }
+  .chart { display: flex; align-items: flex-end; gap: 3px; height: 120px; padding: 4px 0; }
+  .bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; min-width: 0; }
+  .bar { width: 78%; background: linear-gradient(180deg, var(--cyan), var(--cyan-d)); border-radius: 4px 4px 0 0; min-height: 2px; }
+  .bar-col em { font-size: 9px; color: var(--muted); margin-top: 4px; font-style: normal; white-space: nowrap; }
+  .toplist { display: flex; flex-direction: column; gap: 6px; }
+  .toprow { display: flex; justify-content: space-between; background: var(--card2); border-radius: 9px; padding: 9px 12px; font-size: 14px; }
+  .toprow b { color: var(--green); }
+
+  @media print {
+    body > *:not(#report) { display: none !important; }
+    #report { display: block !important; position: static !important; background: #fff !important; }
+    #report .sheet { max-height: none !important; box-shadow: none !important; border-radius: 0 !important; background: #fff !important; padding: 0 !important; animation: none !important; }
+    #report, #report * { color: #000 !important; }
+    #report .btns { display: none !important; }
+    .rstat div, .toprow { background: #f0f4f7 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .bar { background: #03a8c8 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .toprow b { color: #0a7d3a !important; }
+  }
 
   /* login gate */
   /* หน้าโหลด (วิดีโอ intro) */
@@ -254,18 +290,25 @@
   </div>
   </div>
 
+  <div class="seg" id="rangeSeg">
+    <button class="seg-btn active" data-r="all" onclick="setRange('all')">ทั้งหมด</button>
+    <button class="seg-btn" data-r="today" onclick="setRange('today')">วันนี้</button>
+    <button class="seg-btn" data-r="7d" onclick="setRange('7d')">7 วัน</button>
+    <button class="seg-btn" data-r="month" onclick="setRange('month')">เดือนนี้</button>
+  </div>
   <div class="bar">
-    <select id="filterMonth"><option value="all">ทุกเดือน</option></select>
+    <select id="filterMonth"><option value="all">เลือกเดือน...</option></select>
     <input id="search" type="search" placeholder="🔍 ค้นหา ชื่อ/ธนาคาร/โน้ต">
   </div>
 
   <div class="list" id="list"></div>
 
   <div class="tools">
-    <button onclick="exportCSV()">⬇️ ส่งออก CSV</button>
-    <button onclick="openSettings()">🔄 ตั้งค่า Real-time</button>
+    <button onclick="openReport()">📊 รายงาน</button>
+    <button onclick="exportCSV()">⬇️ CSV</button>
+    <button onclick="openSettings()">🔄 ตั้งค่า</button>
     <button id="restoreBtn" onclick="restoreBackup()">↩️ กู้คืน</button>
-    <button id="clearBtn" onclick="clearAll()">🗑️ ล้างทั้งหมด</button>
+    <button id="clearBtn" onclick="clearAll()">🗑️ ล้าง</button>
   </div>
 </div>
 
@@ -401,6 +444,17 @@
   </div>
 </div>
 
+<!-- Report Modal -->
+<div class="modal" id="report">
+  <div class="sheet" id="reportSheet">
+    <div id="reportBody"></div>
+    <div class="btns">
+      <button class="btn-cancel" onclick="closeReport()">ปิด</button>
+      <button class="btn-save" onclick="printReport()">🧾 บันทึก PDF</button>
+    </div>
+  </div>
+</div>
+
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
@@ -430,6 +484,26 @@ let data = [];          // array of records
 let rtOn = false;       // realtime active?
 let dbRef = null;       // firebase ref
 let app = null;
+let dateRange = 'all';  // all | today | 7d | month | m:YYYY-MM
+
+function localDateStr(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function inRange(date){
+  if(dateRange==='all') return true;
+  const today=todayStr();
+  if(dateRange==='today') return date===today;
+  if(dateRange==='7d'){ const d=new Date(); d.setDate(d.getDate()-6); return date>=localDateStr(d) && date<=today; }
+  if(dateRange==='month') return date.slice(0,7)===today.slice(0,7);
+  if(dateRange.indexOf('m:')===0) return date.slice(0,7)===dateRange.slice(2);
+  return true;
+}
+function rangeLabel(){
+  if(dateRange==='today') return 'ยอดลูกค้า วันนี้';
+  if(dateRange==='7d') return 'ยอดลูกค้า 7 วันล่าสุด';
+  if(dateRange==='month') return 'ยอดลูกค้า เดือนนี้';
+  if(dateRange.indexOf('m:')===0) return 'ยอดลูกค้า '+monthLabel(dateRange.slice(2));
+  return 'ยอดลูกค้าทั้งหมด';
+}
+function setRange(r){ dateRange=r; render(); }
 
 /* ---------- helpers ---------- */
 function fmt(n) { return Number(n).toLocaleString('th-TH', { minimumFractionDigits: 0, maximumFractionDigits: 2 }); }
@@ -864,16 +938,15 @@ function exportCSV() {
 function render() {
   const months = [...new Set(data.map(x => x.date.slice(0,7)))].sort().reverse();
   const fm = document.getElementById('filterMonth');
-  const cur = fm.value;
-  fm.innerHTML = '<option value="all">ทุกเดือน</option>' +
+  fm.innerHTML = '<option value="all">เลือกเดือน...</option>' +
     months.map(m => `<option value="${m}">${monthLabel(m)}</option>`).join('');
-  if ([...fm.options].some(o => o.value === cur)) fm.value = cur;
+  fm.value = (dateRange.indexOf('m:')===0 && [...fm.options].some(o=>o.value===dateRange.slice(2))) ? dateRange.slice(2) : 'all';
+  document.querySelectorAll('#rangeSeg .seg-btn').forEach(b => b.classList.toggle('active', b.dataset.r === dateRange));
 
-  const monthSel = fm.value;
   const q = document.getElementById('search').value.trim().toLowerCase();
 
   let rows = data.filter(it => {
-    if (monthSel !== 'all' && it.date.slice(0,7) !== monthSel) return false;
+    if (!inRange(it.date)) return false;
     if (q && !((it.name + ' ' + it.bank + ' ' + it.note).toLowerCase().includes(q))) return false;
     return true;
   }).sort((a,b) => b.date.localeCompare(a.date) || String(b.id).localeCompare(String(a.id)));
@@ -883,7 +956,7 @@ function render() {
   document.getElementById('count').textContent = rows.length;
   document.getElementById('avg').textContent = rows.length ? fmt(Math.round(total/rows.length)) : '0';
   document.getElementById('last').textContent = rows.length ? thaiDate(rows[0].date) : '-';
-  document.getElementById('sumLabel').textContent = (monthSel === 'all' ? 'ยอดลูกค้าทั้งหมด' : 'ยอดลูกค้า ' + monthLabel(monthSel));
+  document.getElementById('sumLabel').textContent = rangeLabel();
 
   const tm = todayStr().slice(0,7), td = todayStr();
   document.getElementById('thisMonth').textContent = fmtShort(data.filter(x => x.date.slice(0,7) === tm).reduce((s,x) => s + Number(x.amount), 0));
@@ -920,8 +993,43 @@ function render() {
   list.innerHTML = html;
 }
 
-document.getElementById('filterMonth').addEventListener('change', render);
+document.getElementById('filterMonth').addEventListener('change', function(){ dateRange = this.value === 'all' ? 'all' : ('m:' + this.value); render(); });
 document.getElementById('search').addEventListener('input', render);
+document.getElementById('report').addEventListener('click', e => { if (e.target.id === 'report') closeReport(); });
+
+/* ---------- รายงาน + PDF ---------- */
+const MON_TH = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+function openReport(){ buildReport(); document.getElementById('report').classList.add('show'); }
+function closeReport(){ document.getElementById('report').classList.remove('show'); }
+function printReport(){ window.print(); }
+function buildReport(){
+  const esc = s => (s||'').toString().replace(/[<>&"]/g, c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));
+  const byDay={}, byMonth={}, byCust={};
+  data.forEach(x=>{ const a=Number(x.amount)||0;
+    byDay[x.date]=(byDay[x.date]||0)+a;
+    byMonth[x.date.slice(0,7)]=(byMonth[x.date.slice(0,7)]||0)+a;
+    const c=(x.name||'ไม่ระบุ'); byCust[c]=(byCust[c]||0)+a; });
+  const grand=data.reduce((s,x)=>s+Number(x.amount||0),0);
+  const tm=todayStr().slice(0,7), td=todayStr();
+  const monthTotal=data.filter(x=>x.date.slice(0,7)===tm).reduce((s,x)=>s+Number(x.amount||0),0);
+  const todayTotal=data.filter(x=>x.date===td).reduce((s,x)=>s+Number(x.amount||0),0);
+  const days=[]; for(let i=13;i>=0;i--){ const d=new Date(); d.setDate(d.getDate()-i); days.push(localDateStr(d)); }
+  const dayMax=Math.max(1,...days.map(d=>byDay[d]||0));
+  const dayBars=days.map(d=>{ const v=byDay[d]||0; const h=Math.round(v/dayMax*100); return `<div class="bar-col"><div class="bar" style="height:${h}%" title="${fmt(v)}"></div><em>${Number(d.slice(8,10))}</em></div>`; }).join('');
+  const mons=[]; for(let i=5;i>=0;i--){ const d=new Date(); d.setMonth(d.getMonth()-i); mons.push(d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')); }
+  const monMax=Math.max(1,...mons.map(k=>byMonth[k]||0));
+  const monBars=mons.map(k=>{ const v=byMonth[k]||0; const h=Math.round(v/monMax*100); return `<div class="bar-col"><div class="bar" style="height:${h}%" title="${fmt(v)}"></div><em>${MON_TH[Number(k.slice(5,7))-1]}</em></div>`; }).join('');
+  const tops=Object.entries(byCust).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  const topHTML = tops.length ? tops.map(([n,v])=>`<div class="toprow"><span>${esc(n)}</span><b>${fmt(v)} ฿</b></div>`).join('') : '<div class="rsub">ยังไม่มีข้อมูล</div>';
+  const now=new Date();
+  document.getElementById('reportBody').innerHTML =
+    '<h2>📊 รายงานสรุป HURT SHOP</h2>'+
+    '<div class="rsub">ออก ณ '+now.getDate()+' '+MON_TH[now.getMonth()]+' '+(now.getFullYear()+543)+' '+String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0')+' น.</div>'+
+    '<div class="rstat"><div><span>ยอดรวมทั้งหมด</span><b>'+fmt(grand)+' ฿</b></div><div><span>เดือนนี้</span><b>'+fmt(monthTotal)+' ฿</b></div><div><span>วันนี้</span><b>'+fmt(todayTotal)+' ฿</b></div></div>'+
+    '<h3>ยอดรายวัน (14 วันล่าสุด)</h3><div class="chart">'+dayBars+'</div>'+
+    '<h3>ยอดรายเดือน (6 เดือนล่าสุด)</h3><div class="chart">'+monBars+'</div>'+
+    '<h3>ลูกค้าจ่ายเยอะสุด (Top 5)</h3><div class="toplist">'+topHTML+'</div>';
+}
 
 /* ---------- auth (เข้าสู่ระบบด้วย Google) ---------- */
 // บทบาทตามอีเมล: เจ้าของ = ทำได้ทุกอย่าง, พนักงาน = เพิ่มสลิปได้อย่างเดียว
