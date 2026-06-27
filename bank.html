@@ -216,12 +216,12 @@
     <h2 id="modalTitle">เพิ่มยอดโอนเข้า</h2>
     <input type="hidden" id="editId">
     <div class="field slip-primary">
-      <label>📎 แนบสลิป แล้วข้อมูลจะเติมให้อัตโนมัติ</label>
+      <label>📎 แนบสลิป แล้วกดบันทึก (ยืนยันกับธนาคารอัตโนมัติ)</label>
       <input id="fSlip" type="file" accept="image/*" onchange="handleSlip(this)">
       <input type="hidden" id="fSlipRef"><input type="hidden" id="fSlipHash"><input type="hidden" id="fSlipVerified">
       <div id="slipStatus" class="slipstatus"></div>
     </div>
-    <div class="autofill-note">ข้อมูลด้านล่างเติมจากสลิปให้อัตโนมัติ — แก้ไขได้ถ้าต้องการ</div>
+    <div class="autofill-note">ระบบดึง ยอด/ชื่อ/วันที่ จากธนาคารให้เอง — ช่องด้านล่างใช้กรณีเจ้าของกรอกเอง</div>
     <div class="field">
       <label>จำนวนเงิน (บาท)</label>
       <input id="fAmount" class="amount-in" type="number" inputmode="decimal" placeholder="0.00" step="0.01">
@@ -251,7 +251,7 @@
     </div>
     <div class="btns">
       <button class="btn-cancel" onclick="closeModal()">ยกเลิก</button>
-      <button class="btn-save" onclick="save()">บันทึก</button>
+      <button class="btn-save" id="saveBtn" onclick="save()">บันทึก</button>
     </div>
   </div>
 </div>
@@ -567,24 +567,77 @@ function closeModal() { document.getElementById('modal').classList.remove('show'
 document.getElementById('modal').addEventListener('click', e => { if (e.target.id === 'modal') closeModal(); });
 document.getElementById('settings').addEventListener('click', e => { if (e.target.id === 'settings') closeSettings(); });
 
-function save() {
+async function save() {
+  const editId = document.getElementById('editId').value;
+  const qr = document.getElementById('fSlipRef').value;
+  const note = document.getElementById('fNote').value.trim();
+
+  // แก้ไขรายการเดิม (เจ้าของเท่านั้น) → เขียนตรง
+  if (editId) {
+    const amount = parseFloat(document.getElementById('fAmount').value);
+    if (!amount || amount <= 0) { alert('กรุณาใส่จำนวนเงินให้ถูกต้อง'); return; }
+    putRecord({
+      id: editId, amount,
+      name: document.getElementById('fName').value.trim() || 'ไม่ระบุชื่อ',
+      bank: document.getElementById('fBank').value,
+      date: document.getElementById('fDate').value || todayStr(), note,
+      slipRef: qr || '', slipHash: document.getElementById('fSlipHash').value || '',
+      slipVerified: document.getElementById('fSlipVerified').value === '1'
+    });
+    closeModal(); return;
+  }
+
+  // รายการใหม่ + มีสลิป → ยืนยัน+บันทึกผ่าน Worker (ยอดมาจากธนาคาร กันเงินปลอม)
+  if (qr) {
+    const btn = document.getElementById('saveBtn');
+    btn.disabled = true; btn.textContent = 'กำลังยืนยัน...';
+    setSlipStatus('busy', '🛡️ กำลังยืนยันกับธนาคารและบันทึก...');
+    const r = await workerSave(qr, note);
+    btn.disabled = false; btn.textContent = 'บันทึก';
+    if (r.ok) { setSlipStatus('ok', '✅ บันทึกแล้ว: ' + esc2(r.record.name) + ' ยอด ' + fmt(r.record.amount) + ' ฿'); setTimeout(closeModal, 800); return; }
+    if (r.alreadyExists) { alert('สลิปนี้บันทึกไว้แล้ว: ยอด ' + fmt(r.record.amount) + ' ฿' + (r.record.name ? ' (' + r.record.name + ')' : '')); closeModal(); return; }
+    if (r.error === 'unauthorized') { alert('เซสชันหมดอายุ — กรุณาออกจากระบบแล้วล็อกอินใหม่'); return; }
+    if (r.notFound) {
+      if (role === 'owner') {
+        if (confirm('⚠️ ตรวจไม่พบสลิปนี้ในระบบธนาคาร (อาจสลิปเก่า/ปลอม)\n\nบันทึกแบบกรอกเอง (ข้ามการตรวจ) ไหม? — ต้องใส่ยอดเงินเอง')) ownerManualSave();
+        else setSlipStatus('warn', 'ยกเลิก — สลิปไม่ผ่านการตรวจ');
+        return;
+      }
+      alert('❌ สลิปไม่ผ่านการตรวจกับธนาคาร — บันทึกไม่ได้\n(อาจเป็นสลิปปลอม หรือสลิปเก่าเกินกำหนด)');
+      setSlipStatus('dup', '❌ สลิปไม่ผ่านการตรวจ — บันทึกไม่ได้'); return;
+    }
+    alert('บันทึกไม่สำเร็จ: ' + (r.error || 'ลองใหม่อีกครั้ง')); return;
+  }
+
+  // รายการใหม่ ไม่มีสลิป → เจ้าของกรอกเองได้ / พนักงานไม่ได้
+  if (role === 'owner') ownerManualSave();
+  else alert('⚠️ ต้องแนบสลิปทุกครั้ง');
+}
+// บันทึกผ่าน Worker: ส่ง idToken + QR → Worker ตรวจ SlipOK แล้วเขียนเอง (ยอดจากธนาคาร)
+async function workerSave(qr, note) {
+  const proxy = localStorage.getItem(SOKEY) || BAKED_SLIPOK_PROXY;
+  try {
+    const user = firebase.auth().currentUser;
+    if (!user) return { ok: false, error: 'unauthorized' };
+    const idToken = await user.getIdToken();
+    const resp = await fetch(proxy, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ idToken, data: qr, note }) });
+    return await resp.json().catch(() => ({ ok: false, error: 'bad response' }));
+  } catch (e) { return { ok: false, error: 'เชื่อมต่อไม่ได้' }; }
+}
+// เจ้าของกรอกเอง (ข้ามการตรวจ) → เขียนตรง
+function ownerManualSave() {
   const amount = parseFloat(document.getElementById('fAmount').value);
-  if (!amount || amount <= 0) { alert('กรุณาใส่จำนวนเงินให้ถูกต้อง'); return; }
-  // บังคับ: ทุกรายการต้องแนบสลิป
-  const hasSlip = document.getElementById('fSlipRef').value || document.getElementById('fSlipHash').value;
-  if (!hasSlip) { alert('⚠️ ต้องแนบสลิปทุกครั้ง\nกรุณาถ่าย/เลือกรูปสลิปในช่อง "แนบสลิป" ก่อนบันทึก'); return; }
-  const rec = {
-    id: document.getElementById('editId').value || ('t' + Date.now() + Math.floor(Math.random()*1000)),
-    amount: amount,
+  if (!amount || amount <= 0) { alert('กรอกแบบเอง: กรุณาใส่จำนวนเงินก่อน'); document.getElementById('fAmount').focus(); return; }
+  putRecord({
+    id: 't' + Date.now() + Math.floor(Math.random()*1000), amount,
     name: document.getElementById('fName').value.trim() || 'ไม่ระบุชื่อ',
     bank: document.getElementById('fBank').value,
     date: document.getElementById('fDate').value || todayStr(),
     note: document.getElementById('fNote').value.trim(),
     slipRef: document.getElementById('fSlipRef').value || '',
     slipHash: document.getElementById('fSlipHash').value || '',
-    slipVerified: document.getElementById('fSlipVerified').value === '1'
-  };
-  putRecord(rec);
+    slipVerified: false, manual: true
+  });
   closeModal();
 }
 
@@ -615,83 +668,15 @@ async function handleSlip(input) {
   try {
     const buf = await file.arrayBuffer();
     const hash = await sha256(buf);
-    // อ่าน QR
     const url = URL.createObjectURL(new Blob([buf]));
     const img = await new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = url; });
     const qr = readQRfromImage(img);
     URL.revokeObjectURL(url);
-
-    let ref = qr || '';
     document.getElementById('fSlipHash').value = hash;
+    document.getElementById('fSlipRef').value = qr || '';
     document.getElementById('fSlipVerified').value = '';
-
-    const editId = document.getElementById('editId').value;
-    const esKey = localStorage.getItem(ESKEY);
-    const sokProxy = localStorage.getItem(SOKEY) || BAKED_SLIPOK_PROXY;
-    const provider = sokProxy ? 'slipok' : (esKey ? 'easyslip' : '');
-
-    // ── ชั้นที่ 1: ยืนยันกับธนาคารจริง (SlipOK ฟรีก่อน, ไม่งั้น EasySlip) ──
-    if (provider && qr) {
-      setSlipStatus('busy', '🛡️ กำลังยืนยันกับธนาคารผ่าน ' + (provider === 'slipok' ? 'SlipOK' : 'EasySlip') + '...');
-      const v = provider === 'slipok' ? await verifySlipOK(qr, sokProxy) : await verifyEasySlip(qr, esKey);
-      if (v.ok) {
-        ref = v.transRef || ref;           // ใช้เลขอ้างอิงธนาคารเป็นคีย์กันซ้ำ (แม่นกว่า)
-        document.getElementById('fSlipRef').value = ref;
-        document.getElementById('fSlipVerified').value = '1';
-        // เติมข้อมูลจากสลิปอัตโนมัติทั้งหมด (ยอด/ผู้โอน/ธนาคาร/วันที่)
-        const amtEl = document.getElementById('fAmount');
-        if (v.amount) amtEl.value = v.amount;
-        if (v.sender) document.getElementById('fName').value = v.sender;
-        if (v.senderBank) setBankSelect(v.senderBank);
-        if (v.date) { const d = v.date.slice(0,10); if (/^\d{4}-\d{2}-\d{2}$/.test(d)) document.getElementById('fDate').value = d; }
-
-        // เช็คซ้ำด้วยเลขอ้างอิงธนาคาร
-        const dup = data.find(x => x.id !== editId && x.slipRef && x.slipRef === ref);
-        let msg = '🛡️ <b>ยืนยันกับธนาคารแล้ว ✓ เติมข้อมูลให้แล้ว</b><br>' +
-          (v.sender ? 'ผู้โอน: ' + esc2(v.sender) + '<br>' : '') +
-          (v.receiver ? 'เข้าบัญชี: ' + esc2(v.receiver) + '<br>' : '') +
-          'ยอด: <b>' + fmt(v.amount) + ' ฿</b>' + (v.date ? ' · ' + v.date.slice(0,10) : '');
-        if (dup) {
-          setSlipStatus('dup', '❌ <b>สลิปนี้ถูกใช้ไปแล้ว!</b><br>เคยบันทึกเมื่อ ' + thaiDate(dup.date) +
-            ' ยอด ' + fmt(dup.amount) + ' ฿<br>' + msg);
-        } else {
-          setSlipStatus('ok', msg + '<br><small>ไม่ซ้ำ · ของจริง · กดบันทึกได้เลย' +
-            (v.sokDup ? ' (เคยตรวจสลิปนี้แล้ว แต่ไม่มีในระบบ — ใส่กลับได้)' : '') + '</small>');
-        }
-        return;
-      } else if (v.dup) {
-        document.getElementById('fSlipRef').value = ref;
-        setSlipStatus('dup', '❌ <b>สลิปนี้ถูกใช้ไปแล้ว!</b> (SlipOK แจ้งว่าสลิปซ้ำ)<br><small>มีคนส่งสลิปนี้เข้าระบบไปแล้ว</small>');
-        return;
-      } else if (v.notFound) {
-        document.getElementById('fSlipRef').value = ref;
-        setSlipStatus('warn', '⚠️ <b>ตรวจไม่พบรายการนี้ในระบบธนาคาร</b>' +
-          (v.reason ? '<br>เหตุผล: ' + esc2(v.reason) : '') +
-          '<br><small>เป็นได้ 2 อย่าง: (1) สลิปปลอม/ตัดต่อ หรือ (2) สลิปเก่าเกินกำหนดที่ธนาคารให้ตรวจย้อนหลัง — ถ้าเป็นสลิปสดของลูกค้าที่เพิ่งโอน แล้วยังไม่ผ่าน ให้ระวังสลิปปลอม</small>');
-        return;
-      } else {
-        // ยืนยันไม่ได้ (key ผิด/โควต้าหมด/เน็ตล่ม) → แจ้งแล้วถอยไปตรวจซ้ำแบบ local
-        setSlipStatus('warn', '⚠️ ยืนยันกับธนาคารไม่ได้: ' + esc2(v.error || 'unknown') + '<br><small>จะใช้การกันสลิปซ้ำในเครื่องแทน</small>');
-      }
-    }
-
-    // ── ชั้นที่ 2: กันสลิปซ้ำในเครื่อง (เมื่อไม่มี key หรือยืนยันไม่ได้) ──
-    document.getElementById('fSlipRef').value = ref;
-    const dup = data.find(x => x.id !== editId && (
-      (ref && x.slipRef && x.slipRef === ref) || (x.slipHash && x.slipHash === hash)
-    ));
-    if (dup) {
-      setSlipStatus('dup',
-        '❌ <b>สลิปนี้ถูกใช้ไปแล้ว!</b><br>เคยบันทึกเมื่อ ' + thaiDate(dup.date) +
-        ' ยอด ' + fmt(dup.amount) + ' ฿' + (dup.name ? ' (' + esc2(dup.name) + ')' : '') +
-        '<br><small>ระวังสลิปซ้ำ/สลิปเก่า — ตรวจสอบก่อนบันทึก</small>');
-    } else if (ref && !provider) {
-      setSlipStatus('ok', '✅ อ่าน QR สลิปได้ และ<b>ไม่ซ้ำ</b>กับรายการเดิม<br><small>💡 ตั้งค่า ⚙️ SlipOK (ฟรี) หรือ EasySlip เพื่อยืนยันกับธนาคาร (กันสลิปปลอม)</small>');
-    } else if (ref) {
-      setSlipStatus('ok', '✅ อ่าน QR ได้ และไม่ซ้ำ');
-    } else {
-      setSlipStatus('warn', '⚠️ อ่าน QR ไม่เจอ (ภาพไม่ชัด/ครอบไม่ติด QR หรือไม่ใช่สลิป)<br><small>ยังกันสลิปซ้ำได้จากภาพเดียวกัน แต่แนะนำถ่ายให้เห็น QR ชัดๆ</small>');
-    }
+    if (qr) setSlipStatus('ok', '📎 อ่านสลิปสำเร็จ — กด <b>"บันทึก"</b> เพื่อยืนยันกับธนาคารและบันทึก<br><small>ยอด/ชื่อ/วันที่ จะดึงจากธนาคารให้อัตโนมัติ (กันเงินปลอม)</small>');
+    else setSlipStatus('warn', '⚠️ อ่าน QR ไม่เจอ (ภาพไม่ชัด/ครอบไม่ติด QR หรือไม่ใช่สลิป) — ถ่ายให้เห็น QR ชัดๆ');
   } catch (e) {
     setSlipStatus('warn', '⚠️ อ่านไฟล์ไม่สำเร็จ ลองใหม่อีกครั้ง');
   }
