@@ -675,8 +675,8 @@ async function verifySlipOK(payload, proxyUrl) {
     }
     const code = j && (j.code || (j.data && j.data.code));
     if (code === 1012) return { ok: false, dup: true };          // สลิปซ้ำ (ฝั่ง SlipOK)
-    if (code === 1011) return { ok: false, notFound: true };     // QR ปลอม/หมดอายุ
-    if (code === 1013) return { ok: false, notFound: true };     // ยอดไม่ตรง
+    if (code === 1011 || code === 1008 || code === 1013)
+      return { ok: false, notFound: true };                      // QR ปลอม/หมดอายุ/ไม่ใช่สลิป/ยอดไม่ตรง
     return { ok: false, error: (j && j.message) || ('โค้ด ' + (code || resp.status)) };
   } catch (e) {
     return { ok: false, error: 'เชื่อมต่อ SlipOK proxy ไม่ได้ (เช็ค URL)' };
