@@ -578,9 +578,29 @@ function monthLabel(ym) {
   return months[Number(m)-1] + ' ' + (Number(y)+543);
 }
 
+/* ---------- normalize (กันวันที่/ธนาคารจากสลิปรูปแบบแปลกๆ) ---------- */
+const BANK_CODE = { '001':'ธปท.','002':'กรุงเทพ','004':'กสิกรไทย','006':'กรุงไทย','008':'JPMorgan','009':'OCBC',
+  '011':'ทหารไทยธนชาต','014':'ไทยพาณิชย์','017':'ซิตี้แบงก์','018':'ซูมิโตโม','020':'สแตนดาร์ดชาร์เตอร์ด',
+  '022':'CIMB','024':'UOB','025':'กรุงศรีอยุธยา','030':'ออมสิน','031':'HSBC','033':'ธอส.','034':'ธ.ก.ส.',
+  '039':'มิซูโฮ','045':'BNP','065':'ธนชาต','066':'อิสลาม','067':'ทิสโก้','069':'เกียรตินาคินภัทร',
+  '070':'ICBC','071':'ไทยเครดิต','073':'แลนด์แอนด์เฮ้าส์','098':'SME Bank' };
+function normBank(b){ b=(b||'').toString().trim(); const c=b.replace(/\D/g,''); if(/^\d{2,3}$/.test(c)) return BANK_CODE[c.padStart(3,'0')] || ('ธนาคาร '+c); return b; }
+function ymd(y,mo,da){ y=Number(y); if(y>2200) y-=543; return String(y).padStart(4,'0')+'-'+String(Number(mo)).padStart(2,'0')+'-'+String(Number(da)).padStart(2,'0'); }
+function normDate(s){
+  s=(s||'').toString().trim();
+  let m=s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/); if(m) return ymd(m[1],m[2],m[3]);   // YYYY-MM-DD
+  m=s.match(/^(\d{4})(\d{2})(\d{2})/);          if(m) return ymd(m[1],m[2],m[3]);     // YYYYMMDD(Txx)
+  m=s.match(/^(\d{1,2})[\/.](\d{1,2})[\/.](\d{4})/); if(m) return ymd(m[3],m[2],m[1]); // DD/MM/YYYY
+  if(/^\d{13}$/.test(s)){ const d=new Date(Number(s)); if(!isNaN(d.getTime())) return localDateStr(d); }     // epoch ms
+  if(/^\d{10}$/.test(s)){ const d=new Date(Number(s)*1000); if(!isNaN(d.getTime())) return localDateStr(d); }// epoch s
+  const d=new Date(s); if(!isNaN(d.getTime())) return localDateStr(d);
+  return todayStr();
+}
+function normalizeRec(r){ return (r && typeof r==='object') ? Object.assign({}, r, { date: normDate(r.date), bank: normBank(r.bank) }) : r; }
+
 /* ---------- data layer (local or realtime) ---------- */
 function loadLocal() {
-  try { data = JSON.parse(localStorage.getItem(LKEY)) || []; } catch (e) { data = []; }
+  try { data = (JSON.parse(localStorage.getItem(LKEY)) || []).map(normalizeRec); } catch (e) { data = []; }
 }
 function persistLocal() { localStorage.setItem(LKEY, JSON.stringify(data)); }
 
@@ -642,7 +662,7 @@ function connectRT(cfg, room) {
 
     dbRef.on('value', snap => {
       const val = snap.val() || {};
-      data = Object.values(val);
+      data = Object.values(val).map(normalizeRec);
       rtOn = true;
       render();
     }, err => {
