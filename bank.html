@@ -23,11 +23,11 @@
     --blue: #06b6d4; --red: #ef4444; --accent: #06d6f5; --amber: #f59e0b;
     --cyan: #03d0f5; --cyan-d: #0496c7;
     /* ───── Liquid Glass ───── */
-    --glass:    rgba(255,255,255,.06);
-    --glass-2:  rgba(255,255,255,.10);
-    --glass-bd: rgba(255,255,255,.16);
-    --glass-hi: rgba(255,255,255,.30);   /* แสง specular ขอบบน */
-    --blur:     saturate(180%) blur(18px);
+    --glass:    rgba(255,255,255,.035);
+    --glass-2:  rgba(255,255,255,.06);
+    --glass-bd: rgba(255,255,255,.14);
+    --glass-hi: rgba(255,255,255,.28);   /* แสง specular ขอบบน */
+    --blur:     saturate(180%) blur(22px);
     --glass-sh: 0 8px 30px rgba(0,0,0,.30);
     --inset-hi: inset 0 1px 0 var(--glass-hi), inset 0 0 0 .5px rgba(255,255,255,.05);
   }
@@ -70,7 +70,7 @@
 
   .summary {
     position: relative; overflow: hidden;
-    background: linear-gradient(135deg, rgba(3,208,245,.85), rgba(3,105,161,.85));
+    background: linear-gradient(135deg, rgba(3,208,245,.55), rgba(3,105,161,.48));
     -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur);
     border: 1px solid var(--glass-bd); border-radius: 22px;
     padding: 22px 20px; margin: 14px 0 16px;
@@ -142,7 +142,7 @@
 
   .modal { position: fixed; inset: 0; background: rgba(4,12,18,.45); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); display: none; align-items: flex-end; justify-content: center; z-index: 50; }
   .modal.show { display: flex; }
-  .sheet { background: rgba(18,32,42,.72); -webkit-backdrop-filter: saturate(180%) blur(30px); backdrop-filter: saturate(180%) blur(30px); border-top: 1px solid var(--glass-bd); width: 100%; max-width: 560px; border-radius: 26px 26px 0 0; padding: 20px 18px calc(20px + env(safe-area-inset-bottom)); animation: up .25s ease; max-height: 92vh; overflow-y: auto; box-shadow: 0 -12px 40px rgba(0,0,0,.4), inset 0 1px 0 var(--glass-hi); }
+  .sheet { background: rgba(18,32,42,.58); -webkit-backdrop-filter: saturate(180%) blur(34px); backdrop-filter: saturate(180%) blur(34px); border-top: 1px solid var(--glass-bd); width: 100%; max-width: 560px; border-radius: 26px 26px 0 0; padding: 20px 18px calc(20px + env(safe-area-inset-bottom)); animation: up .25s ease; max-height: 92vh; overflow-y: auto; box-shadow: 0 -12px 40px rgba(0,0,0,.4), inset 0 1px 0 var(--glass-hi); }
   @keyframes up { from { transform: translateY(100%); } to { transform: translateY(0); } }
   .sheet h2 { font-size: 18px; margin-bottom: 16px; text-align: center; }
   .field { margin-bottom: 12px; }
