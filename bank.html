@@ -3,14 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<meta name="theme-color" content="#0ea5e9">
+<meta name="theme-color" content="#03d0f5">
 <title>HURT SHOP</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   :root {
-    --bg: #0f172a; --card: #1e293b; --card2: #273449; --line: #334155;
-    --text: #f1f5f9; --muted: #94a3b8; --green: #22c55e; --green-d: #16a34a;
-    --blue: #0ea5e9; --red: #ef4444; --accent: #38bdf8; --amber: #f59e0b;
+    --bg: #0b1620; --card: #15242f; --card2: #1d3340; --line: #2c4452;
+    --text: #f1f5f9; --muted: #93acba; --green: #22c55e; --green-d: #16a34a;
+    --blue: #06b6d4; --red: #ef4444; --accent: #06d6f5; --amber: #f59e0b;
+    --cyan: #03d0f5; --cyan-d: #0496c7;
   }
   body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Sukhumvit Set", "Helvetica Neue", sans-serif;
@@ -40,8 +41,8 @@
   @keyframes blink { 50% { opacity: .3; } }
 
   .summary {
-    background: linear-gradient(135deg, #0ea5e9, #2563eb); border-radius: 20px;
-    padding: 22px 20px; box-shadow: 0 10px 30px rgba(14,165,233,.25); margin: 14px 0 16px;
+    background: linear-gradient(135deg, #03d0f5, #0369a1); border-radius: 20px;
+    padding: 22px 20px; box-shadow: 0 10px 30px rgba(3,208,245,.28); margin: 14px 0 16px;
   }
   .summary .label { font-size: 13px; opacity: .85; }
   .summary .total { font-size: 38px; font-weight: 800; letter-spacing: -1px; margin-top: 4px; word-break: break-all; }
@@ -81,9 +82,9 @@
   .fab {
     position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
     width: calc(100% - 32px); max-width: 528px;
-    background: linear-gradient(135deg, var(--green), var(--green-d)); color: #fff;
-    border: none; border-radius: 16px; padding: 16px; font-size: 16px; font-weight: 700;
-    box-shadow: 0 8px 24px rgba(34,197,94,.35); cursor: pointer;
+    background: linear-gradient(135deg, var(--cyan), var(--cyan-d)); color: #04222b;
+    border: none; border-radius: 16px; padding: 16px; font-size: 16px; font-weight: 800;
+    box-shadow: 0 8px 24px rgba(3,208,245,.4); cursor: pointer;
   }
   .fab:active { transform: translateX(-50%) scale(.98); }
 
@@ -134,7 +135,7 @@
 
   .login-screen {
     position: fixed; inset: 0; z-index: 100;
-    background: linear-gradient(160deg, #0f172a 0%, #1e293b 60%, #0e3a5e 100%);
+    background: linear-gradient(160deg, #0b1620 0%, #0c2c3a 55%, #064a60 100%);
     display: flex; align-items: center; justify-content: center; padding: 24px;
   }
   .login-box { text-align: center; max-width: 360px; width: 100%; }
