@@ -19,7 +19,7 @@ const FB_SECRET = "ใส่_FIREBASE_DATABASE_SECRET";   // กุญแจ adm
 const FB_APIKEY = "ใส่_FIREBASE_WEB_APIKEY";        // public web api key (ใช้ตรวจ idToken)
 const ROOM = "main";
 const ALLOWED = ["owner@gmail.com", "staff@gmail.com"]; // อีเมลที่อนุญาต
-const ALLOW_ORIGIN = "*";
+const ALLOW_ORIGIN = "https://chitipat-web.github.io"; // จำกัดเฉพาะโดเมนเว็บเรา (กันเว็บอื่นเรียก)
 
 // แปลงวันที่จาก SlipOK (มักเป็น YYYYMMDD ไม่มีขีด) ให้เป็น YYYY-MM-DD
 function toYMD(s) {
@@ -58,14 +58,12 @@ export default {
       } catch (e) { return { ok: false, error: "slipok unreachable" }; }
     };
 
-    // โหมดเก่า: ไม่มี idToken = แค่ตรวจ ส่งกลับ ไม่เขียน
-    if (!body.idToken) {
-      let v = await verify(body.data, body.log === true);
-      if (v.dup) { const r = await verify(body.data, false); if (r.ok) r.sokDup = true; v = r; }
-      return J(v.ok ? { success: true, data: { transRef: v.transRef, amount: v.amount, transDate: v.date, sender: { displayName: v.sender, bank: v.senderBank } } } : { success: false, code: v.notFound ? 1011 : 0, message: v.error || v.reason || "" }, v.ok ? 200 : 400);
+    // ต้องมี idToken เสมอ — กันคนภายนอกยิง Worker เผาโควต้า SlipOK (ไม่มี token = ไม่เรียก SlipOK)
+    if (!body.idToken || typeof body.idToken !== "string" || body.idToken.trim().length < 20) {
+      return J({ ok: false, error: "unauthorized" }, 401);
     }
 
-    // โหมดใหม่: ตรวจตัวตน → ตรวจสลิป → เขียนเอง
+    // ตรวจตัวตน → ตรวจสลิป → เขียนเอง
     let email = "";
     try {
       const lk = await fetch("https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=" + FB_APIKEY,
