@@ -200,7 +200,7 @@
     <div class="field">
       <label>📎 ตรวจสลิป (กันสลิปซ้ำ)</label>
       <input id="fSlip" type="file" accept="image/*" capture="environment" onchange="handleSlip(this)">
-      <input type="hidden" id="fSlipRef"><input type="hidden" id="fSlipHash">
+      <input type="hidden" id="fSlipRef"><input type="hidden" id="fSlipHash"><input type="hidden" id="fSlipVerified">
       <div id="slipStatus" class="slipstatus"></div>
     </div>
     <div class="btns">
@@ -244,6 +244,25 @@
     <div class="btns" style="margin-top:10px">
       <button class="btn-cancel" style="flex:1" onclick="disconnectRT()">ตัดการเชื่อมต่อ (กลับโหมดออฟไลน์)</button>
     </div>
+
+    <hr style="border:none;border-top:1px solid var(--line);margin:22px 0 18px">
+    <h2 style="margin-bottom:12px">🛡️ ยืนยันสลิปกับธนาคาร (กันสลิปปลอม)</h2>
+    <div class="hint">
+      ตรวจสลิป<b>ตัดต่อ/ปลอม</b>โดยยืนยันกับธนาคารจริงผ่าน <b>EasySlip</b>
+      <ol>
+        <li>สมัครที่ <a href="https://developer.easyslip.com" target="_blank">developer.easyslip.com</a> (มีแพ็กเกจฟรีให้ลอง)</li>
+        <li>คัดลอก <b>API Key (Access Token)</b> มาวางช่องล่างนี้ → กดบันทึก</li>
+        <li>เวลาเพิ่มรายการ แนบสลิป ระบบจะเช็คกับธนาคารให้อัตโนมัติ</li>
+      </ol>
+    </div>
+    <div class="field">
+      <label>EasySlip API Key</label>
+      <input id="sEasySlip" type="text" placeholder="วาง Access Token ที่นี่" autocomplete="off">
+    </div>
+    <div class="btns">
+      <button class="btn-cancel" onclick="closeSettings()">ปิด</button>
+      <button class="btn-save" onclick="saveEasySlip()">บันทึก API Key</button>
+    </div>
   </div>
 </div>
 
@@ -254,6 +273,7 @@
 const LKEY = 'bank_transfers_v1';      // local fallback store
 const CFGKEY = 'bank_fb_config';        // saved firebase config (JSON string)
 const ROOMKEY = 'bank_room';            // saved room code
+const ESKEY = 'bank_easyslip_key';      // saved EasySlip API key (per device)
 
 // Real-time แบบฝังไว้ในตัว: ทุกเครื่องที่เปิดลิงก์จะ sync อัตโนมัติ ไม่ต้องตั้งค่า
 const BAKED_CONFIG = {
@@ -392,8 +412,15 @@ function openSettings() {
   document.getElementById('settings').classList.add('show');
   document.getElementById('sCfg').value = localStorage.getItem(CFGKEY) || '';
   document.getElementById('sRoom').value = localStorage.getItem(ROOMKEY) || '';
+  document.getElementById('sEasySlip').value = localStorage.getItem(ESKEY) || '';
 }
 function closeSettings() { document.getElementById('settings').classList.remove('show'); }
+function saveEasySlip() {
+  const k = document.getElementById('sEasySlip').value.trim();
+  if (k) localStorage.setItem(ESKEY, k); else localStorage.removeItem(ESKEY);
+  alert(k ? 'บันทึก API Key แล้ว — เวลาแนบสลิปจะยืนยันกับธนาคารอัตโนมัติ' : 'ลบ API Key แล้ว (กลับไปตรวจเฉพาะสลิปซ้ำ)');
+  closeSettings();
+}
 function saveSettings() {
   const raw = document.getElementById('sCfg').value.trim();
   const room = document.getElementById('sRoom').value.trim();
@@ -431,7 +458,9 @@ function openModal(id) {
     document.getElementById('fNote').value = it.note;
     document.getElementById('fSlipRef').value = it.slipRef || '';
     document.getElementById('fSlipHash').value = it.slipHash || '';
-    setSlipStatus(it.slipRef || it.slipHash ? 'ok' : '', it.slipRef || it.slipHash ? '📎 มีสลิปแนบอยู่แล้ว' : '');
+    document.getElementById('fSlipVerified').value = it.slipVerified ? '1' : '';
+    setSlipStatus(it.slipVerified ? 'ok' : (it.slipRef || it.slipHash ? 'ok' : ''),
+      it.slipVerified ? '🛡️ ยืนยันกับธนาคารแล้ว' : (it.slipRef || it.slipHash ? '📎 มีสลิปแนบอยู่แล้ว' : ''));
   } else {
     document.getElementById('modalTitle').textContent = 'เพิ่มยอดโอนเข้า';
     document.getElementById('editId').value = '';
@@ -442,6 +471,7 @@ function openModal(id) {
     document.getElementById('fNote').value = '';
     document.getElementById('fSlipRef').value = '';
     document.getElementById('fSlipHash').value = '';
+    document.getElementById('fSlipVerified').value = '';
     setSlipStatus('', '');
     setTimeout(() => document.getElementById('fAmount').focus(), 200);
   }
@@ -462,7 +492,8 @@ function save() {
     date: document.getElementById('fDate').value || todayStr(),
     note: document.getElementById('fNote').value.trim(),
     slipRef: document.getElementById('fSlipRef').value || '',
-    slipHash: document.getElementById('fSlipHash').value || ''
+    slipHash: document.getElementById('fSlipHash').value || '',
+    slipVerified: document.getElementById('fSlipVerified').value === '1'
   };
   putRecord(rec);
   closeModal();
@@ -501,27 +532,100 @@ async function handleSlip(input) {
     const qr = readQRfromImage(img);
     URL.revokeObjectURL(url);
 
-    const ref = qr || '';
-    document.getElementById('fSlipRef').value = ref;
+    let ref = qr || '';
     document.getElementById('fSlipHash').value = hash;
+    document.getElementById('fSlipVerified').value = '';
 
-    // ตรวจซ้ำกับรายการทั้งหมด (ข้ามทุกเครื่องผ่าน Firebase) — ยกเว้นรายการที่กำลังแก้อยู่
     const editId = document.getElementById('editId').value;
+    const esKey = localStorage.getItem(ESKEY);
+
+    // ── ชั้นที่ 1: ยืนยันกับธนาคารจริงผ่าน EasySlip (ถ้าตั้ง API key + อ่าน QR ได้) ──
+    if (esKey && qr) {
+      setSlipStatus('busy', '🛡️ กำลังยืนยันกับธนาคารผ่าน EasySlip...');
+      const v = await verifyEasySlip(qr, esKey);
+      if (v.ok) {
+        ref = v.transRef || ref;           // ใช้เลขอ้างอิงธนาคารเป็นคีย์กันซ้ำ (แม่นกว่า)
+        document.getElementById('fSlipRef').value = ref;
+        document.getElementById('fSlipVerified').value = '1';
+        // เติมยอดให้อัตโนมัติถ้ายังว่าง
+        const amtEl = document.getElementById('fAmount');
+        if (v.amount && !parseFloat(amtEl.value)) amtEl.value = v.amount;
+
+        // เช็คซ้ำด้วยเลขอ้างอิงธนาคาร
+        const dup = data.find(x => x.id !== editId && x.slipRef && x.slipRef === ref);
+        const typed = parseFloat(amtEl.value);
+        const mismatch = v.amount && typed && Math.abs(typed - v.amount) > 0.01;
+        let msg = '🛡️ <b>ยืนยันกับธนาคารแล้ว ✓</b><br>' +
+          (v.sender ? 'ผู้โอน: ' + esc2(v.sender) + '<br>' : '') +
+          (v.receiver ? 'เข้าบัญชี: ' + esc2(v.receiver) + '<br>' : '') +
+          'ยอด: <b>' + fmt(v.amount) + ' ฿</b>' + (v.date ? ' · ' + v.date.slice(0,10) : '');
+        if (dup) {
+          setSlipStatus('dup', '❌ <b>สลิปนี้ถูกใช้ไปแล้ว!</b><br>เคยบันทึกเมื่อ ' + thaiDate(dup.date) +
+            ' ยอด ' + fmt(dup.amount) + ' ฿<br>' + msg);
+        } else if (mismatch) {
+          setSlipStatus('warn', '⚠️ <b>ยอดไม่ตรง!</b> สลิปจริงคือ ' + fmt(v.amount) +
+            ' ฿ แต่คุณกรอก ' + fmt(typed) + ' ฿<br>' + msg);
+        } else {
+          setSlipStatus('ok', msg + '<br><small>ไม่ซ้ำ · ของจริง</small>');
+        }
+        return;
+      } else if (v.notFound) {
+        document.getElementById('fSlipRef').value = ref;
+        setSlipStatus('dup', '❌ <b>ตรวจไม่พบรายการนี้ในระบบธนาคาร</b><br><small>เสี่ยงเป็นสลิปปลอม/ตัดต่อ — อย่าเพิ่งบันทึก ตรวจสอบให้ดี</small>');
+        return;
+      } else {
+        // ยืนยันไม่ได้ (key ผิด/โควต้าหมด/เน็ตล่ม) → แจ้งแล้วถอยไปตรวจซ้ำแบบ local
+        setSlipStatus('warn', '⚠️ ยืนยันกับธนาคารไม่ได้: ' + esc2(v.error || 'unknown') + '<br><small>จะใช้การกันสลิปซ้ำในเครื่องแทน</small>');
+      }
+    }
+
+    // ── ชั้นที่ 2: กันสลิปซ้ำในเครื่อง (เมื่อไม่มี key หรือยืนยันไม่ได้) ──
+    document.getElementById('fSlipRef').value = ref;
     const dup = data.find(x => x.id !== editId && (
       (ref && x.slipRef && x.slipRef === ref) || (x.slipHash && x.slipHash === hash)
     ));
     if (dup) {
       setSlipStatus('dup',
         '❌ <b>สลิปนี้ถูกใช้ไปแล้ว!</b><br>เคยบันทึกเมื่อ ' + thaiDate(dup.date) +
-        ' ยอด ' + fmt(dup.amount) + ' ฿' + (dup.name ? ' (' + dup.name + ')' : '') +
+        ' ยอด ' + fmt(dup.amount) + ' ฿' + (dup.name ? ' (' + esc2(dup.name) + ')' : '') +
         '<br><small>ระวังสลิปซ้ำ/สลิปเก่า — ตรวจสอบก่อนบันทึก</small>');
+    } else if (ref && !esKey) {
+      setSlipStatus('ok', '✅ อ่าน QR สลิปได้ และ<b>ไม่ซ้ำ</b>กับรายการเดิม<br><small>💡 ใส่ EasySlip API key ในตั้งค่า ⚙️ เพื่อยืนยันกับธนาคาร (กันสลิปปลอม)</small>');
     } else if (ref) {
-      setSlipStatus('ok', '✅ อ่าน QR สลิปได้ และ<b>ไม่ซ้ำ</b>กับรายการเดิม<br><small>เลขอ้างอิงถูกเก็บไว้กันใช้สลิปนี้ซ้ำ</small>');
+      setSlipStatus('ok', '✅ อ่าน QR ได้ และไม่ซ้ำ');
     } else {
       setSlipStatus('warn', '⚠️ อ่าน QR ไม่เจอ (ภาพไม่ชัด/ครอบไม่ติด QR หรือไม่ใช่สลิป)<br><small>ยังกันสลิปซ้ำได้จากภาพเดียวกัน แต่แนะนำถ่ายให้เห็น QR ชัดๆ</small>');
     }
   } catch (e) {
     setSlipStatus('warn', '⚠️ อ่านไฟล์ไม่สำเร็จ ลองใหม่อีกครั้ง');
+  }
+}
+function esc2(s) { return (s||'').toString().replace(/[<>&]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;'}[c])); }
+// เรียก EasySlip ตรงจากเบราว์เซอร์ (CORS รองรับ) — ส่งเฉพาะ payload ของ QR ไม่ใช่รูป
+async function verifyEasySlip(payload, key) {
+  try {
+    const resp = await fetch('https://api.easyslip.com/v2/verify/bank', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + key, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ payload })
+    });
+    const j = await resp.json().catch(() => ({}));
+    if (resp.ok && j && j.success && j.data) {
+      const raw = j.data.rawSlip || j.data;
+      const amt = raw.amount && (raw.amount.amount != null ? raw.amount.amount
+        : (raw.amount.local && raw.amount.local.amount)) || j.data.amountInSlip || null;
+      const sName = raw.sender && raw.sender.account && raw.sender.account.name && (raw.sender.account.name.th || raw.sender.account.name.en);
+      const rName = raw.receiver && raw.receiver.account && raw.receiver.account.name && (raw.receiver.account.name.th || raw.receiver.account.name.en);
+      return { ok: true, transRef: raw.transRef || '', amount: amt ? Number(amt) : null,
+        sender: sName || '', receiver: rName || '', date: raw.date || '' };
+    }
+    const code = (j && j.error && (j.error.code || j.error)) || (resp.status === 404 ? 'SLIP_NOT_FOUND' : 'ERROR');
+    if (resp.status === 404 || code === 'SLIP_NOT_FOUND') return { ok: false, notFound: true };
+    const msgMap = { INVALID_API_KEY: 'API key ไม่ถูกต้อง (เช็คในตั้งค่า)', QUOTA_EXCEEDED: 'โควต้า EasySlip หมด',
+      VALIDATION_ERROR: 'อ่านสลิปไม่ได้ (payload ไม่ถูกต้อง)' };
+    return { ok: false, error: msgMap[code] || ('โค้ด ' + code) };
+  } catch (e) {
+    return { ok: false, error: 'เชื่อมต่อ EasySlip ไม่ได้' };
   }
 }
 function del(id) {
@@ -596,7 +700,7 @@ function render() {
           <div class="name">${esc(it.name)}</div>
           <div class="sub">${esc(it.bank) || 'ไม่ระบุธนาคาร'}</div>
           ${it.note ? `<div class="note">${esc(it.note)}</div>` : ''}
-          ${(it.slipRef || it.slipHash) ? `<div class="slip has">📎 มีสลิป${it.slipRef ? ' · QR ✓' : ''}</div>` : ''}
+          ${it.slipVerified ? `<div class="slip has">🛡️ ยืนยันธนาคารแล้ว</div>` : ((it.slipRef || it.slipHash) ? `<div class="slip has">📎 มีสลิป${it.slipRef ? ' · QR ✓' : ''}</div>` : '')}
         </div>
         <div class="amt">
           <b>+${fmt(it.amount)}</b>
