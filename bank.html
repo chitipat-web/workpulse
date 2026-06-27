@@ -611,7 +611,9 @@ async function handleSlip(input) {
         return;
       } else if (v.notFound) {
         document.getElementById('fSlipRef').value = ref;
-        setSlipStatus('dup', '❌ <b>ตรวจไม่พบรายการนี้ในระบบธนาคาร</b><br><small>เสี่ยงเป็นสลิปปลอม/ตัดต่อ — อย่าเพิ่งบันทึก ตรวจสอบให้ดี</small>');
+        setSlipStatus('warn', '⚠️ <b>ตรวจไม่พบรายการนี้ในระบบธนาคาร</b>' +
+          (v.reason ? '<br>เหตุผล: ' + esc2(v.reason) : '') +
+          '<br><small>เป็นได้ 2 อย่าง: (1) สลิปปลอม/ตัดต่อ หรือ (2) สลิปเก่าเกินกำหนดที่ธนาคารให้ตรวจย้อนหลัง — ถ้าเป็นสลิปสดของลูกค้าที่เพิ่งโอน แล้วยังไม่ผ่าน ให้ระวังสลิปปลอม</small>');
         return;
       } else {
         // ยืนยันไม่ได้ (key ผิด/โควต้าหมด/เน็ตล่ม) → แจ้งแล้วถอยไปตรวจซ้ำแบบ local
@@ -676,7 +678,7 @@ async function verifySlipOK(payload, proxyUrl) {
     const code = j && (j.code || (j.data && j.data.code));
     if (code === 1012) return { ok: false, dup: true };          // สลิปซ้ำ (ฝั่ง SlipOK)
     if (code === 1011 || code === 1008 || code === 1013)
-      return { ok: false, notFound: true };                      // QR ปลอม/หมดอายุ/ไม่ใช่สลิป/ยอดไม่ตรง
+      return { ok: false, notFound: true, reason: j && j.message }; // QR ปลอม/หมดอายุ/ไม่ใช่สลิป/ยอดไม่ตรง
     return { ok: false, error: (j && j.message) || ('โค้ด ' + (code || resp.status)) };
   } catch (e) {
     return { ok: false, error: 'เชื่อมต่อ SlipOK proxy ไม่ได้ (เช็ค URL)' };
