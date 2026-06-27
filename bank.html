@@ -649,7 +649,8 @@ async function handleSlip(input) {
           setSlipStatus('dup', '❌ <b>สลิปนี้ถูกใช้ไปแล้ว!</b><br>เคยบันทึกเมื่อ ' + thaiDate(dup.date) +
             ' ยอด ' + fmt(dup.amount) + ' ฿<br>' + msg);
         } else {
-          setSlipStatus('ok', msg + '<br><small>ไม่ซ้ำ · ของจริง · กดบันทึกได้เลย</small>');
+          setSlipStatus('ok', msg + '<br><small>ไม่ซ้ำ · ของจริง · กดบันทึกได้เลย' +
+            (v.sokDup ? ' (เคยตรวจสลิปนี้แล้ว แต่ไม่มีในระบบ — ใส่กลับได้)' : '') + '</small>');
         }
         return;
       } else if (v.dup) {
@@ -706,11 +707,12 @@ function setBankSelect(bankName) {
   sel.value = hit || 'อื่นๆ';
 }
 // เรียก SlipOK ผ่านพร็อกซี Cloudflare (พร็อกซีถือ key+branch เอง) ส่งเฉพาะ payload ของ QR
-async function verifySlipOK(payload, proxyUrl) {
+async function verifySlipOK(payload, proxyUrl, doLog) {
+  if (doLog === undefined) doLog = true;
   try {
     const resp = await fetch(proxyUrl, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ data: payload, log: true })
+      body: JSON.stringify({ data: payload, log: doLog })
     });
     const j = await resp.json().catch(() => ({}));
     const d = (j && j.data) ? j.data : j;
@@ -723,7 +725,11 @@ async function verifySlipOK(payload, proxyUrl) {
         sender: sName || '', senderBank: sBank || '', receiver: rName || '', date: dt };
     }
     const code = j && (j.code || (j.data && j.data.code));
-    if (code === 1012) return { ok: false, dup: true };          // สลิปซ้ำ (ฝั่ง SlipOK)
+    if (code === 1012) {
+      // SlipOK เคยเห็นสลิปนี้แล้ว — ดึงข้อมูลจริงอีกครั้งแบบไม่ log แล้วให้ระบบเราตัดสินว่าซ้ำจริงไหม
+      if (doLog) { const retry = await verifySlipOK(payload, proxyUrl, false); if (retry.ok) retry.sokDup = true; return retry; }
+      return { ok: false, dup: true };
+    }
     if (code === 1011 || code === 1008 || code === 1013)
       return { ok: false, notFound: true, reason: j && j.message }; // QR ปลอม/หมดอายุ/ไม่ใช่สลิป/ยอดไม่ตรง
     return { ok: false, error: (j && j.message) || ('โค้ด ' + (code || resp.status)) };
