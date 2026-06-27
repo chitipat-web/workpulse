@@ -135,6 +135,8 @@
   }
   .login-box { text-align: center; max-width: 360px; width: 100%; }
   .login-logo { font-size: 64px; margin-bottom: 8px; }
+  .login-logo-img { width: 110px; height: 110px; object-fit: cover; border-radius: 26px; margin-bottom: 12px; box-shadow: 0 8px 24px rgba(0,0,0,.35); }
+  .hdr-logo { width: 30px; height: 30px; object-fit: cover; border-radius: 8px; vertical-align: -7px; margin-right: 4px; }
   .login-box h1 { font-size: 24px; font-weight: 800; margin-bottom: 8px; }
   .login-box p { color: var(--muted); font-size: 14px; margin-bottom: 26px; line-height: 1.5; }
   .g-btn {
@@ -159,7 +161,7 @@
 <body>
 <div class="login-screen" id="loginScreen">
   <div class="login-box">
-    <div class="login-logo">💰</div>
+    <img src="hurt-logo.jpg" alt="HURT SHOP" class="login-logo-img">
     <h1>HURT SHOP</h1>
     <p id="loginMsg">กำลังตรวจสอบ...</p>
     <button class="g-btn" id="gBtn" onclick="googleSignIn()" style="display:none">
@@ -172,7 +174,7 @@
 <div class="wrap">
   <header>
     <button class="gear" onclick="openSettings()">⚙️</button>
-    <h1>🛍️ HURT SHOP</h1>
+    <h1><img src="hurt-logo.jpg" class="hdr-logo" alt="">HURT SHOP</h1>
     <p>บันทึกเงินที่โอนเข้าบัญชีธนาคาร</p>
     <div class="syncpill" id="syncPill" onclick="openSettings()"><span class="dot"></span><span id="syncText">โหมดออฟไลน์ (เครื่องนี้)</span></div>
     <div class="role-badge">👤 โหมดพนักงาน — เพิ่มสลิปได้อย่างเดียว (แก้/ลบไม่ได้)</div>
