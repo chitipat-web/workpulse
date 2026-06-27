@@ -148,7 +148,7 @@
 
   /* พนักงาน: ซ่อนปุ่ม ลบ/ล้าง (เพิ่มได้อย่างเดียว) */
   body.role-employee .item .amt .del { display: none; }
-  body.role-employee #clearBtn { display: none; }
+  body.role-employee #clearBtn, body.role-employee #restoreBtn { display: none; }
   body.role-employee .item { cursor: default; }
   .role-badge { display:none; font-size:11px; color:var(--amber); margin-top:6px; }
   body.role-employee .role-badge { display:block; }
@@ -201,6 +201,7 @@
   <div class="tools">
     <button onclick="exportCSV()">⬇️ ส่งออก CSV</button>
     <button onclick="openSettings()">🔄 ตั้งค่า Real-time</button>
+    <button id="restoreBtn" onclick="restoreBackup()">↩️ กู้คืน</button>
     <button id="clearBtn" onclick="clearAll()">🗑️ ล้างทั้งหมด</button>
   </div>
 </div>
@@ -763,12 +764,30 @@ function del(id) {
   if (!confirm('ลบรายการนี้?')) return;
   removeRecord(id);
 }
+const BACKUPKEY = 'bank_backup';
 function clearAll() {
   if (role === 'employee') { alert('พนักงานล้างข้อมูลไม่ได้'); return; }
-  if (!data.length) return;
-  if (!confirm('ล้างข้อมูลทั้งหมด? ไม่สามารถกู้คืนได้')) return;
+  if (!data.length) { alert('ไม่มีข้อมูลให้ล้าง'); return; }
+  if (!confirm('⚠️ ล้างข้อมูลทั้งหมด ' + data.length + ' รายการ?\n(ระบบจะสำรองไว้ให้กู้คืนได้)')) return;
+  const typed = prompt('กันกดพลาด — พิมพ์คำว่า  ล้าง  เพื่อยืนยัน');
+  if (typed === null) return;
+  if (typed.trim() !== 'ล้าง') { alert('ยกเลิก (พิมพ์ไม่ตรง)'); return; }
+  try { localStorage.setItem(BACKUPKEY, JSON.stringify({ when: Date.now(), items: data })); } catch (e) {}
   if (rtOn && dbRef) { dbRef.remove(); }
   else { data = []; persistLocal(); render(); }
+  alert('ล้างข้อมูลแล้ว ✅\nถ้าพลาด กดปุ่ม "↩️ กู้คืน" เพื่อเอากลับได้ (จากเครื่องนี้)');
+}
+function restoreBackup() {
+  if (role === 'employee') { alert('พนักงานกู้คืนไม่ได้'); return; }
+  let bk = null; try { bk = JSON.parse(localStorage.getItem(BACKUPKEY)); } catch (e) {}
+  if (!bk || !bk.items || !bk.items.length) { alert('ไม่มีข้อมูลสำรองในเครื่องนี้\n(ปุ่มกู้คืนใช้ได้เฉพาะเครื่องที่กดล้าง และเฉพาะข้อมูลที่ล้างหลังอัปเดตนี้)'); return; }
+  const total = bk.items.reduce((s, x) => s + Number(x.amount || 0), 0);
+  if (!confirm('กู้คืน ' + bk.items.length + ' รายการ (รวม ' + fmt(total) + ' ฿) กลับเข้าระบบ?')) return;
+  if (rtOn && dbRef) {
+    const obj = {}; bk.items.forEach(it => { if (it && it.id) obj[it.id] = it; });
+    dbRef.update(obj);
+  } else { data = bk.items; persistLocal(); render(); }
+  alert('กู้คืนข้อมูลเรียบร้อย ✅');
 }
 function exportCSV() {
   if (!data.length) { alert('ยังไม่มีข้อมูล'); return; }
