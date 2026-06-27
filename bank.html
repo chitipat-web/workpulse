@@ -203,9 +203,12 @@
   body.role-employee .role-badge { display:block; }
 
   /* ───── อนิเมชันปุ่มนุ่มๆ ───── */
-  .fab, .btns button, .g-btn, .gear, .tools button, .item, .syncpill, .login-signout, .bar select, .bar input {
+  .fab, .btns button, .g-btn, .gear, .tools button, .item, .syncpill, .login-signout {
     transition: transform .2s cubic-bezier(.34,1.45,.5,1), box-shadow .25s ease, background-color .2s ease, filter .2s ease, border-color .2s ease;
   }
+  /* ช่องกรอง/ค้นหา: โฟกัสสะอาด ไม่มีแสงฟ้าเกิน (กันแสงโฟกัสของ Safari) */
+  .bar select, .bar input { transition: border-color .2s ease; box-shadow: none !important; }
+  .bar select:focus, .bar input:focus { border-color: var(--accent); outline: none; box-shadow: none !important; }
   .btns button:active, .tools button:active, .gear:active, .g-btn:active, .syncpill:active { transform: scale(.93); }
   .item:active { transform: scale(.98); }
   @media (hover: hover) {
