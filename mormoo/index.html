@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>หมอมู AI — เปิดไพ่ดวงวันนี้ 🔮</title>
+<meta name="description" content="เปิดไพ่ยิปซีกับหมอมู AI วันละ 1 ใบ พร้อมเคล็ดเสริมดวง สีมงคล และเลขนำโชค">
+<meta name="theme-color" content="#0b0620">
+<meta property="og:title" content="หมอมู AI — เปิดไพ่ดวงวันนี้ 🔮">
+<meta property="og:description" content="ตั้งจิต ถามคำถาม แล้วเปิดไพ่ยิปซีวันละ 1 ใบ ฟรี">
+<link rel="manifest" href="./manifest.json">
+<link rel="apple-touch-icon" href="./apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="หมอมู">
+
+<!-- Fonts: async load (กัน FOUC — critical CSS inline ด้านล่าง) -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Srisakdi:wght@400;700&family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Srisakdi:wght@400;700&family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet"></noscript>
+
+<style>
+/* ============ TOKENS ============ */
+:root{
+  --bg:#0b0620;            /* คืนมู */
+  --nebula:#2a1458;        /* ม่วงญาณ */
+  --panel:rgba(26,16,52,.92);
+  --line:rgba(240,201,106,.28);
+  --gold:#f0c96a;          /* ทองวัด */
+  --gold-2:#c8973f;
+  --ivory:#f6efdf;         /* หน้าไพ่งาช้าง */
+  --ink:#f1eafe;
+  --dim:#b9aed6;
+  --danger:#ff9d9d;
+  --radius:18px;
+  --sat:env(safe-area-inset-top,0px);
+  --sab:env(safe-area-inset-bottom,0px);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{
+  font-family:'Sarabun',system-ui,sans-serif;
+  color:var(--ink);
+  background:
+    radial-gradient(1200px 700px at 50% -10%, rgba(139,92,246,.22), transparent 60%),
+    radial-gradient(900px 600px at 85% 100%, rgba(42,20,88,.9), transparent 55%),
+    var(--bg);
+  min-height:100dvh;
+  overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+.font-display{font-family:'Srisakdi','Sarabun',cursive}
+
+/* ============ STARFIELD ============ */
+#stars{position:fixed;inset:0;pointer-events:none;z-index:0}
+.star{position:absolute;border-radius:50%;background:#fff;opacity:.7;animation:tw 3.2s ease-in-out infinite}
+@keyframes tw{0%,100%{opacity:.15}50%{opacity:.85}}
+@media (prefers-reduced-motion:reduce){.star{animation:none;opacity:.4}}
+
+/* ============ LAYOUT ============ */
+.wrap{position:relative;z-index:1;max-width:520px;margin:0 auto;padding:calc(var(--sat) + 18px) 20px calc(var(--sab) + 28px)}
+.screen{display:none;animation:fadeUp .45s ease both}
+.screen.on{display:block}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.screen{animation:none}}
+
+/* ============ HEADER ============ */
+header{text-align:center;margin-bottom:8px}
+.brand{
+  font-family:'Srisakdi','Sarabun',cursive;
+  font-weight:700;font-size:52px;line-height:1.15;
+  color:var(--gold);
+  text-shadow:0 0 26px rgba(240,201,106,.35), 0 2px 0 rgba(0,0,0,.35);
+}
+.tagline{color:var(--dim);font-size:15px;margin-top:2px}
+.daychip{
+  display:inline-flex;align-items:center;gap:6px;margin-top:12px;
+  font-size:13px;color:var(--gold);
+  border:1px solid var(--line);border-radius:999px;padding:6px 14px;
+  background:rgba(240,201,106,.06);
+}
+
+/* ============ HOME ============ */
+.ritual{
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  padding:22px 18px;margin-top:18px;
+  box-shadow:0 18px 50px rgba(0,0,0,.45);
+}
+.label{font-size:13px;font-weight:600;letter-spacing:.06em;color:var(--gold);margin-bottom:10px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{
+  font-family:inherit;font-size:15px;color:var(--ink);
+  background:rgba(255,255,255,.05);
+  border:1px solid rgba(255,255,255,.14);
+  border-radius:999px;padding:10px 16px;min-height:44px;
+  transition:transform .12s ease, background .2s, border-color .2s;
+}
+.chip[aria-pressed="true"]{
+  background:rgba(240,201,106,.16);border-color:var(--gold);color:var(--gold);font-weight:600;
+}
+.chip:active{transform:scale(.96)}
+#q{
+  width:100%;margin-top:6px;
+  font-family:inherit;font-size:16px;color:var(--ink);
+  background:rgba(0,0,0,.28);
+  border:1px solid rgba(255,255,255,.14);
+  border-radius:14px;padding:14px 14px;min-height:52px;
+  outline:none;
+}
+#q:focus{border-color:var(--gold)}
+#q::placeholder{color:#7e6fa3}
+.hint{font-size:12.5px;color:var(--dim);margin-top:8px}
+
+.btn{
+  font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px;
+  width:100%;min-height:54px;margin-top:18px;
+  font-size:18px;font-weight:700;color:#241304;
+  background:linear-gradient(180deg,var(--gold),var(--gold-2));
+  border:none;border-radius:16px;
+  box-shadow:0 10px 26px rgba(240,201,106,.28), inset 0 1px 0 rgba(255,255,255,.55);
+  transition:transform .12s ease, filter .2s;
+}
+.btn:active{transform:scale(.97)}
+.btn:disabled{filter:grayscale(.7) brightness(.7)}
+.btn.ghost{
+  background:transparent;color:var(--gold);
+  border:1px solid var(--line);box-shadow:none;font-weight:600;
+}
+button:focus-visible,.chip:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+
+/* ============ PICK (fan of cards) ============ */
+#screen-pick .ritual{text-align:center}
+.fan{
+  position:relative;height:300px;margin:26px 0 6px;
+  display:flex;align-items:flex-end;justify-content:center;
+}
+.fcard{
+  position:absolute;bottom:0;width:118px;height:190px;border-radius:14px;
+  border:none;padding:0;cursor:pointer;
+  transform-origin:50% 130%;
+  transition:transform .5s cubic-bezier(.2,.9,.3,1.2), opacity .4s;
+  animation:dealIn .6s ease both;
+}
+@keyframes dealIn{from{opacity:0;transform:translateY(60px) rotate(0deg)}}
+.fcard:active{filter:brightness(1.15)}
+.fcard.away{opacity:0;transform:translateY(120px) scale(.8) !important}
+.cardback{
+  width:100%;height:100%;border-radius:14px;
+  background:
+    radial-gradient(circle at 50% 42%, rgba(240,201,106,.28), transparent 46%),
+    repeating-linear-gradient(45deg, rgba(240,201,106,.08) 0 3px, transparent 3px 12px),
+    linear-gradient(160deg,#241049,#120827);
+  border:2px solid var(--gold-2);
+  box-shadow:inset 0 0 0 5px #120827, inset 0 0 0 6px rgba(240,201,106,.5), 0 14px 28px rgba(0,0,0,.5);
+  display:flex;align-items:center;justify-content:center;
+  color:var(--gold);font-size:30px;
+}
+
+/* ============ FLIP / RESULT CARD ============ */
+.flipwrap{display:flex;justify-content:center;margin:20px 0 8px;perspective:1100px}
+.flip{position:relative;width:210px;height:340px;transform-style:preserve-3d;transition:transform .9s cubic-bezier(.3,.7,.3,1)}
+.flip.go{transform:rotateY(180deg)}
+.face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:18px}
+.face.front{transform:rotateY(180deg)}
+.tarot{
+  width:100%;height:100%;border-radius:18px;
+  background:linear-gradient(175deg,#fdf8ea,#efe3c2);
+  border:2px solid var(--gold-2);
+  box-shadow:inset 0 0 0 6px #fdf8ea, inset 0 0 0 7px rgba(200,151,63,.6), 0 18px 44px rgba(0,0,0,.55);
+  color:#3a2a10;display:flex;flex-direction:column;align-items:center;justify-content:space-between;
+  padding:16px 12px;text-align:center;
+}
+.tarot .num{font-size:13px;font-weight:700;letter-spacing:.22em;color:#8a6a2b}
+.tarot .art{font-size:88px;line-height:1;filter:drop-shadow(0 6px 10px rgba(0,0,0,.18))}
+.tarot .art.rev{transform:rotate(180deg)}
+.tarot .nameth{font-family:'Srisakdi','Sarabun',cursive;font-weight:700;font-size:27px;color:#5a3c12;line-height:1.1}
+.tarot .nameen{font-size:11.5px;letter-spacing:.14em;color:#8a6a2b;text-transform:uppercase;margin-top:2px}
+.revbadge{
+  display:inline-block;margin-top:10px;font-size:12.5px;font-weight:700;color:#ffbcbc;
+  border:1px solid rgba(255,157,157,.5);border-radius:999px;padding:4px 12px;background:rgba(255,80,80,.12);
+}
+
+/* reading */
+.keyword{
+  font-family:'Srisakdi','Sarabun',cursive;font-weight:700;
+  font-size:36px;color:var(--gold);text-align:center;line-height:1.2;margin-top:14px;
+  text-shadow:0 0 18px rgba(240,201,106,.3);
+}
+.reading{font-size:16.5px;line-height:1.85;margin-top:10px;color:var(--ink)}
+.advice{
+  margin-top:16px;border:1px dashed var(--line);border-radius:14px;
+  background:rgba(240,201,106,.07);padding:14px 14px;font-size:15.5px;line-height:1.8;
+}
+.advice b{color:var(--gold)}
+.lucky{display:flex;gap:12px;margin-top:16px;flex-wrap:wrap}
+.lucky .box{
+  flex:1;min-width:140px;border:1px solid rgba(255,255,255,.12);border-radius:14px;
+  background:rgba(0,0,0,.25);padding:12px;display:flex;align-items:center;gap:10px;
+}
+.swatch{width:34px;height:34px;border-radius:50%;border:2px solid #fff3;flex:none}
+.lucky .t{font-size:12px;color:var(--dim)}
+.lucky .v{font-size:15.5px;font-weight:700}
+.numchip{display:inline-block;background:rgba(240,201,106,.15);color:var(--gold);border:1px solid var(--line);border-radius:10px;padding:3px 10px;font-weight:700;margin-right:6px}
+
+/* loading skeleton */
+.skel{height:14px;border-radius:8px;margin:12px 0;background:linear-gradient(90deg,#241448 25%,#3a2470 50%,#241448 75%);background-size:220% 100%;animation:sh 1.3s linear infinite}
+@keyframes sh{to{background-position:-220% 0}}
+.gaze{text-align:center;color:var(--gold);font-size:15px;margin-top:14px;animation:pul 1.6s ease-in-out infinite}
+@keyframes pul{0%,100%{opacity:.55}50%{opacity:1}}
+
+.lockchip{
+  display:flex;align-items:center;justify-content:center;gap:8px;margin-top:14px;
+  color:var(--dim);font-size:14px;
+}
+.err{color:var(--danger);text-align:center;font-size:15px;margin-top:14px;line-height:1.7}
+
+footer{text-align:center;color:#6f639a;font-size:12px;margin-top:26px;line-height:1.7}
+
+/* share modal (iOS fallback: long-press save) */
+#shareModal{position:fixed;inset:0;z-index:50;display:none;background:rgba(4,2,12,.9);padding:20px;overflow:auto}
+#shareModal.on{display:flex;flex-direction:column;align-items:center;gap:14px}
+#shareModal img{width:min(78vw,340px);border-radius:16px;border:1px solid var(--line);box-shadow:0 20px 60px rgba(0,0,0,.6)}
+#shareModal p{color:var(--dim);font-size:14px;text-align:center}
+</style>
+</head>
+<body>
+<div id="stars" aria-hidden="true"></div>
+
+<div class="wrap">
+  <header>
+    <div class="brand">หมอมู AI</div>
+    <div class="tagline">เปิดไพ่ยิปซี วันละหนึ่งใบ ฟรี</div>
+    <div class="daychip" id="daychip">🔮</div>
+  </header>
+
+  <!-- ============ HOME ============ -->
+  <section class="screen" id="screen-home">
+    <div class="ritual">
+      <div class="label">อยากรู้ดวงเรื่องอะไร</div>
+      <div class="chips" id="topics" role="group" aria-label="เลือกหัวข้อ">
+        <button class="chip" data-t="ดวงรวม" aria-pressed="true">🍀 ดวงรวม</button>
+        <button class="chip" data-t="ความรัก" aria-pressed="false">💘 ความรัก</button>
+        <button class="chip" data-t="การงาน" aria-pressed="false">💼 การงาน</button>
+        <button class="chip" data-t="การเงิน" aria-pressed="false">💰 การเงิน</button>
+      </div>
+      <div class="label" style="margin-top:18px">คำถามในใจ</div>
+      <input id="q" maxlength="120" placeholder="พิมพ์คำถาม… (ไม่ใส่ก็ได้)" autocomplete="off">
+      <div class="hint">ตั้งจิตให้นิ่ง นึกถึงคำถาม แล้วกดจั่วไพ่</div>
+      <button class="btn" id="btnDraw">จั่วไพ่วันนี้ ✦</button>
+    </div>
+  </section>
+
+  <!-- ============ PICK ============ -->
+  <section class="screen" id="screen-pick">
+    <div class="ritual">
+      <div class="label" style="text-align:center">หลับตาหนึ่งวินาที… แล้วเลือกไพ่ที่เรียกเรา</div>
+      <div class="fan" id="fan"></div>
+    </div>
+  </section>
+
+  <!-- ============ RESULT ============ -->
+  <section class="screen" id="screen-result">
+    <div class="flipwrap">
+      <div class="flip" id="flip">
+        <div class="face"><div class="cardback" style="font-size:44px">✦</div></div>
+        <div class="face front" id="cardFront"></div>
+      </div>
+    </div>
+    <div style="text-align:center" id="revHolder"></div>
+
+    <div class="ritual" id="readingBox">
+      <div id="loadingArea">
+        <div class="gaze">หมอมูกำลังเพ่งญาณ… 🔮</div>
+        <div class="skel" style="width:92%"></div>
+        <div class="skel" style="width:100%"></div>
+        <div class="skel" style="width:78%"></div>
+      </div>
+      <div id="resultArea" style="display:none">
+        <div class="keyword" id="keyword"></div>
+        <p class="reading" id="reading"></p>
+        <div class="advice" id="advice"></div>
+        <div class="lucky">
+          <div class="box">
+            <div class="swatch" id="swatch"></div>
+            <div><div class="t">สีมงคลวันนี้</div><div class="v" id="colorName"></div></div>
+          </div>
+          <div class="box">
+            <div style="font-size:26px">🔢</div>
+            <div><div class="t">เลขนำโชค</div><div class="v" id="numbers"></div></div>
+          </div>
+        </div>
+        <button class="btn" id="btnShare">แชร์การ์ดดวง 📤</button>
+        <div class="lockchip" id="lockchip"></div>
+      </div>
+      <div id="errArea" style="display:none">
+        <div class="err" id="errMsg"></div>
+        <button class="btn ghost" id="btnRetry">เพ่งญาณอีกครั้ง</button>
+      </div>
+    </div>
+  </section>
+
+  <footer>ดวงวันนี้เพื่อความบันเทิงเท่านั้น ✨<br>หมอมู AI</footer>
+</div>
+
+<div id="shareModal" role="dialog" aria-label="บันทึกการ์ดดวง">
+  <img id="shareImg" alt="การ์ดดวงวันนี้">
+  <p>กดค้างที่รูปเพื่อบันทึก แล้วเอาไปลงสตอรี่ได้เลย</p>
+  <button class="btn ghost" style="max-width:220px" onclick="document.getElementById('shareModal').classList.remove('on')">ปิด</button>
+</div>
+
+<canvas id="cv" width="1080" height="1920" style="display:none"></canvas>
+
+<script>
+/* ================= CONFIG ================= */
+const CONFIG = {
+  WORKER_URL: 'https://mormoo.YOUR-SUBDOMAIN.workers.dev', // ← แก้เป็น URL worker ของเรา
+  APP_URL: 'chitipat-web.github.io/workpulse/mormoo',       // ← URL แอปจริง (โชว์บนการ์ดแชร์)
+  APP_NAME: 'หมอมู AI',
+};
+
+/* ================= DECK (Major Arcana 22) ================= */
+const DECK = [
+  {n:'0',    en:'The Fool',            th:'ผู้เริ่มต้น',      e:'🎒'},
+  {n:'I',    en:'The Magician',        th:'นักมายากล',       e:'✨'},
+  {n:'II',   en:'The High Priestess',  th:'นักบวชหญิง',      e:'🌙'},
+  {n:'III',  en:'The Empress',         th:'จักรพรรดินี',     e:'🌹'},
+  {n:'IV',   en:'The Emperor',         th:'จักรพรรดิ',       e:'👑'},
+  {n:'V',    en:'The Hierophant',      th:'มหาคุรุ',         e:'🛕'},
+  {n:'VI',   en:'The Lovers',          th:'คู่รัก',           e:'💞'},
+  {n:'VII',  en:'The Chariot',         th:'ราชรถ',           e:'🐎'},
+  {n:'VIII', en:'Strength',            th:'พลังใจ',          e:'🦁'},
+  {n:'IX',   en:'The Hermit',          th:'ฤๅษี',            e:'🏮'},
+  {n:'X',    en:'Wheel of Fortune',    th:'กงล้อโชคชะตา',    e:'🎡'},
+  {n:'XI',   en:'Justice',             th:'ตราชูยุติธรรม',   e:'⚖️'},
+  {n:'XII',  en:'The Hanged Man',      th:'ชายห้อยหัว',      e:'🙃'},
+  {n:'XIII', en:'Death',               th:'การเปลี่ยนผ่าน',  e:'🦋'},
+  {n:'XIV',  en:'Temperance',          th:'ความพอดี',        e:'🕊️'},
+  {n:'XV',   en:'The Devil',           th:'เงามืด',          e:'⛓️'},
+  {n:'XVI',  en:'The Tower',           th:'หอคอย',           e:'⚡'},
+  {n:'XVII', en:'The Star',            th:'ดวงดาว',          e:'🌠'},
+  {n:'XVIII',en:'The Moon',            th:'ดวงจันทร์',       e:'🌕'},
+  {n:'XIX',  en:'The Sun',             th:'ดวงอาทิตย์',      e:'☀️'},
+  {n:'XX',   en:'Judgement',           th:'เสียงปลุกตื่น',   e:'📯'},
+  {n:'XXI',  en:'The World',           th:'โลกสมบูรณ์',      e:'🌍'},
+];
+const THAI_DAYS = ['อาทิตย์','จันทร์','อังคาร','พุธ','พฤหัสบดี','ศุกร์','เสาร์'];
+
+/* ================= STATE ================= */
+const LS_KEY = 'mm_daily';
+let topic = 'ดวงรวม';
+let current = null;      // {cardIndex, reversed, topic, question}
+let result = null;       // AI result
+let countdownTimer = null;
+
+const $ = id => document.getElementById(id);
+const todayStr = () => { const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); };
+
+/* ================= INIT ================= */
+function init(){
+  makeStars();
+  const d = new Date();
+  $('daychip').textContent = '🔮 วัน' + THAI_DAYS[d.getDay()] + ' ที่ ' + d.getDate() + '/' + (d.getMonth()+1) + '/' + (d.getFullYear()+543);
+
+  // topic chips
+  $('topics').addEventListener('click', ev=>{
+    const b = ev.target.closest('.chip'); if(!b) return;
+    document.querySelectorAll('#topics .chip').forEach(c=>c.setAttribute('aria-pressed','false'));
+    b.setAttribute('aria-pressed','true');
+    topic = b.dataset.t;
+  });
+
+  $('btnDraw').addEventListener('click', startDraw);
+  $('btnShare').addEventListener('click', shareCard);
+  $('btnRetry').addEventListener('click', retry);
+
+  // ถ้าวันนี้เปิดไพ่แล้ว → โชว์ผลเดิม
+  const saved = loadDaily();
+  if (saved){
+    current = saved.current; result = saved.result;
+    showScreen('screen-result');
+    renderCardFace();
+    $('flip').classList.add('go');
+    renderResult(result);
+  } else {
+    showScreen('screen-home');
+  }
+
+  if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(()=>{});
+}
+
+function makeStars(){
+  const c = $('stars'); const n = 70;
+  for(let i=0;i<n;i++){
+    const s = document.createElement('span');
+    s.className='star';
+    const sz = Math.random()*2+1;
+    s.style.cssText = `width:${sz}px;height:${sz}px;left:${Math.random()*100}%;top:${Math.random()*100}%;animation-delay:${(Math.random()*3).toFixed(2)}s`;
+    c.appendChild(s);
+  }
+}
+
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));
+  $(id).classList.add('on');
+  window.scrollTo({top:0});
+}
+
+/* ================= DRAW FLOW ================= */
+function startDraw(){
+  if (loadDaily()){ showScreen('screen-result'); return; }
+  buildFan();
+  showScreen('screen-pick');
+}
+
+function buildFan(){
+  const fan = $('fan'); fan.innerHTML='';
+  const angles = [-24,-12,0,12,24];
+  angles.forEach((a,i)=>{
+    const b = document.createElement('button');
+    b.className='fcard';
+    b.setAttribute('aria-label','ไพ่ใบที่ '+(i+1));
+    b.style.transform = `rotate(${a}deg)`;
+    b.style.animationDelay = (i*0.07)+'s';
+    b.innerHTML = '<div class="cardback">✦</div>';
+    b.addEventListener('click', ()=>choose(i), {once:true});
+    fan.appendChild(b);
+  });
+}
+
+function choose(pickIdx){
+  // สุ่มไพ่จริง (การเลือกคือพิธีกรรม)
+  const cardIndex = Math.floor(Math.random()*DECK.length);
+  const reversed = Math.random() < 0.25;
+  const question = $('q').value.trim().slice(0,120);
+  current = { cardIndex, reversed, topic, question };
+
+  // อนิเมชั่น: ใบอื่นหายไป
+  const cards = document.querySelectorAll('.fcard');
+  cards.forEach((c,i)=>{ if(i!==pickIdx) c.classList.add('away'); });
+  const chosen = cards[pickIdx];
+  chosen.style.transform = 'rotate(0deg) translateY(-24px) scale(1.12)';
+  chosen.style.zIndex = 9;
+
+  // ยิง API ทันที ระหว่างรอทำอนิเมชั่นพลิก
+  const apiPromise = fetchReading(current);
+
+  setTimeout(()=>{
+    renderCardFace();
+    showScreen('screen-result');
+    $('flip').classList.remove('go');
+    $('loadingArea').style.display='block';
+    $('resultArea').style.display='none';
+    $('errArea').style.display='none';
+    requestAnimationFrame(()=>requestAnimationFrame(()=>$('flip').classList.add('go')));
+  }, 650);
+
+  apiPromise.then(data=>{
+    result = data;
+    saveDaily();
+    setTimeout(()=>renderResult(data), 950); // รอ flip จบก่อนโชว์คำทำนาย
+  }).catch(err=>{
+    setTimeout(()=>showError(err), 950);
+  });
+}
+
+function renderCardFace(){
+  const c = DECK[current.cardIndex];
+  $('cardFront').innerHTML = `
+    <div class="tarot">
+      <div class="num">${c.n} · MAJOR ARCANA</div>
+      <div class="art ${current.reversed?'rev':''}">${c.e}</div>
+      <div>
+        <div class="nameth">${c.th}</div>
+        <div class="nameen">${c.en}</div>
+      </div>
+    </div>`;
+  $('revHolder').innerHTML = current.reversed ? '<span class="revbadge">ไพ่กลับหัว ↕</span>' : '';
+}
+
+/* ================= API ================= */
+async function fetchReading(cur){
+  const c = DECK[cur.cardIndex];
+  const res = await fetch(CONFIG.WORKER_URL, {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({
+      card: c.en, cardTh: c.th,
+      orientation: cur.reversed ? 'reversed' : 'upright',
+      topic: cur.topic, question: cur.question,
+    })
+  });
+  const j = await res.json().catch(()=>({}));
+  if (!res.ok || !j.ok) throw (j.error || 'network');
+  return j.data;
+}
+
+function showError(code){
+  $('loadingArea').style.display='none';
+  $('resultArea').style.display='none';
+  $('errArea').style.display='block';
+  const msgs = {
+    busy:  'คิวเข้าเฝ้าหมอมูแน่นมาก 🙏 รอสัก 1 นาทีแล้วลองใหม่',
+    quota: 'วันนี้ญาณหมอมูถูกใช้เยอะเป็นพิเศษ ✨ ลองใหม่อีกสักพัก',
+  };
+  $('errMsg').textContent = msgs[code] || 'ญาณขัดข้องชั่วคราว 🌫️ เช็คเน็ตแล้วลองอีกครั้ง';
+}
+
+function retry(){
+  if (!current) { showScreen('screen-home'); return; }
+  $('errArea').style.display='none';
+  $('loadingArea').style.display='block';
+  fetchReading(current).then(data=>{
+    result = data; saveDaily(); renderResult(data);
+  }).catch(err=>showError(err));
+}
+
+/* ================= RENDER RESULT ================= */
+function renderResult(data){
+  $('loadingArea').style.display='none';
+  $('errArea').style.display='none';
+  $('resultArea').style.display='block';
+  $('keyword').textContent = '“' + (data.keyword||'ดวงกำลังเดิน') + '”';
+  $('reading').textContent = data.reading || '';
+  $('advice').innerHTML = '<b>🪄 เคล็ดเสริมดวงวันนี้:</b> ' + escapeHtml(data.advice||'');
+  const col = data.color || {name:'ทองอำพัน', hex:'#f0c96a'};
+  $('swatch').style.background = col.hex || '#f0c96a';
+  $('colorName').textContent = col.name || 'ทองอำพัน';
+  const nums = Array.isArray(data.numbers) ? data.numbers.slice(0,2) : [7,24];
+  $('numbers').innerHTML = nums.map(n=>'<span class="numchip">'+String(n)+'</span>').join('');
+  startCountdown();
+}
+
+function escapeHtml(s){ return String(s).replace(/[&<>"]/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m])); }
+
+function startCountdown(){
+  if (countdownTimer) clearInterval(countdownTimer);
+  const tick = ()=>{
+    const now = new Date();
+    const next = new Date(now); next.setHours(24,0,0,0);
+    let s = Math.max(0, Math.floor((next-now)/1000));
+    const h = String(Math.floor(s/3600)).padStart(2,'0');
+    const m = String(Math.floor(s%3600/60)).padStart(2,'0');
+    const ss = String(s%60).padStart(2,'0');
+    $('lockchip').textContent = '🔒 ไพ่ใบใหม่เปิดได้ใน ' + h + ':' + m + ':' + ss;
+  };
+  tick(); countdownTimer = setInterval(tick, 1000);
+}
+
+/* ================= DAILY LOCK ================= */
+function saveDaily(){
+  try{ localStorage.setItem(LS_KEY, JSON.stringify({date: todayStr(), current, result})); }catch(e){}
+}
+function loadDaily(){
+  try{
+    const j = JSON.parse(localStorage.getItem(LS_KEY)||'null');
+    if (j && j.date === todayStr() && j.result) return j;
+  }catch(e){}
+  return null;
+}
+
+/* ================= SHARE CARD (Canvas 1080x1920) ================= */
+async function shareCard(){
+  const btn = $('btnShare');
+  btn.disabled = true; btn.textContent = 'กำลังปั้นการ์ด…';
+  try{
+    try{ await document.fonts.load('700 70px Srisakdi'); await document.fonts.load('700 44px Sarabun'); await document.fonts.ready; }catch(e){}
+    const cv = $('cv'); const x = cv.getContext('2d');
+    const W=1080, H=1920;
+    const c = DECK[current.cardIndex];
+    const col = (result && result.color) || {name:'ทองอำพัน',hex:'#f0c96a'};
+    const nums = (result && Array.isArray(result.numbers)) ? result.numbers.slice(0,2) : [7,24];
+
+    // BG
+    const g = x.createLinearGradient(0,0,0,H);
+    g.addColorStop(0,'#2a1458'); g.addColorStop(.55,'#140a30'); g.addColorStop(1,'#0b0620');
+    x.fillStyle = g; x.fillRect(0,0,W,H);
+    // stars
+    for(let i=0;i<130;i++){
+      x.globalAlpha = Math.random()*0.7+0.15;
+      x.fillStyle = '#fff';
+      const r = Math.random()*2.2+0.6;
+      x.beginPath(); x.arc(Math.random()*W, Math.random()*H, r, 0, 7); x.fill();
+    }
+    x.globalAlpha = 1;
+
+    // header
+    x.textAlign='center';
+    x.fillStyle = '#f0c96a';
+    x.font = "700 64px Srisakdi, Sarabun, serif";
+    x.fillText(CONFIG.APP_NAME + ' 🔮', W/2, 150);
+    x.fillStyle = '#b9aed6';
+    x.font = "500 34px Sarabun, sans-serif";
+    x.fillText('ไพ่ประจำวัน' + THAI_DAYS[new Date().getDay()] + ' · ' + (current.topic||'ดวงรวม'), W/2, 210);
+
+    // tarot card
+    const cw=470, ch=760, cx=(W-cw)/2, cy=270;
+    rrect(x, cx-8, cy-8, cw+16, ch+16, 34); x.fillStyle='#c8973f'; x.fill();
+    rrect(x, cx, cy, cw, ch, 28);
+    const cg = x.createLinearGradient(0,cy,0,cy+ch);
+    cg.addColorStop(0,'#fdf8ea'); cg.addColorStop(1,'#efe3c2');
+    x.fillStyle = cg; x.fill();
+
+    x.fillStyle = '#8a6a2b';
+    x.font = "700 30px Sarabun, sans-serif";
+    x.fillText(c.n + ' · MAJOR ARCANA', W/2, cy+70);
+
+    // emoji art (หมุนถ้ากลับหัว)
+    x.save();
+    x.translate(W/2, cy+330);
+    if (current.reversed) x.rotate(Math.PI);
+    x.font = "240px 'Apple Color Emoji','Segoe UI Emoji',sans-serif";
+    x.textBaseline = 'middle';
+    x.fillText(c.e, 0, 0);
+    x.restore();
+    x.textBaseline = 'alphabetic';
+
+    x.fillStyle = '#5a3c12';
+    x.font = "700 66px Srisakdi, Sarabun, serif";
+    x.fillText(c.th, W/2, cy+ch-110);
+    x.fillStyle = '#8a6a2b';
+    x.font = "600 28px Sarabun, sans-serif";
+    x.fillText(c.en.toUpperCase() + (current.reversed?'  ·  กลับหัว':''), W/2, cy+ch-58);
+
+    // keyword
+    x.fillStyle = '#f0c96a';
+    x.font = "700 78px Srisakdi, Sarabun, serif";
+    x.fillText('“' + ((result&&result.keyword)||'ดวงกำลังเดิน') + '”', W/2, cy+ch+130);
+
+    // reading (wrap)
+    x.fillStyle = '#f1eafe';
+    x.font = "400 40px Sarabun, sans-serif";
+    const lines = wrapThai(x, (result&&result.reading)||'', 880, 4);
+    let ty = cy+ch+210;
+    lines.forEach(L=>{ x.fillText(L, W/2, ty); ty += 62; });
+
+    // lucky row
+    const ly = 1690;
+    x.beginPath(); x.arc(W/2-330, ly-14, 34, 0, 7);
+    x.fillStyle = col.hex || '#f0c96a'; x.fill();
+    x.lineWidth = 4; x.strokeStyle = 'rgba(255,255,255,.5)'; x.stroke();
+    x.textAlign = 'left';
+    x.fillStyle = '#f1eafe'; x.font = "600 38px Sarabun, sans-serif";
+    x.fillText('สีมงคล ' + (col.name||''), W/2-280, ly);
+    x.fillStyle = '#f0c96a';
+    x.fillText('เลขนำโชค ' + nums.join(' · '), W/2+90, ly);
+    x.textAlign = 'center';
+
+    // watermark
+    x.fillStyle = '#8f82b8';
+    x.font = "500 32px Sarabun, sans-serif";
+    x.fillText('เปิดไพ่ของคุณฟรีที่ ' + CONFIG.APP_URL + ' ✨', W/2, 1830);
+
+    // export
+    const blob = await new Promise(r=>cv.toBlob(r,'image/png'));
+    const file = new File([blob], 'mormoo-daily.png', {type:'image/png'});
+    if (navigator.canShare && navigator.canShare({files:[file]})){
+      await navigator.share({files:[file], title:'ไพ่ดวงวันนี้ 🔮'});
+    } else {
+      $('shareImg').src = URL.createObjectURL(blob);
+      $('shareModal').classList.add('on');
+    }
+  }catch(e){ /* ผู้ใช้กดยกเลิก share ก็เงียบไว้ */ }
+  btn.disabled = false; btn.textContent = 'แชร์การ์ดดวง 📤';
+}
+
+function rrect(x, X, Y, Wd, Ht, R){
+  x.beginPath();
+  x.moveTo(X+R, Y);
+  x.arcTo(X+Wd, Y, X+Wd, Y+Ht, R);
+  x.arcTo(X+Wd, Y+Ht, X, Y+Ht, R);
+  x.arcTo(X, Y+Ht, X, Y, R);
+  x.arcTo(X, Y, X+Wd, Y, R);
+  x.closePath();
+}
+
+/* ตัดบรรทัดภาษาไทย (ไม่มีช่องว่าง → วัดทีละตัวอักษร) */
+function wrapThai(x, text, maxW, maxLines){
+  const out = []; let line = '';
+  for (const ch of String(text)){
+    if (ch === '\n'){ out.push(line); line=''; continue; }
+    const test = line + ch;
+    if (x.measureText(test).width > maxW && line){
+      out.push(line); line = ch;
+      if (out.length >= maxLines) break;
+    } else line = test;
+  }
+  if (line && out.length < maxLines) out.push(line);
+  if (out.length >= maxLines) out[maxLines-1] = out[maxLines-1].replace(/.$/,'') + '…';
+  return out;
+}
+
+init();
+</script>
+</body>
+</html>
