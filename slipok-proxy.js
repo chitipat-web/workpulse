@@ -83,8 +83,11 @@ export default {
     const exist = await g.json().catch(() => null);
     if (exist && exist.id) return J({ ok: false, alreadyExists: true, record: exist });
 
-    const rec = { id, amount: v.amount, name: v.sender || "ไม่ระบุชื่อ", bank: v.senderBank || "", date: (v.date || "").slice(0, 10), note: (body.note || "").toString().slice(0, 200), slipRef: v.transRef, slipVerified: true, createdBy: email };
+    // เก็บรูปสลิป (ถ้าส่งมา) — บีบอัดแล้วจากฝั่งเว็บ, จำกัดขนาดกันสแปม
+    const hasImg = typeof body.img === "string" && body.img.indexOf("data:image") === 0 && body.img.length < 400000;
+    const rec = { id, amount: v.amount, name: v.sender || "ไม่ระบุชื่อ", bank: v.senderBank || "", date: (v.date || "").slice(0, 10), note: (body.note || "").toString().slice(0, 200), slipRef: v.transRef, slipVerified: true, createdBy: email, hasImg };
     await fetch(FB_DB + "/rooms/" + ROOM + "/transfers/" + id + ".json?auth=" + FB_SECRET, { method: "PUT", body: JSON.stringify(rec) });
+    if (hasImg) await fetch(FB_DB + "/rooms/" + ROOM + "/slips/" + id + ".json?auth=" + FB_SECRET, { method: "PUT", body: JSON.stringify(body.img) });
     return J({ ok: true, record: rec });
   }
 };
