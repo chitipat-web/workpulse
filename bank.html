@@ -808,9 +808,12 @@ async function save() {
     const btn = document.getElementById('saveBtn');
     btn.disabled = true; btn.textContent = 'กำลังยืนยัน...';
     setSlipStatus('busy', '🛡️ กำลังยืนยันกับธนาคารและบันทึก...');
-    const r = await workerSave(qr, note, currentSlipImg);
+    const r = await workerSave(qr, note);
     btn.disabled = false; btn.textContent = 'บันทึก';
-    if (r.ok) { setSlipStatus('ok', '✅ บันทึกแล้ว: ' + esc2(r.record.name) + ' ยอด ' + fmt(r.record.amount) + ' ฿'); setTimeout(closeModal, 800); return; }
+    if (r.ok) {
+      if (currentSlipImg && r.record && r.record.id) putSlipImage(r.record.id, currentSlipImg);   // เก็บรูปสลิป (เขียนตรงจากเครื่อง)
+      setSlipStatus('ok', '✅ บันทึกแล้ว: ' + esc2(r.record.name) + ' ยอด ' + fmt(r.record.amount) + ' ฿'); setTimeout(closeModal, 800); return;
+    }
     if (r.alreadyExists) { alert('สลิปนี้บันทึกไว้แล้ว: ยอด ' + fmt(r.record.amount) + ' ฿' + (r.record.name ? ' (' + r.record.name + ')' : '')); closeModal(); return; }
     if (r.error === 'unauthorized') { alert('เซสชันหมดอายุ — กรุณาออกจากระบบแล้วล็อกอินใหม่'); return; }
     if (r.notFound) {
@@ -830,13 +833,13 @@ async function save() {
   else alert('⚠️ ต้องแนบสลิปทุกครั้ง');
 }
 // บันทึกผ่าน Worker: ส่ง idToken + QR → Worker ตรวจ SlipOK แล้วเขียนเอง (ยอดจากธนาคาร)
-async function workerSave(qr, note, img) {
+async function workerSave(qr, note) {
   const proxy = localStorage.getItem(SOKEY) || BAKED_SLIPOK_PROXY;
   try {
     const user = firebase.auth().currentUser;
     if (!user) return { ok: false, error: 'unauthorized' };
     const idToken = await user.getIdToken();
-    const resp = await fetch(proxy, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ idToken, data: qr, note, img: img || '' }) });
+    const resp = await fetch(proxy, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ idToken, data: qr, note }) });
     return await resp.json().catch(() => ({ ok: false, error: 'bad response' }));
   } catch (e) { return { ok: false, error: 'เชื่อมต่อไม่ได้' }; }
 }
@@ -1107,7 +1110,7 @@ function render() {
           <div class="sub">${esc(it.bank) || 'ไม่ระบุธนาคาร'}</div>
           ${it.note ? `<div class="note">${esc(it.note)}</div>` : ''}
           ${it.slipVerified ? `<div class="slip has">🛡️ ยืนยันธนาคารแล้ว</div>` : ((it.slipRef || it.slipHash) ? `<div class="slip has">📎 มีสลิป${it.slipRef ? ' · QR ✓' : ''}</div>` : '')}
-          ${it.hasImg ? `<button class="slipview" onclick="event.stopPropagation(); openSlip('${it.id}')">👁️ ดูสลิป</button>` : ''}
+          ${(it.hasImg || it.slipVerified) ? `<button class="slipview" onclick="event.stopPropagation(); openSlip('${it.id}')">👁️ ดูสลิป</button>` : ''}
         </div>
         <div class="amt">
           <b>+${fmt(it.amount)}</b>
