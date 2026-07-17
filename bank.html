@@ -897,7 +897,7 @@ function slipsRef() {
 function putSlipImage(id, img) {
   if (!img) return;
   const ref = slipsRef();
-  if (ref) { try { ref.child(id).set(img); } catch (e) {} }
+  if (ref) { try { ref.child(id).set(img).catch(() => {}); } catch (e) {} }
 }
 async function openSlip(id) {
   let box = document.getElementById('slipLightbox');
