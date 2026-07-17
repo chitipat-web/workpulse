@@ -123,6 +123,13 @@
   .item .amt b { color: var(--green); font-size: 16px; font-weight: 700; }
   .item .amt .del { display: block; margin-top: 6px; color: var(--muted); font-size: 11px; cursor: pointer; background: none; border: none; }
   .item .amt .del:active { color: var(--red); }
+  .slipview { display: inline-flex; align-items: center; gap: 4px; margin-top: 5px; background: var(--glass-2); -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur); border: 1px solid var(--glass-bd); color: var(--accent); border-radius: 9px; padding: 4px 10px; font-size: 11px; cursor: pointer; font-family: inherit; box-shadow: var(--inset-hi); }
+  .slip-lightbox { position: fixed; inset: 0; z-index: 120; background: rgba(0,0,0,.86); -webkit-backdrop-filter: blur(5px); backdrop-filter: blur(5px); display: none; align-items: center; justify-content: center; padding: 20px; flex-direction: column; }
+  .slip-lightbox.show { display: flex; animation: fade .2s ease; }
+  @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+  .slip-lightbox img { max-width: 100%; max-height: 82vh; border-radius: 14px; box-shadow: 0 12px 44px rgba(0,0,0,.7); }
+  .slip-lb-msg { color: #cfeef7; font-size: 14px; margin-top: 14px; text-align: center; }
+  .slip-lb-close { color: #cfeef7; font-size: 13px; margin-top: 16px; opacity: .8; }
 
   .empty { text-align: center; color: var(--muted); padding: 50px 20px; }
   .empty .ic { font-size: 50px; }
@@ -766,6 +773,7 @@ function openModal(id) {
     setSlipStatus('', '');
     setTimeout(() => document.getElementById('fAmount').focus(), 200);
   }
+  currentSlipImg = '';
   document.getElementById('fSlip').value = '';
 }
 function closeModal() { document.getElementById('modal').classList.remove('show'); }
@@ -781,14 +789,17 @@ async function save() {
   if (editId) {
     const amount = parseFloat(document.getElementById('fAmount').value);
     if (!amount || amount <= 0) { alert('กรุณาใส่จำนวนเงินให้ถูกต้อง'); return; }
+    const old = data.find(x => x.id === editId) || {};
     putRecord({
       id: editId, amount,
       name: document.getElementById('fName').value.trim() || 'ไม่ระบุชื่อ',
       bank: document.getElementById('fBank').value,
       date: document.getElementById('fDate').value || todayStr(), note,
       slipRef: qr || '', slipHash: document.getElementById('fSlipHash').value || '',
-      slipVerified: document.getElementById('fSlipVerified').value === '1'
+      slipVerified: document.getElementById('fSlipVerified').value === '1',
+      hasImg: currentSlipImg ? true : !!old.hasImg
     });
+    if (currentSlipImg) putSlipImage(editId, currentSlipImg);
     closeModal(); return;
   }
 
@@ -797,7 +808,7 @@ async function save() {
     const btn = document.getElementById('saveBtn');
     btn.disabled = true; btn.textContent = 'กำลังยืนยัน...';
     setSlipStatus('busy', '🛡️ กำลังยืนยันกับธนาคารและบันทึก...');
-    const r = await workerSave(qr, note);
+    const r = await workerSave(qr, note, currentSlipImg);
     btn.disabled = false; btn.textContent = 'บันทึก';
     if (r.ok) { setSlipStatus('ok', '✅ บันทึกแล้ว: ' + esc2(r.record.name) + ' ยอด ' + fmt(r.record.amount) + ' ฿'); setTimeout(closeModal, 800); return; }
     if (r.alreadyExists) { alert('สลิปนี้บันทึกไว้แล้ว: ยอด ' + fmt(r.record.amount) + ' ฿' + (r.record.name ? ' (' + r.record.name + ')' : '')); closeModal(); return; }
@@ -819,13 +830,13 @@ async function save() {
   else alert('⚠️ ต้องแนบสลิปทุกครั้ง');
 }
 // บันทึกผ่าน Worker: ส่ง idToken + QR → Worker ตรวจ SlipOK แล้วเขียนเอง (ยอดจากธนาคาร)
-async function workerSave(qr, note) {
+async function workerSave(qr, note, img) {
   const proxy = localStorage.getItem(SOKEY) || BAKED_SLIPOK_PROXY;
   try {
     const user = firebase.auth().currentUser;
     if (!user) return { ok: false, error: 'unauthorized' };
     const idToken = await user.getIdToken();
-    const resp = await fetch(proxy, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ idToken, data: qr, note }) });
+    const resp = await fetch(proxy, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ idToken, data: qr, note, img: img || '' }) });
     return await resp.json().catch(() => ({ ok: false, error: 'bad response' }));
   } catch (e) { return { ok: false, error: 'เชื่อมต่อไม่ได้' }; }
 }
@@ -833,16 +844,18 @@ async function workerSave(qr, note) {
 function ownerManualSave() {
   const amount = parseFloat(document.getElementById('fAmount').value);
   if (!amount || amount <= 0) { alert('กรอกแบบเอง: กรุณาใส่จำนวนเงินก่อน'); document.getElementById('fAmount').focus(); return; }
+  const id = 't' + Date.now() + Math.floor(Math.random()*1000);
   putRecord({
-    id: 't' + Date.now() + Math.floor(Math.random()*1000), amount,
+    id, amount,
     name: document.getElementById('fName').value.trim() || 'ไม่ระบุชื่อ',
     bank: document.getElementById('fBank').value,
     date: document.getElementById('fDate').value || todayStr(),
     note: document.getElementById('fNote').value.trim(),
     slipRef: document.getElementById('fSlipRef').value || '',
     slipHash: document.getElementById('fSlipHash').value || '',
-    slipVerified: false, manual: true
+    slipVerified: false, manual: true, hasImg: !!currentSlipImg
   });
+  if (currentSlipImg) putSlipImage(id, currentSlipImg);
   closeModal();
 }
 
@@ -866,9 +879,49 @@ function readQRfromImage(img) {
   try { const r = (typeof jsQR === 'function') ? jsQR(d.data, c.width, c.height) : null; return r ? r.data : ''; }
   catch (e) { return ''; }
 }
+/* ---------- เก็บรูปสลิป (บีบอัด + โหนดแยก slips) ---------- */
+let currentSlipImg = '';   // dataURL ของสลิปที่กำลังจะบันทึก
+function compressToDataURL(img) {
+  const max = 1200, scale = Math.min(1, max / Math.max(img.width, img.height));
+  const c = document.createElement('canvas');
+  c.width = Math.round(img.width * scale); c.height = Math.round(img.height * scale);
+  c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+  let q = 0.7, url = c.toDataURL('image/jpeg', q);
+  while (url.length > 180000 && q > 0.35) { q -= 0.12; url = c.toDataURL('image/jpeg', q); }
+  return url;
+}
+function slipsRef() {
+  if (rtOn && dbRef && dbRef.parent) return dbRef.parent.child('slips');
+  try { return firebase.database().ref('rooms/' + BAKED_ROOM + '/slips'); } catch (e) { return null; }
+}
+function putSlipImage(id, img) {
+  if (!img) return;
+  const ref = slipsRef();
+  if (ref) { try { ref.child(id).set(img); } catch (e) {} }
+}
+async function openSlip(id) {
+  let box = document.getElementById('slipLightbox');
+  if (!box) {
+    box = document.createElement('div'); box.id = 'slipLightbox'; box.className = 'slip-lightbox';
+    box.innerHTML = '<img id="slipLbImg" alt="สลิป" style="display:none"><div id="slipLbMsg" class="slip-lb-msg"></div><div class="slip-lb-close">แตะเพื่อปิด</div>';
+    box.addEventListener('click', () => box.classList.remove('show'));
+    document.body.appendChild(box);
+  }
+  const imgEl = document.getElementById('slipLbImg'), msg = document.getElementById('slipLbMsg');
+  imgEl.style.display = 'none'; msg.style.display = 'block'; msg.textContent = '⏳ กำลังโหลดสลิป...';
+  box.classList.add('show');
+  try {
+    const ref = slipsRef();
+    const snap = await ref.child(id).once('value');
+    const v = snap.val();
+    const src = (v && typeof v === 'object') ? v.img : v;
+    if (src) { imgEl.src = src; imgEl.style.display = 'block'; msg.style.display = 'none'; }
+    else { msg.textContent = 'ไม่พบรูปสลิป (อาจเป็นรายการเก่าก่อนเปิดฟีเจอร์นี้)'; }
+  } catch (e) { msg.textContent = 'โหลดสลิปไม่ได้: ' + (e.message || ''); }
+}
 async function handleSlip(input) {
   const file = input.files && input.files[0];
-  if (!file) { setSlipStatus('', ''); document.getElementById('fSlipRef').value=''; document.getElementById('fSlipHash').value=''; return; }
+  if (!file) { setSlipStatus('', ''); currentSlipImg=''; document.getElementById('fSlipRef').value=''; document.getElementById('fSlipHash').value=''; return; }
   setSlipStatus('busy', '⏳ กำลังอ่านสลิป...');
   try {
     const buf = await file.arrayBuffer();
@@ -876,6 +929,7 @@ async function handleSlip(input) {
     const url = URL.createObjectURL(new Blob([buf]));
     const img = await new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = url; });
     const qr = readQRfromImage(img);
+    try { currentSlipImg = compressToDataURL(img); } catch (e) { currentSlipImg = ''; }   // เก็บรูปสลิป (บีบอัด)
     URL.revokeObjectURL(url);
     document.getElementById('fSlipHash').value = hash;
     document.getElementById('fSlipRef').value = qr || '';
@@ -1053,6 +1107,7 @@ function render() {
           <div class="sub">${esc(it.bank) || 'ไม่ระบุธนาคาร'}</div>
           ${it.note ? `<div class="note">${esc(it.note)}</div>` : ''}
           ${it.slipVerified ? `<div class="slip has">🛡️ ยืนยันธนาคารแล้ว</div>` : ((it.slipRef || it.slipHash) ? `<div class="slip has">📎 มีสลิป${it.slipRef ? ' · QR ✓' : ''}</div>` : '')}
+          ${it.hasImg ? `<button class="slipview" onclick="event.stopPropagation(); openSlip('${it.id}')">👁️ ดูสลิป</button>` : ''}
         </div>
         <div class="amt">
           <b>+${fmt(it.amount)}</b>
