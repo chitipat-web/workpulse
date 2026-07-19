@@ -422,9 +422,6 @@
       </div>
     </div>
     <h1><img src="hurt-logo.jpg" class="hdr-logo" alt="">HURT SHOP</h1>
-    <p>บันทึกเงินที่โอนเข้าบัญชีธนาคาร</p>
-    <div class="syncpill" id="syncPill" onclick="openSettings()"><span class="dot"></span><span id="syncText">โหมดออฟไลน์ (เครื่องนี้)</span></div>
-    <div class="role-badge">👤 โหมดพนักงาน — เพิ่มสลิปได้อย่างเดียว (แก้/ลบไม่ได้)</div>
   </header>
 
   <div class="top-row">
@@ -731,6 +728,7 @@ function removeRecord(id) {
 /* ---------- realtime / firebase ---------- */
 function setSync(state, text) {
   const p = document.getElementById('syncPill');
+  if (!p) return;   // เอาแถบสถานะออกแล้ว
   p.className = 'syncpill' + (state ? ' ' + state : '');
   document.getElementById('syncText').textContent = text;
 }
