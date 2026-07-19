@@ -327,6 +327,20 @@
   .modal.show { animation: fade .22s ease; }
   @media (prefers-reduced-motion: reduce) { .rip { display: none; } }
 
+  /* ───── แถวปุ่มไอคอนกลม (สไตล์กรุงไทย) ───── */
+  .quickrow { display: flex; justify-content: space-around; gap: 8px; margin: 2px 0 16px; }
+  .qa { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 7px; background: none; border: none; cursor: pointer; font-family: inherit; padding: 0; }
+  .qa .ic {
+    width: 56px; height: 56px; border-radius: 19px; display: flex; align-items: center; justify-content: center; font-size: 24px;
+    background: var(--glass); -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur);
+    border: 1px solid var(--glass-bd); box-shadow: var(--glass-sh), var(--inset-hi);
+    transition: transform .2s cubic-bezier(.34,1.45,.5,1), border-color .2s ease; position: relative; overflow: hidden;
+  }
+  .qa.primary .ic { background: linear-gradient(135deg, var(--cyan), var(--cyan-d)); color: #04283a; border-color: rgba(255,255,255,.35); box-shadow: 0 8px 22px rgba(0,164,228,.4), inset 0 1px 0 rgba(255,255,255,.45); }
+  .qa .lbl { font-size: 12px; color: var(--muted); }
+  .qa:active .ic { transform: scale(.9); }
+  @media (hover: hover) { .qa:hover .ic { transform: translateY(-2px); border-color: var(--accent); } }
+
   /* ───── จอคอม/แท็บเล็ต (กว้างขึ้น) ───── */
   @media (min-width: 768px) {
     body { padding-bottom: 24px; }
@@ -439,6 +453,13 @@
     <div class="stat"><span>เดือนนี้</span><b id="thisMonth">0 ฿</b></div>
     <div class="stat"><span>วันนี้</span><b id="today">0 ฿</b></div>
   </div>
+  </div>
+
+  <div class="quickrow">
+    <button class="qa primary" onclick="openModal()"><span class="ic">＋</span><span class="lbl">เพิ่มยอด</span></button>
+    <button class="qa" onclick="openReport()"><span class="ic">📊</span><span class="lbl">รายงาน</span></button>
+    <button class="qa" onclick="exportCSV()"><span class="ic">⬇️</span><span class="lbl">CSV</span></button>
+    <button class="qa" onclick="openSettings()"><span class="ic">⚙️</span><span class="lbl">ตั้งค่า</span></button>
   </div>
 
   <div class="seg" id="rangeSeg">
@@ -802,7 +823,7 @@ document.addEventListener('click', function(){ const p = document.getElementById
 
 /* ---------- ripple ตอนแตะปุ่ม/เมนู ---------- */
 document.addEventListener('pointerdown', function(e){
-  const el = e.target.closest('.fab, .asst-fab, .gear, .menu-btn, .menu-panel button, .btns button, .g-btn, .tools button, .seg-btn, .slipview');
+  const el = e.target.closest('.fab, .asst-fab, .gear, .menu-btn, .menu-panel button, .qa .ic, .btns button, .g-btn, .tools button, .seg-btn, .slipview');
   if (!el) return;
   const r = el.getBoundingClientRect();
   const size = Math.max(r.width, r.height);
