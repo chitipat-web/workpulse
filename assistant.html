@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<meta name="theme-color" content="#8b5cf6">
+<meta name="theme-color" content="#3b82f6">
 <title>ผู้ช่วย — HURT SHOP</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -19,8 +19,8 @@
   :root {
     --bg: #0b1620; --card: #15242f; --card2: #1d3340; --line: #2c4452;
     --text: #f1f5f9; --muted: #93acba; --green: #22c55e; --green-d: #16a34a;
-    --blue: #8b5cf6; --red: #ef4444; --accent: #a78bfa; --amber: #f59e0b;
-    --cyan: #8b5cf6; --cyan-d: #7c3aed;
+    --blue: #3b82f6; --red: #ef4444; --accent: #60a5fa; --amber: #f59e0b;
+    --cyan: #3b82f6; --cyan-d: #2563eb;
     --glass:    rgba(255,255,255,.035);
     --glass-2:  rgba(255,255,255,.06);
     --glass-bd: rgba(255,255,255,.14);
@@ -34,8 +34,8 @@
     font-family: 'IBM Plex Sans Thai', -apple-system, BlinkMacSystemFont, "Segoe UI", "Sukhumvit Set", "Helvetica Neue", sans-serif;
     color: var(--text);
     background:
-      radial-gradient(1100px 620px at 82% -8%,  rgba(139,92,246,.22), transparent 60%),
-      radial-gradient(820px 520px at -12% 18%,  rgba(139,92,246,.18), transparent 55%),
+      radial-gradient(1100px 620px at 82% -8%,  rgba(59,130,246,.22), transparent 60%),
+      radial-gradient(820px 520px at -12% 18%,  rgba(59,130,246,.18), transparent 55%),
       var(--bg);
     background-attachment: fixed;
     display: flex; flex-direction: column;
@@ -58,7 +58,7 @@
   }
   .bot-ava {
     width: 40px; height: 40px; border-radius: 13px; flex-shrink: 0;
-    background: linear-gradient(135deg, rgba(139,92,246,.35), rgba(139,92,246,.12));
+    background: linear-gradient(135deg, rgba(59,130,246,.35), rgba(59,130,246,.12));
     border: 1px solid var(--glass-bd);
     display: flex; align-items: center; justify-content: center; font-size: 21px;
     box-shadow: var(--inset-hi);
@@ -90,9 +90,9 @@
   }
   .msg.user {
     background: linear-gradient(135deg, var(--cyan), var(--cyan-d));
-    color: #1a0b2e; font-weight: 500;
+    color: #0a1836; font-weight: 500;
     align-self: flex-end; border-bottom-right-radius: 6px;
-    box-shadow: 0 4px 18px rgba(139,92,246,.25);
+    box-shadow: 0 4px 18px rgba(59,130,246,.25);
   }
   .msg .big { font-size: 22px; font-weight: 700; color: var(--accent); }
   .msg .ok { color: #86efac; }
@@ -128,7 +128,7 @@
     cursor: pointer; white-space: nowrap;
     box-shadow: var(--inset-hi);
   }
-  #quick button:active { background: rgba(139,92,246,.15); }
+  #quick button:active { background: rgba(59,130,246,.15); }
   #inputbar {
     display: flex; gap: 8px;
     padding: 10px 14px calc(12px + env(safe-area-inset-bottom));
@@ -150,11 +150,11 @@
   #inputbar input:focus { border-color: var(--accent); }
   #inputbar button {
     background: linear-gradient(135deg, var(--cyan), var(--cyan-d));
-    color: #1a0b2e;
+    color: #0a1836;
     border: none; border-radius: 50%;
     width: 46px; height: 46px; font-size: 18px;
     cursor: pointer; flex-shrink: 0;
-    box-shadow: 0 4px 18px rgba(139,92,246,.35);
+    box-shadow: 0 4px 18px rgba(59,130,246,.35);
   }
   #inputbar button:active { transform: scale(.94); }
   /* login screen — เหมือน bank.html */
@@ -162,8 +162,8 @@
     position: fixed; inset: 0; z-index: 150;
     background: var(--bg);
     background:
-      radial-gradient(1100px 620px at 82% -8%,  rgba(139,92,246,.22), transparent 60%),
-      radial-gradient(820px 520px at -12% 18%,  rgba(139,92,246,.18), transparent 55%),
+      radial-gradient(1100px 620px at 82% -8%,  rgba(59,130,246,.22), transparent 60%),
+      radial-gradient(820px 520px at -12% 18%,  rgba(59,130,246,.18), transparent 55%),
       var(--bg);
     display: none; align-items: center; justify-content: center;
     padding: 24px; text-align: center;
@@ -195,7 +195,7 @@
   #quick button, #inputbar button, .slipchip, #gBtn { position: relative; overflow: hidden; }
   .rip { position: absolute; border-radius: 50%; transform: scale(0); background: rgba(255,255,255,.38); pointer-events: none; animation: rip .55s cubic-bezier(.25,.7,.35,1) forwards; z-index: 3; }
   #gBtn .rip { background: rgba(0,0,0,.13); }
-  #inputbar button .rip { background: rgba(26,11,46,.28); }
+  #inputbar button .rip { background: rgba(10,24,54,.28); }
   @keyframes rip { to { transform: scale(2.5); opacity: 0; } }
   @media (prefers-reduced-motion: reduce) { .rip { display: none; } }
 </style>
