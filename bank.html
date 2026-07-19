@@ -96,12 +96,17 @@
 
   .summary {
     position: relative; overflow: hidden;
-    background: linear-gradient(135deg, rgba(0,164,228,.55), rgba(0,106,163,.48));
+    background:
+      radial-gradient(200px 200px at 116% 128%, rgba(255,255,255,.12), transparent 60%),
+      radial-gradient(130px 130px at 102% -12%, rgba(255,255,255,.09), transparent 60%),
+      linear-gradient(135deg, rgba(0,164,228,.58), rgba(0,106,163,.5));
     -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur);
     border: 1px solid var(--glass-bd); border-radius: 22px;
-    padding: 22px 20px; margin: 14px 0 16px;
+    padding: 20px 20px; margin: 14px 0 16px;
     box-shadow: 0 12px 34px rgba(0,164,228,.32), var(--inset-hi);
   }
+  .summary .card-top { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; letter-spacing: .3px; opacity: .92; margin-bottom: 12px; }
+  .summary .card-top .chip { width: 26px; height: 19px; border-radius: 5px; background: linear-gradient(135deg, #ffe38a, #cfa219); box-shadow: inset 0 0 0 1px rgba(0,0,0,.18); flex-shrink: 0; }
   .summary::before {
     content: ""; position: absolute; inset: 0; pointer-events: none;
     background: radial-gradient(120% 80% at 15% 0%, rgba(255,255,255,.35), transparent 55%);
@@ -327,6 +332,28 @@
   .modal.show { animation: fade .22s ease; }
   @media (prefers-reduced-motion: reduce) { .rip { display: none; } }
 
+  /* ───── แถบล่าง (tab bar สไตล์กรุงไทย) ───── */
+  .tabbar {
+    position: fixed; bottom: 0; left: 0; right: 0; z-index: 40;
+    display: flex; align-items: flex-end; justify-content: space-around;
+    padding: 8px 6px calc(6px + env(safe-area-inset-bottom));
+    background: rgba(11,22,32,.74); -webkit-backdrop-filter: saturate(180%) blur(20px); backdrop-filter: saturate(180%) blur(20px);
+    border-top: 1px solid var(--glass-bd); box-shadow: 0 -8px 30px rgba(0,0,0,.4);
+  }
+  .tab { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; background: none; border: none; color: var(--muted); font-family: inherit; font-size: 11px; cursor: pointer; padding: 4px 0; transition: color .15s ease; }
+  .tab .ti { font-size: 21px; line-height: 1; }
+  .tab:active { color: var(--accent); }
+  @media (hover: hover) { .tab:hover { color: var(--text); } }
+  .tab.center { flex: 0 0 auto; margin: 0 4px; }
+  .tab.center .tc {
+    width: 58px; height: 58px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    font-size: 32px; color: #04283a; margin-top: -24px; position: relative; overflow: hidden;
+    background: linear-gradient(135deg, var(--cyan), var(--cyan-d)); border: 3px solid #0b1620;
+    box-shadow: 0 6px 20px rgba(0,164,228,.5), inset 0 1px 0 rgba(255,255,255,.45);
+    transition: transform .2s cubic-bezier(.34,1.45,.5,1);
+  }
+  .tab.center:active .tc { transform: scale(.9); }
+
   /* ───── แถวปุ่มไอคอนกลม (สไตล์กรุงไทย) ───── */
   .quickrow { display: flex; justify-content: space-around; gap: 8px; margin: 2px 0 16px; }
   .qa { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 7px; background: none; border: none; cursor: pointer; font-family: inherit; padding: 0; }
@@ -343,8 +370,9 @@
 
   /* ───── จอคอม/แท็บเล็ต (กว้างขึ้น) ───── */
   @media (min-width: 768px) {
-    body { padding-bottom: 24px; }
+    body { padding-bottom: 92px; }
     .wrap { max-width: 940px; padding: 24px 24px 40px; }
+    .tabbar { max-width: 560px; margin: 0 auto; border-radius: 20px 20px 0 0; }
     header { padding-top: 24px; }
     header h1 { font-size: 24px; }
     /* ยอดสรุป + สถิติ เรียงข้างกัน */
@@ -440,6 +468,7 @@
 
   <div class="top-row">
   <div class="summary">
+    <div class="card-top"><span class="chip"></span> บัญชีร้าน · HURT SHOP</div>
     <div class="label" id="sumLabel">ยอดรวมทั้งหมด</div>
     <div class="total"><span id="totalAmt">0</span> <small>บาท</small></div>
     <div class="meta">
@@ -477,8 +506,13 @@
 
 </div>
 
-<button class="asst-fab" onclick="openAssistant()" aria-label="ผู้ช่วย" title="ผู้ช่วย">💬</button>
-<button class="fab" onclick="openModal()">+ เพิ่มยอดโอนเข้า</button>
+<nav class="tabbar">
+  <button class="tab" onclick="goHome()"><span class="ti">🏠</span><span>หน้าแรก</span></button>
+  <button class="tab" onclick="goList()"><span class="ti">📄</span><span>รายการ</span></button>
+  <button class="tab center" onclick="openModal()" aria-label="เพิ่มยอด"><span class="tc">＋</span></button>
+  <button class="tab" onclick="openAssistant()"><span class="ti">💬</span><span>ผู้ช่วย</span></button>
+  <button class="tab" onclick="openSettings()"><span class="ti">⚙️</span><span>ตั้งค่า</span></button>
+</nav>
 
 <!-- Add/Edit Modal -->
 <div class="modal" id="modal">
@@ -816,6 +850,10 @@ function disconnectRT() {
   location.reload();
 }
 
+/* ---------- แถบล่าง (tab bar) ---------- */
+function goHome(){ window.scrollTo({ top: 0, behavior: 'smooth' }); }
+function goList(){ const l = document.getElementById('list'); if (l) l.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+
 /* ---------- เมนูมุมซ้ายบน ---------- */
 function toggleMenu(e){ e.stopPropagation(); document.getElementById('menuPanel').classList.toggle('show'); }
 function menuGo(fn){ document.getElementById('menuPanel').classList.remove('show'); fn(); }
@@ -823,7 +861,7 @@ document.addEventListener('click', function(){ const p = document.getElementById
 
 /* ---------- ripple ตอนแตะปุ่ม/เมนู ---------- */
 document.addEventListener('pointerdown', function(e){
-  const el = e.target.closest('.fab, .asst-fab, .gear, .menu-btn, .menu-panel button, .qa .ic, .btns button, .g-btn, .tools button, .seg-btn, .slipview');
+  const el = e.target.closest('.tab.center .tc, .gear, .menu-btn, .menu-panel button, .qa .ic, .btns button, .g-btn, .tools button, .seg-btn, .slipview');
   if (!el) return;
   const r = el.getBoundingClientRect();
   const size = Math.max(r.width, r.height);
