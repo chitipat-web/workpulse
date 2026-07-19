@@ -34,7 +34,7 @@
   body {
     font-family: 'IBM Plex Sans Thai', -apple-system, BlinkMacSystemFont, "Segoe UI", "Sukhumvit Set", "Helvetica Neue", sans-serif;
     color: var(--text); min-height: 100vh;
-    padding-bottom: 90px; -webkit-text-size-adjust: 100%;
+    padding-bottom: 96px; -webkit-text-size-adjust: 100%;
     background:
       radial-gradient(1100px 620px at 82% -8%,  rgba(0,164,228,.22), transparent 60%),
       radial-gradient(820px 520px at -12% 18%,  rgba(0,164,228,.18), transparent 55%),
@@ -313,33 +313,38 @@
   .modal.show { animation: fade .22s ease; }
   @media (prefers-reduced-motion: reduce) { .rip { display: none; } }
 
-  /* ───── แถบล่าง (tab bar สไตล์กรุงไทย) ───── */
+  /* ───── แถบล่าง (แคปซูลลอย floating) ───── */
   .tabbar {
-    position: fixed; bottom: 0; left: 0; right: 0; z-index: 40;
-    display: flex; align-items: flex-end; justify-content: space-around;
-    padding: 8px 6px calc(6px + env(safe-area-inset-bottom));
-    background: rgba(11,22,32,.74); -webkit-backdrop-filter: saturate(180%) blur(20px); backdrop-filter: saturate(180%) blur(20px);
-    border-top: 1px solid var(--glass-bd); box-shadow: 0 -8px 30px rgba(0,0,0,.4);
+    position: fixed; bottom: calc(12px + env(safe-area-inset-bottom)); left: 10px; right: 10px; z-index: 40;
+    max-width: 480px; margin: 0 auto;
+    display: flex; align-items: center; justify-content: space-around; gap: 1px;
+    padding: 6px 6px;
+    background: rgba(11,22,32,.82); -webkit-backdrop-filter: saturate(180%) blur(24px); backdrop-filter: saturate(180%) blur(24px);
+    border: 1px solid var(--glass-bd); border-radius: 28px;
+    box-shadow: 0 14px 38px rgba(0,0,0,.5), 0 2px 8px rgba(0,0,0,.3), inset 0 1px 0 var(--glass-hi);
   }
-  .tab { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; background: none; border: none; color: var(--muted); font-family: inherit; font-size: 11px; cursor: pointer; padding: 4px 0; transition: color .15s ease; }
-  .tab .ti { font-size: 21px; line-height: 1; }
+  .tab { flex: 1 1 0; min-width: 0; overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; background: none; border: none; color: var(--muted); font-family: inherit; font-size: 11px; cursor: pointer; padding: 7px 0 6px; border-radius: 16px; transition: color .18s ease, background .22s ease; }
+  .tab span:not(.ti):not(.tc) { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .tab .ti { font-size: 21px; line-height: 1; transition: transform .2s cubic-bezier(.34,1.45,.5,1); }
   .tab:active { color: var(--accent); }
+  .tab:active .ti { transform: scale(.88); }
   @media (hover: hover) { .tab:hover { color: var(--text); } }
-  .tab.center { flex: 0 0 auto; margin: 0 4px; }
+  .tab.active { color: #fff; background: linear-gradient(160deg, var(--cyan), var(--cyan-d)); box-shadow: 0 6px 16px rgba(0,164,228,.5), inset 0 1px 0 rgba(255,255,255,.35); }
+  .tab.active .ti { color: #fff; }
   .tab.center .tc {
-    width: 58px; height: 58px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
-    font-size: 32px; color: #04283a; margin-top: -24px; position: relative; overflow: hidden;
-    background: linear-gradient(135deg, var(--cyan), var(--cyan-d)); border: 3px solid #0b1620;
-    box-shadow: 0 6px 20px rgba(0,164,228,.5), inset 0 1px 0 rgba(255,255,255,.45);
+    width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    font-size: 22px; color: #fff;
+    background: linear-gradient(135deg, var(--cyan), var(--cyan-d));
+    box-shadow: 0 3px 10px rgba(0,164,228,.5), inset 0 1px 0 rgba(255,255,255,.4);
     transition: transform .2s cubic-bezier(.34,1.45,.5,1);
   }
-  .tab.center:active .tc { transform: scale(.9); }
+  .tab.center:active .tc { transform: scale(.88); }
 
   /* ───── จอคอม/แท็บเล็ต (กว้างขึ้น) ───── */
   @media (min-width: 768px) {
-    body { padding-bottom: 92px; }
+    body { padding-bottom: 96px; }
     .wrap { max-width: 940px; padding: 24px 24px 40px; }
-    .tabbar { max-width: 560px; margin: 0 auto; border-radius: 20px 20px 0 0; }
+    .tabbar { max-width: 520px; }
     header { padding-top: 24px; }
     header h1 { font-size: 24px; }
     /* ยอดสรุป + สถิติ เรียงข้างกัน */
@@ -457,9 +462,9 @@
 </div>
 
 <nav class="tabbar">
-  <button class="tab" onclick="goHome()"><span class="ti">🏠</span><span>หน้าแรก</span></button>
+  <button class="tab active" onclick="goHome()"><span class="ti">🏠</span><span>หน้าแรก</span></button>
   <button class="tab" onclick="openReport()"><span class="ti">📊</span><span>รายงาน</span></button>
-  <button class="tab center" onclick="openModal()" aria-label="เพิ่มยอด"><span class="tc">＋</span></button>
+  <button class="tab center" onclick="openModal()" aria-label="เพิ่มยอด"><span class="tc">＋</span><span>เพิ่ม</span></button>
   <button class="tab" onclick="openAssistant()"><span class="ti">💬</span><span>ผู้ช่วย</span></button>
   <button class="tab" onclick="openSettings()"><span class="ti">⚙️</span><span>ตั้งค่า</span></button>
 </nav>
