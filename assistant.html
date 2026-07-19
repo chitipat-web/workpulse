@@ -184,6 +184,13 @@
     font-size: 15px; font-weight: 600; cursor: pointer;
   }
   #loginSignout { display: none; margin-top: 14px; background: none; border: none; color: var(--accent); font-size: 13.5px; cursor: pointer; text-decoration: underline; }
+  /* ปุ่มดูสลิปในแชท + ไลท์บ็อกซ์ */
+  .slipchip { display: inline-flex; align-items: center; gap: 4px; margin: 6px 6px 0 0; background: var(--glass-2); -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur); border: 1px solid var(--glass-bd); color: var(--accent); border-radius: 999px; padding: 5px 12px; font-size: 12.5px; cursor: pointer; font-family: inherit; box-shadow: var(--inset-hi); }
+  .slip-lightbox { position: fixed; inset: 0; z-index: 300; background: rgba(0,0,0,.88); -webkit-backdrop-filter: blur(5px); backdrop-filter: blur(5px); display: none; align-items: center; justify-content: center; padding: 20px; flex-direction: column; }
+  .slip-lightbox.show { display: flex; }
+  .slip-lightbox img { max-width: 100%; max-height: 82vh; border-radius: 14px; box-shadow: 0 12px 44px rgba(0,0,0,.7); }
+  .slip-lb-msg { color: #cfeef7; font-size: 14px; margin-top: 14px; text-align: center; }
+  .slip-lb-close { color: #cfeef7; font-size: 13px; margin-top: 16px; opacity: .8; }
 </style>
 </head>
 <body>
@@ -272,7 +279,8 @@ function filterRange(from, to){
 function sum(list){ return list.reduce((s,r) => s + Number(r.amount||0), 0); }
 function recLine(r){
   const v = r.slipVerified ? '✅' : (r.slipRef ? '⏳' : '📝');
-  return v + ' ' + fmt(r.amount) + ' ฿ — ' + (r.name||'ไม่ระบุชื่อ') + (r.bank ? ' (' + r.bank + ')' : '') + ' · ' + thaiDate(r.date) + (r.note ? '\n    💬 ' + r.note : '');
+  const slip = (r.slipVerified || r.hasImg) && r.id ? ' ⟦slip:' + r.id + '⟧' : '';
+  return v + ' ' + fmt(r.amount) + ' ฿ — ' + (r.name||'ไม่ระบุชื่อ') + (r.bank ? ' (' + r.bank + ')' : '') + ' · ' + thaiDate(r.date) + (r.note ? '\n    💬 ' + r.note : '') + slip;
 }
 function sortRecent(list){
   return [...list].sort((a,b) => (b.date||'').localeCompare(a.date||'') || String(b.id||'').localeCompare(String(a.id||'')));
@@ -421,12 +429,44 @@ const chatEl = document.getElementById('chat');
 const inputEl = document.getElementById('input');
 const QUICK = ['ยอดวันนี้', 'รายการล่าสุด', 'ยอดเดือนนี้', 'แยกตามธนาคาร', 'ยังไม่ตรวจสลิป', 'ช่วยเหลือ'];
 
+function escHtml(s){ return (s||'').toString().replace(/[<>&]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;'}[c])); }
 function addMsg(text, who){
   const d = document.createElement('div');
   d.className = 'msg ' + who;
-  d.textContent = text;
+  if (who === 'bot' && /⟦slip:/.test(text)) {
+    const parts = text.split(/⟦slip:([^⟧]+)⟧/);   // [ข้อความ, id, ข้อความ, id, ...]
+    let html = '';
+    for (let i = 0; i < parts.length; i++) {
+      html += (i % 2 === 0) ? escHtml(parts[i]) : '<button class="slipchip" data-slip="' + escHtml(parts[i]) + '">👁️ ดูสลิป</button>';
+    }
+    d.innerHTML = html;
+    d.querySelectorAll('.slipchip').forEach(b => b.onclick = () => openSlip(b.dataset.slip));
+  } else {
+    d.textContent = text;
+  }
   chatEl.appendChild(d);
   chatEl.scrollTop = chatEl.scrollHeight;
+}
+/* ---------- ดูรูปสลิป (ไลท์บ็อกซ์) ---------- */
+let activeRoom = BAKED_ROOM;
+async function openSlip(id){
+  let box = document.getElementById('slipLightbox');
+  if (!box) {
+    box = document.createElement('div'); box.id = 'slipLightbox'; box.className = 'slip-lightbox';
+    box.innerHTML = '<img id="slipLbImg" alt="สลิป" style="display:none"><div id="slipLbMsg" class="slip-lb-msg"></div><div class="slip-lb-close">แตะเพื่อปิด</div>';
+    box.addEventListener('click', () => box.classList.remove('show'));
+    document.body.appendChild(box);
+  }
+  const imgEl = document.getElementById('slipLbImg'), msg = document.getElementById('slipLbMsg');
+  imgEl.style.display = 'none'; msg.style.display = 'block'; msg.textContent = '⏳ กำลังโหลดสลิป...';
+  box.classList.add('show');
+  try {
+    const snap = await firebase.database().ref('rooms/' + activeRoom + '/slips/' + id).once('value');
+    const v = snap.val();
+    const src = (v && typeof v === 'object') ? v.img : v;
+    if (src) { imgEl.src = src; imgEl.style.display = 'block'; msg.style.display = 'none'; }
+    else { msg.textContent = 'ไม่พบรูปสลิป (อาจเป็นรายการเก่าก่อนเปิดฟีเจอร์เก็บสลิป)'; }
+  } catch (e) { msg.textContent = 'โหลดสลิปไม่ได้: ' + (e.message || ''); }
 }
 async function send(preset){
   const text = preset || inputEl.value.trim();
@@ -502,6 +542,7 @@ function googleSignIn(){
 function googleSignOut(){ if(window.firebase && firebase.auth) firebase.auth().signOut().then(() => location.reload()); }
 
 function connectRT(cfg, room){
+  activeRoom = room;
   try { if(!app) app = firebase.initializeApp(cfg); } catch(e){}
   setSync(false, 'กำลังเชื่อมต่อ...');
   try {
