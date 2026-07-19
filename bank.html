@@ -34,7 +34,7 @@
   body {
     font-family: 'IBM Plex Sans Thai', -apple-system, BlinkMacSystemFont, "Segoe UI", "Sukhumvit Set", "Helvetica Neue", sans-serif;
     color: var(--text); min-height: 100vh;
-    padding-bottom: 96px; -webkit-text-size-adjust: 100%;
+    padding-bottom: 84px; -webkit-text-size-adjust: 100%;
     background:
       radial-gradient(1100px 620px at 82% -8%,  rgba(0,164,228,.22), transparent 60%),
       radial-gradient(820px 520px at -12% 18%,  rgba(0,164,228,.18), transparent 55%),
@@ -313,23 +313,18 @@
   .modal.show { animation: fade .22s ease; }
   @media (prefers-reduced-motion: reduce) { .rip { display: none; } }
 
-  /* ───── แถบล่าง (แคปซูลลอย floating) ───── */
+  /* ───── แถบล่าง (ติดขอบล่าง Liquid Glass) ───── */
   .tabbar {
-    position: fixed; bottom: calc(12px + env(safe-area-inset-bottom)); left: 10px; right: 10px; z-index: 40;
-    max-width: 480px; margin: 0 auto;
-    display: flex; align-items: center; justify-content: space-around; gap: 1px;
-    padding: 6px 6px;
-    border: 1px solid rgba(255,255,255,.16); border-radius: 28px;
+    position: fixed; bottom: 0; left: 0; right: 0; z-index: 40;
+    display: flex; align-items: center; justify-content: space-around; gap: 2px;
+    padding: 6px 8px calc(6px + env(safe-area-inset-bottom));
+    border-top: 1px solid rgba(255,255,255,.14);
     background:
-      linear-gradient(180deg, rgba(255,255,255,.20), rgba(255,255,255,.03) 46%, rgba(255,255,255,0) 62%) padding-box,
-      linear-gradient(180deg, rgba(26,44,58,.42), rgba(11,22,32,.52)) padding-box;
-    -webkit-backdrop-filter: blur(30px) saturate(200%) brightness(1.08);
-    backdrop-filter: blur(30px) saturate(200%) brightness(1.08);
-    box-shadow:
-      0 18px 42px rgba(0,0,0,.55), 0 3px 10px rgba(0,0,0,.35),
-      inset 0 1px 0 rgba(255,255,255,.55),
-      inset 0 -8px 14px rgba(255,255,255,.05),
-      inset 0 0 0 .5px rgba(255,255,255,.07);
+      linear-gradient(180deg, rgba(255,255,255,.14), rgba(255,255,255,.02) 45%) padding-box,
+      linear-gradient(180deg, rgba(26,44,58,.55), rgba(11,22,32,.66)) padding-box;
+    -webkit-backdrop-filter: blur(28px) saturate(190%);
+    backdrop-filter: blur(28px) saturate(190%);
+    box-shadow: 0 -8px 30px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.35);
   }
   .tab { flex: 1 1 0; min-width: 0; overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; background: none; border: none; color: var(--muted); font-family: inherit; font-size: 11px; cursor: pointer; padding: 7px 0 6px; border-radius: 16px; transition: color .18s ease, background .22s ease; }
   .tab span:not(.ti):not(.tc) { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -355,7 +350,7 @@
 
   /* ───── จอคอม/แท็บเล็ต (กว้างขึ้น) ───── */
   @media (min-width: 768px) {
-    body { padding-bottom: 96px; }
+    body { padding-bottom: 84px; }
     .wrap { max-width: 940px; padding: 24px 24px 40px; }
     .tabbar { max-width: 520px; }
     header { padding-top: 24px; }
@@ -475,11 +470,11 @@
 </div>
 
 <nav class="tabbar">
-  <button class="tab active" onclick="goHome()"><span class="ti"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.7 12 3.5l9 7.2"/><path d="M5.2 9.4V19a1.4 1.4 0 0 0 1.4 1.4h10.8A1.4 1.4 0 0 0 18.8 19V9.4"/><path d="M9.5 20.4v-5.2a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v5.2"/></svg></span><span>หน้าแรก</span></button>
-  <button class="tab" onclick="openReport()"><span class="ti"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.2" y="12.5" width="4" height="7.3" rx="1.2"/><rect x="10" y="7.5" width="4" height="12.3" rx="1.2"/><rect x="16.8" y="4" width="4" height="15.8" rx="1.2"/></svg></span><span>รายงาน</span></button>
-  <button class="tab center" onclick="openModal()" aria-label="เพิ่มยอด"><span class="tc"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="12" y1="5.5" x2="12" y2="18.5"/><line x1="5.5" y1="12" x2="18.5" y2="12"/></svg></span><span>เพิ่ม</span></button>
-  <button class="tab" onclick="openAssistant()"><span class="ti"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 11.5a7.5 7.5 0 0 1-10.9 6.7L4.5 20l1.8-5.1A7.5 7.5 0 1 1 20.5 11.5z"/><circle cx="8.6" cy="11.4" r=".7" fill="currentColor" stroke="none"/><circle cx="12" cy="11.4" r=".7" fill="currentColor" stroke="none"/><circle cx="15.4" cy="11.4" r=".7" fill="currentColor" stroke="none"/></svg></span><span>ผู้ช่วย</span></button>
-  <button class="tab" onclick="openSettings()"><span class="ti"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V15z"/></svg></span><span>ตั้งค่า</span></button>
+  <button class="tab active" onclick="setTab(this); goHome()"><span class="ti"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.7 12 3.5l9 7.2"/><path d="M5.2 9.4V19a1.4 1.4 0 0 0 1.4 1.4h10.8A1.4 1.4 0 0 0 18.8 19V9.4"/><path d="M9.5 20.4v-5.2a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v5.2"/></svg></span><span>หน้าแรก</span></button>
+  <button class="tab" onclick="setTab(this); openReport()"><span class="ti"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.2" y="12.5" width="4" height="7.3" rx="1.2"/><rect x="10" y="7.5" width="4" height="12.3" rx="1.2"/><rect x="16.8" y="4" width="4" height="15.8" rx="1.2"/></svg></span><span>รายงาน</span></button>
+  <button class="tab center" onclick="setTab(this); openModal()" aria-label="เพิ่มยอด"><span class="tc"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="12" y1="5.5" x2="12" y2="18.5"/><line x1="5.5" y1="12" x2="18.5" y2="12"/></svg></span><span>เพิ่ม</span></button>
+  <button class="tab" onclick="setTab(this); openAssistant()"><span class="ti"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 11.5a7.5 7.5 0 0 1-10.9 6.7L4.5 20l1.8-5.1A7.5 7.5 0 1 1 20.5 11.5z"/><circle cx="8.6" cy="11.4" r=".7" fill="currentColor" stroke="none"/><circle cx="12" cy="11.4" r=".7" fill="currentColor" stroke="none"/><circle cx="15.4" cy="11.4" r=".7" fill="currentColor" stroke="none"/></svg></span><span>ผู้ช่วย</span></button>
+  <button class="tab" onclick="setTab(this); openSettings()"><span class="ti"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V15z"/></svg></span><span>ตั้งค่า</span></button>
 </nav>
 
 
@@ -804,7 +799,7 @@ function openSettings() {
   document.getElementById('sRoom').value = localStorage.getItem(ROOMKEY) || '';
   document.getElementById('sSlipOK').value = localStorage.getItem(SOKEY) || '';
 }
-function closeSettings() { document.getElementById('settings').classList.remove('show'); }
+function closeSettings() { document.getElementById('settings').classList.remove('show'); homeTab(); }
 function saveSlipOK() {
   let u = document.getElementById('sSlipOK').value.trim();
   if (u && !/^https?:\/\//.test(u)) u = 'https://' + u;
@@ -837,6 +832,8 @@ function disconnectRT() {
 
 /* ---------- แถบล่าง (tab bar) ---------- */
 function goHome(){ window.scrollTo({ top: 0, behavior: 'smooth' }); }
+function setTab(el){ document.querySelectorAll('.tabbar .tab').forEach(t => t.classList.remove('active')); if (el) el.classList.add('active'); }
+function homeTab(){ setTab(document.querySelector('.tabbar .tab')); }   // ไฮไลต์กลับหน้าแรกเมื่อปิดเมนู
 
 /* ---------- ripple ตอนแตะปุ่ม/เมนู ---------- */
 document.addEventListener('pointerdown', function(e){
@@ -862,7 +859,7 @@ function openAssistant() {
   }
   document.getElementById('asstModal').classList.add('show');
 }
-function closeAssistant() { document.getElementById('asstModal').classList.remove('show'); }
+function closeAssistant() { document.getElementById('asstModal').classList.remove('show'); homeTab(); }
 document.getElementById('asstModal').addEventListener('click', e => { if (e.target.id === 'asstModal') closeAssistant(); });
 
 /* ---------- add/edit modal ---------- */
@@ -901,7 +898,7 @@ function openModal(id) {
   currentSlipImg = '';
   document.getElementById('fSlip').value = '';
 }
-function closeModal() { document.getElementById('modal').classList.remove('show'); }
+function closeModal() { document.getElementById('modal').classList.remove('show'); homeTab(); }
 document.getElementById('modal').addEventListener('click', e => { if (e.target.id === 'modal') closeModal(); });
 document.getElementById('settings').addEventListener('click', e => { if (e.target.id === 'settings') closeSettings(); });
 
@@ -1290,7 +1287,7 @@ document.getElementById('report').addEventListener('click', e => { if (e.target.
 /* ---------- รายงาน + PDF ---------- */
 const MON_TH = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
 function openReport(){ buildReport(); document.getElementById('report').classList.add('show'); }
-function closeReport(){ document.getElementById('report').classList.remove('show'); }
+function closeReport(){ document.getElementById('report').classList.remove('show'); homeTab(); }
 function printReport(){ window.print(); }
 function buildReport(){
   const esc = s => (s||'').toString().replace(/[<>&"]/g, c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));
