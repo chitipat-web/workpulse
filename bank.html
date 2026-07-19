@@ -1109,31 +1109,66 @@ function exportRows() {
              .sort((a,b) => String(a.date||'').localeCompare(String(b.date||'')));
 }
 
+// ---- สร้างไฟล์ .xlsx จริง (ZIP+XML) เอง ไม่ต้องพึ่ง library — เปิดได้ทั้งมือถือและคอม ----
+function _concat(list) { let n = 0; list.forEach(a => n += a.length); const out = new Uint8Array(n); let o = 0; list.forEach(a => { out.set(a, o); o += a.length; }); return out; }
+const _CRC = (() => { const t = new Uint32Array(256); for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1); t[n] = c >>> 0; } return t; })();
+function _crc32(buf) { let c = 0xFFFFFFFF; for (let i = 0; i < buf.length; i++) c = _CRC[(c ^ buf[i]) & 0xFF] ^ (c >>> 8); return (c ^ 0xFFFFFFFF) >>> 0; }
+function _zipStore(files) {
+  const enc = new TextEncoder();
+  const u16 = n => new Uint8Array([n & 0xFF, (n >>> 8) & 0xFF]);
+  const u32 = n => new Uint8Array([n & 0xFF, (n >>> 8) & 0xFF, (n >>> 16) & 0xFF, (n >>> 24) & 0xFF]);
+  const chunks = [], central = []; let offset = 0; const DT = 0, DD = 0x21;   // วันที่ในไฟล์ = 1980-01-01
+  files.forEach(f => {
+    const nb = enc.encode(f.name), crc = _crc32(f.data), sz = f.data.length;
+    const lh = _concat([u32(0x04034b50), u16(20), u16(0x0800), u16(0), u16(DT), u16(DD), u32(crc), u32(sz), u32(sz), u16(nb.length), u16(0), nb]);
+    chunks.push(lh, f.data);
+    central.push(_concat([u32(0x02014b50), u16(20), u16(20), u16(0x0800), u16(0), u16(DT), u16(DD), u32(crc), u32(sz), u32(sz), u16(nb.length), u16(0), u16(0), u16(0), u16(0), u32(0), u32(offset), nb]));
+    offset += lh.length + f.data.length;
+  });
+  const cb = _concat(central);
+  const end = _concat([u32(0x06054b50), u16(0), u16(0), u16(files.length), u16(files.length), u32(cb.length), u32(offset), u16(0)]);
+  return new Blob([...chunks, cb, end], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+}
+function _xlsxBlob(aoa) {
+  const enc = new TextEncoder();
+  const col = n => { let s = ''; n++; while (n > 0) { const m = (n - 1) % 26; s = String.fromCharCode(65 + m) + s; n = Math.floor((n - 1) / 26); } return s; };
+  const xe = s => String(s == null ? '' : s).replace(/[<>&"']/g, c => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;', "'": '&apos;' }[c]));
+  let rx = '';
+  aoa.forEach((row, r) => {
+    let cs = '';
+    row.forEach((v, c) => {
+      const ref = col(c) + (r + 1);
+      if (typeof v === 'number' && isFinite(v)) cs += `<c r="${ref}"><v>${v}</v></c>`;
+      else cs += `<c r="${ref}" t="inlineStr"><is><t xml:space="preserve">${xe(v)}</t></is></c>`;
+    });
+    rx += `<row r="${r + 1}">${cs}</row>`;
+  });
+  const P = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n';
+  const sheet = P + `<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetData>${rx}</sheetData></worksheet>`;
+  const ct = P + '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/></Types>';
+  const rels = P + '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>';
+  const wb = P + '<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="ยอดโอนเข้า" sheetId="1" r:id="rId1"/></sheets></workbook>';
+  const wbr = P + '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/></Relationships>';
+  return _zipStore([
+    { name: '[Content_Types].xml', data: enc.encode(ct) },
+    { name: '_rels/.rels', data: enc.encode(rels) },
+    { name: 'xl/workbook.xml', data: enc.encode(wb) },
+    { name: 'xl/_rels/workbook.xml.rels', data: enc.encode(wbr) },
+    { name: 'xl/worksheets/sheet1.xml', data: enc.encode(sheet) },
+  ]);
+}
 function exportExcel() {
   if (!data.length) { alert('ยังไม่มีข้อมูล'); return; }
-  const esc = s => (s == null ? '' : s).toString().replace(/[<>&]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
   const rows = exportRows();
-  const total = rows.reduce((s,x) => s + amt(x), 0);
-  let html = '<html xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="utf-8"></head><body>';
-  html += '<table border="1"><thead><tr>' +
-    ['วันที่','ผู้โอน','ธนาคาร','จำนวนเงิน','โน้ต'].map(h => `<th>${h}</th>`).join('') +
-    '</tr></thead><tbody>';
-  rows.forEach(it => {
-    html += '<tr>' +
-      `<td>${esc(it.date||'')}</td>` +
-      `<td>${esc(it.name)}</td>` +
-      `<td>${esc(it.bank)}</td>` +
-      `<td>${amt(it)}</td>` +
-      `<td>${esc(it.note)}</td>` +
-      '</tr>';
-  });
-  html += `<tr><td colspan="3"><b>รวม (${rows.length} รายการ)</b></td><td><b>${total}</b></td><td></td></tr>`;
-  html += '</tbody></table></body></html>';
-  const blob = new Blob(['﻿' + html], { type: 'application/vnd.ms-excel;charset=utf-8' });
+  const total = rows.reduce((s, x) => s + amt(x), 0);
+  const aoa = [['วันที่', 'ผู้โอน', 'ธนาคาร', 'จำนวนเงิน', 'โน้ต']];
+  rows.forEach(it => aoa.push([it.date || '', it.name || '', it.bank || '', amt(it), it.note || '']));
+  aoa.push([`รวม (${rows.length} รายการ)`, '', '', total, '']);
   const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'ยอดโอนเข้า_' + todayStr() + '.xls';
+  a.href = URL.createObjectURL(_xlsxBlob(aoa));
+  a.download = 'ยอดโอนเข้า_' + todayStr() + '.xlsx';
   a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 4000);
 }
 
 function exportPDF() {
