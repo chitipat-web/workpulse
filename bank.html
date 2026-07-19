@@ -130,6 +130,12 @@
   .slip-lightbox img { max-width: 100%; max-height: 82vh; border-radius: 14px; box-shadow: 0 12px 44px rgba(0,0,0,.7); }
   .slip-lb-msg { color: #cfeef7; font-size: 14px; margin-top: 14px; text-align: center; }
   .slip-lb-close { color: #cfeef7; font-size: 13px; margin-top: 16px; opacity: .8; }
+  /* ป๊อปอัพผู้ช่วย (iframe) */
+  .asst-modal { position: fixed; inset: 0; z-index: 130; background: rgba(4,12,18,.55); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); display: none; align-items: center; justify-content: center; padding: 14px; }
+  .asst-modal.show { display: flex; animation: fade .2s ease; }
+  .asst-box { position: relative; width: 100%; max-width: 480px; height: 100%; max-height: 760px; border-radius: 22px; overflow: hidden; box-shadow: 0 18px 60px rgba(0,0,0,.6); border: 1px solid var(--glass-bd); background: var(--bg); animation: up .28s ease; }
+  .asst-box iframe { width: 100%; height: 100%; border: 0; display: block; }
+  .asst-close { position: absolute; top: 10px; right: 10px; z-index: 2; width: 34px; height: 34px; border-radius: 50%; border: 1px solid var(--glass-bd); background: rgba(8,19,28,.6); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); color: #fff; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 
   .empty { text-align: center; color: var(--muted); padding: 50px 20px; }
   .empty .ic { font-size: 50px; }
@@ -361,7 +367,7 @@
   <div class="list" id="list"></div>
 
   <div class="tools">
-    <button onclick="location.href='assistant.html'">💬 ผู้ช่วย</button>
+    <button onclick="openAssistant()">💬 ผู้ช่วย</button>
     <button onclick="openReport()">📊 รายงาน</button>
     <button onclick="exportCSV()">⬇️ CSV</button>
     <button onclick="openSettings()">🔄 ตั้งค่า</button>
@@ -499,6 +505,14 @@
       <button class="btn-save" onclick="saveSlipOK()">บันทึก SlipOK</button>
     </div>
     </div><!-- /ownerOnlySettings -->
+  </div>
+</div>
+
+<!-- Assistant Popup (iframe) -->
+<div class="asst-modal" id="asstModal">
+  <div class="asst-box">
+    <button class="asst-close" onclick="closeAssistant()" aria-label="ปิด">✕</button>
+    <iframe id="asstFrame" title="ผู้ช่วย HURT SHOP" loading="lazy"></iframe>
   </div>
 </div>
 
@@ -741,6 +755,18 @@ function disconnectRT() {
   closeSettings();
   location.reload();
 }
+
+/* ---------- ป๊อปอัพผู้ช่วย (iframe) ---------- */
+function openAssistant() {
+  const f = document.getElementById('asstFrame');
+  if (!f.src) {
+    f.onload = function(){ try { const b = f.contentDocument.querySelector('header a.back'); if (b) b.style.display = 'none'; } catch(e){} };
+    f.src = 'assistant.html';   // โหลดครั้งแรกที่เปิดเท่านั้น
+  }
+  document.getElementById('asstModal').classList.add('show');
+}
+function closeAssistant() { document.getElementById('asstModal').classList.remove('show'); }
+document.getElementById('asstModal').addEventListener('click', e => { if (e.target.id === 'asstModal') closeAssistant(); });
 
 /* ---------- add/edit modal ---------- */
 function openModal(id) {
