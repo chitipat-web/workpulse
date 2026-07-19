@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<meta name="theme-color" content="#3b82f6">
+<meta name="theme-color" content="#00a4e4">
 <title>HURT SHOP</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -20,8 +20,8 @@
   :root {
     --bg: #0b1620; --card: #15242f; --card2: #1d3340; --line: #2c4452;
     --text: #f1f5f9; --muted: #93acba; --green: #22c55e; --green-d: #16a34a;
-    --blue: #3b82f6; --red: #ef4444; --accent: #60a5fa; --amber: #f59e0b;
-    --cyan: #3b82f6; --cyan-d: #2563eb;
+    --blue: #00a4e4; --red: #ef4444; --accent: #4cc9f0; --amber: #f59e0b;
+    --cyan: #00a4e4; --cyan-d: #0086c9;
     /* ───── Liquid Glass ───── */
     --glass:    rgba(255,255,255,.035);
     --glass-2:  rgba(255,255,255,.06);
@@ -36,9 +36,9 @@
     color: var(--text); min-height: 100vh;
     padding-bottom: 90px; -webkit-text-size-adjust: 100%;
     background:
-      radial-gradient(1100px 620px at 82% -8%,  rgba(59,130,246,.22), transparent 60%),
-      radial-gradient(820px 520px at -12% 18%,  rgba(59,130,246,.18), transparent 55%),
-      radial-gradient(760px 560px at 50% 118%,  rgba(37,99,235,.20), transparent 60%),
+      radial-gradient(1100px 620px at 82% -8%,  rgba(0,164,228,.22), transparent 60%),
+      radial-gradient(820px 520px at -12% 18%,  rgba(0,164,228,.18), transparent 55%),
+      radial-gradient(760px 560px at 50% 118%,  rgba(0,134,201,.20), transparent 60%),
       linear-gradient(165deg, #08131c 0%, #0a1a25 100%);
     background-attachment: fixed;
   }
@@ -96,11 +96,11 @@
 
   .summary {
     position: relative; overflow: hidden;
-    background: linear-gradient(135deg, rgba(59,130,246,.55), rgba(29,78,216,.48));
+    background: linear-gradient(135deg, rgba(0,164,228,.55), rgba(0,106,163,.48));
     -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur);
     border: 1px solid var(--glass-bd); border-radius: 22px;
     padding: 22px 20px; margin: 14px 0 16px;
-    box-shadow: 0 12px 34px rgba(59,130,246,.32), var(--inset-hi);
+    box-shadow: 0 12px 34px rgba(0,164,228,.32), var(--inset-hi);
   }
   .summary::before {
     content: ""; position: absolute; inset: 0; pointer-events: none;
@@ -171,26 +171,26 @@
   .fab {
     position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
     width: calc(100% - 32px); max-width: 528px;
-    background: linear-gradient(135deg, rgba(59,130,246,.28), rgba(37,99,235,.20)); color: #eef4ff;
+    background: linear-gradient(135deg, rgba(0,164,228,.28), rgba(0,134,201,.20)); color: #e7f7ff;
     -webkit-backdrop-filter: saturate(180%) blur(22px); backdrop-filter: saturate(180%) blur(22px);
     border: 1px solid rgba(255,255,255,.30); border-radius: 18px; padding: 16px; font-size: 16px; font-weight: 700;
     text-shadow: 0 1px 3px rgba(0,0,0,.35);
-    box-shadow: 0 10px 28px rgba(59,130,246,.22), inset 0 1px 0 rgba(255,255,255,.40); cursor: pointer;
+    box-shadow: 0 10px 28px rgba(0,164,228,.22), inset 0 1px 0 rgba(255,255,255,.40); cursor: pointer;
   }
   .fab:active { transform: translateX(-50%) scale(.98); }
   /* ปุ่มผู้ช่วยลอย (ค้างมุมจอ เหนือปุ่มเพิ่มยอด) */
   .asst-fab {
     position: fixed; bottom: 92px; right: 16px; z-index: 45;
     width: 56px; height: 56px; border-radius: 50%;
-    background: linear-gradient(135deg, rgba(59,130,246,.92), rgba(37,99,235,.92)); color: #0a1836;
+    background: linear-gradient(135deg, rgba(0,164,228,.92), rgba(0,134,201,.92)); color: #04283a;
     -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur);
     border: 1px solid rgba(255,255,255,.4); font-size: 25px; cursor: pointer;
     display: flex; align-items: center; justify-content: center;
-    box-shadow: 0 8px 26px rgba(59,130,246,.45), inset 0 1px 0 rgba(255,255,255,.5);
+    box-shadow: 0 8px 26px rgba(0,164,228,.45), inset 0 1px 0 rgba(255,255,255,.5);
     transition: transform .2s cubic-bezier(.34,1.45,.5,1), box-shadow .25s ease;
   }
   .asst-fab:active { transform: scale(.9); }
-  @media (hover: hover) { .asst-fab:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(59,130,246,.6), inset 0 1px 0 rgba(255,255,255,.5); } }
+  @media (hover: hover) { .asst-fab:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(0,164,228,.6), inset 0 1px 0 rgba(255,255,255,.5); } }
 
   .modal { position: fixed; inset: 0; background: rgba(4,12,18,.45); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); display: none; align-items: flex-end; justify-content: center; z-index: 50; }
   .modal.show { display: flex; }
@@ -223,7 +223,7 @@
   .autofill-note { font-size: 12px; color: var(--muted); text-align: center; margin-bottom: 12px; }
   .seg { display: flex; gap: 6px; background: var(--glass); -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur); border: 1px solid var(--glass-bd); border-radius: 14px; padding: 4px; margin-bottom: 10px; box-shadow: var(--inset-hi); }
   .seg-btn { flex: 1; background: transparent; border: none; color: var(--muted); border-radius: 11px; padding: 9px 6px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; transition: background .2s, color .2s; }
-  .seg-btn.active { background: linear-gradient(135deg, rgba(59,130,246,.95), rgba(37,99,235,.95)); color: #0a1836; box-shadow: 0 4px 14px rgba(59,130,246,.4), inset 0 1px 0 rgba(255,255,255,.45); }
+  .seg-btn.active { background: linear-gradient(135deg, rgba(0,164,228,.95), rgba(0,134,201,.95)); color: #04283a; box-shadow: 0 4px 14px rgba(0,164,228,.4), inset 0 1px 0 rgba(255,255,255,.45); }
   .slipstatus { font-size: 13px; margin-top: 8px; line-height: 1.5; border-radius: 10px; padding: 0; }
   .slipstatus.show { padding: 10px 12px; }
   .slipstatus.ok { background: rgba(34,197,94,.12); color: #86efac; border: 1px solid rgba(34,197,94,.3); }
@@ -258,7 +258,7 @@
     #report, #report * { color: #000 !important; }
     #report .btns { display: none !important; }
     .rstat div, .toprow { background: #f0f4f7 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-    .cbar { background: #1d4ed8 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .cbar { background: #006aa3 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     .toprow b { color: #0a7d3a !important; }
   }
 
@@ -269,7 +269,7 @@
 
   .login-screen {
     position: fixed; inset: 0; z-index: 100;
-    background: linear-gradient(160deg, #0b1620 0%, #122043 55%, #1e3a6e 100%);
+    background: linear-gradient(160deg, #0b1620 0%, #0a2c3d 55%, #0e3d55 100%);
     display: flex; align-items: center; justify-content: center; padding: 24px;
   }
   .login-box {
@@ -321,7 +321,7 @@
   .btns button, .g-btn, .tools button, .seg-btn, .slipview { position: relative; }
   .rip { position: absolute; border-radius: 50%; transform: scale(0); background: rgba(255,255,255,.38); pointer-events: none; animation: rip .55s cubic-bezier(.25,.7,.35,1) forwards; z-index: 3; }
   .g-btn .rip { background: rgba(0,0,0,.13); }
-  .seg-btn.active .rip { background: rgba(10,24,54,.22); }
+  .seg-btn.active .rip { background: rgba(4,40,58,.22); }
   @keyframes rip { to { transform: scale(2.5); opacity: 0; } }
   .sheet { animation: up .34s cubic-bezier(.22,1,.36,1); }
   .modal.show { animation: fade .22s ease; }
@@ -343,7 +343,7 @@
     .list .group-date, .list .empty { grid-column: 1 / -1; }
     /* ปุ่มเพิ่มเป็นปุ่มมุมขวาล่าง (ไม่เต็มความกว้าง) */
     .fab { left: auto; right: 28px; transform: none; width: auto; min-width: 230px; padding: 15px 30px; }
-    .fab:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(59,130,246,.55); }
+    .fab:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(0,164,228,.55); }
     .fab:active { transform: scale(.97); }
   }
   @media (min-width: 1100px) {
@@ -351,8 +351,8 @@
   }
 
   /* ═══════════ ปรับดีไซน์ให้ทันสมัย/พรีเมียมขึ้น ═══════════ */
-  header h1 { letter-spacing: .3px; background: linear-gradient(120deg, #f7faff 30%, #bfdbfe); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
-  .hdr-logo { box-shadow: 0 0 18px rgba(59,130,246,.5); }
+  header h1 { letter-spacing: .3px; background: linear-gradient(120deg, #f2fbff 30%, #b3e7fb); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+  .hdr-logo { box-shadow: 0 0 18px rgba(0,164,228,.5); }
   /* ตัวเลขเรียงสวย (tabular) */
   .summary .total, .summary .meta div b, .stat b, .item .amt b, .group-date span:last-child { font-variant-numeric: tabular-nums; }
   .summary .total { font-size: 40px; letter-spacing: -1.2px; }
@@ -374,7 +374,7 @@
   .sheet::before { content: ""; display: block; width: 40px; height: 4px; border-radius: 99px; background: rgba(255,255,255,.28); margin: 0 auto 16px; }
   #reportSheet::before { display: none; }
   @media (hover: hover) {
-    .stat:hover { transform: translateY(-2px); border-color: var(--accent); box-shadow: 0 8px 22px rgba(59,130,246,.18), var(--inset-hi); }
+    .stat:hover { transform: translateY(-2px); border-color: var(--accent); box-shadow: 0 8px 22px rgba(0,164,228,.18), var(--inset-hi); }
   }
   @media print { .summary::after { display: none !important; } }
   /* scrollbar สวยบนคอม */
