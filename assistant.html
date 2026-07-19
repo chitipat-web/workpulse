@@ -290,15 +290,15 @@ function normBank(b){ b=(b||'').toString().trim(); const c=b.replace(/\D/g,''); 
 function ymd(y,mo,da){ y=Number(y); if(y>2200) y-=543; return String(y).padStart(4,'0')+'-'+String(Number(mo)).padStart(2,'0')+'-'+String(Number(da)).padStart(2,'0'); }
 function normDate(s){
   s=(s||'').toString().trim();
-  let m=s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/); if(m) return ymd(m[1],m[2],m[3]);
-  m=s.match(/^(\d{4})(\d{2})(\d{2})/);          if(m) return ymd(m[1],m[2],m[3]);
-  m=s.match(/^(\d{1,2})[\/.](\d{1,2})[\/.](\d{4})/); if(m) return ymd(m[3],m[2],m[1]);
   if(/^\d{13}$/.test(s)){ const d=new Date(Number(s)); if(!isNaN(d.getTime())) return localDateStr(d); }
   if(/^\d{10}$/.test(s)){ const d=new Date(Number(s)*1000); if(!isNaN(d.getTime())) return localDateStr(d); }
+  let m=s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/); if(m) return ymd(m[1],m[2],m[3]);
+  m=s.match(/^(\d{4})(\d{2})(\d{2})(?!\d)/);     if(m) return ymd(m[1],m[2],m[3]);
+  m=s.match(/^(\d{1,2})[\/.](\d{1,2})[\/.](\d{4})/); if(m) return ymd(m[3],m[2],m[1]);
   const d=new Date(s); if(!isNaN(d.getTime())) return localDateStr(d);
   return todayStr();
 }
-function normalizeRec(r){ return (r && typeof r==='object') ? Object.assign({}, r, { date: normDate(r.date), bank: normBank(r.bank) }) : r; }
+function normalizeRec(r){ return (r && typeof r==='object' && r.date!=null) ? Object.assign({}, r, { date: normDate(r.date), bank: normBank(r.bank) }) : null; }
 
 function filterRange(from, to){
   return data.filter(r => r.date >= from && r.date <= to);
@@ -531,7 +531,7 @@ document.addEventListener('pointerdown', function(e){
   setTimeout(function(){ rip.remove(); }, 560);
 }, true);
 
-function escHtml(s){ return (s||'').toString().replace(/[<>&]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;'}[c])); }
+function escHtml(s){ return (s||'').toString().replace(/[<>&"']/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&#39;'}[c])); }
 function addMsg(text, who){
   const d = document.createElement('div');
   d.className = 'msg ' + who;
@@ -654,7 +654,7 @@ function connectRT(cfg, room){
       else setSync(false, 'กำลังเชื่อมต่อ...');
     });
     db.ref('rooms/' + room + '/transfers').on('value', snap => {
-      data = Object.values(snap.val() || {}).map(normalizeRec);
+      data = Object.values(snap.val() || {}).map(normalizeRec).filter(Boolean);
       const first = !ready;
       ready = true;
       setSync(true, 'Real-time · ' + data.length + ' รายการ' + (AI_PROXY ? ' · AI ✨' : ''));
@@ -669,7 +669,7 @@ function connectRT(cfg, room){
   }
 }
 function loadLocalFallback(){
-  try { data = (JSON.parse(localStorage.getItem(LKEY)) || []).map(normalizeRec); } catch(e){ data = []; }
+  try { data = (JSON.parse(localStorage.getItem(LKEY)) || []).map(normalizeRec).filter(Boolean); } catch(e){ data = []; }
   ready = true;
   setSync(false, 'โหมดออฟไลน์ · ' + data.length + ' รายการ');
   addMsg('⚠️ เชื่อมต่อฐานข้อมูลไม่ได้ ใช้ข้อมูลสำรองในเครื่องนี้แทน (' + data.length + ' รายการ)', 'bot');

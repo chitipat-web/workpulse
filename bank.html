@@ -520,7 +520,7 @@
       ทำให้ <b>กรอกเครื่องนึง อีกเครื่องเห็นทันที</b> โดยต่อกับ Firebase ฟรีของ Google
       <ol>
         <li>เข้า <a href="https://console.firebase.google.com" target="_blank">console.firebase.google.com</a> สร้างโปรเจกต์</li>
-        <li>เมนู <b>Build → Realtime Database</b> → Create Database → เลือก <b>Start in test mode</b></li>
+        <li>เมนู <b>Build → Realtime Database</b> → Create Database (แนะนำ <b>Locked mode</b> แล้วตั้ง Rules จำกัดตามอีเมล — อย่าปล่อย test mode ถาวร เพราะใครก็เขียนได้)</li>
         <li>เมนู <b>Project settings (⚙️) → General</b> เลื่อนลงล่าง กด <b>&lt;/&gt; Web app</b> สร้างแอป</li>
         <li>คัดลอกบล็อก <b>firebaseConfig</b> ทั้งก้อน มาวางช่องล่างนี้</li>
         <li>ตั้ง <b>รหัสห้อง</b> เป็นอะไรก็ได้ (ทุกเครื่องที่อยากเห็นยอดเดียวกันต้องใช้รหัสนี้)</li>
@@ -691,19 +691,19 @@ function normBank(b){ b=(b||'').toString().trim(); const c=b.replace(/\D/g,''); 
 function ymd(y,mo,da){ y=Number(y); if(y>2200) y-=543; return String(y).padStart(4,'0')+'-'+String(Number(mo)).padStart(2,'0')+'-'+String(Number(da)).padStart(2,'0'); }
 function normDate(s){
   s=(s||'').toString().trim();
-  let m=s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/); if(m) return ymd(m[1],m[2],m[3]);   // YYYY-MM-DD
-  m=s.match(/^(\d{4})(\d{2})(\d{2})/);          if(m) return ymd(m[1],m[2],m[3]);     // YYYYMMDD(Txx)
-  m=s.match(/^(\d{1,2})[\/.](\d{1,2})[\/.](\d{4})/); if(m) return ymd(m[3],m[2],m[1]); // DD/MM/YYYY
-  if(/^\d{13}$/.test(s)){ const d=new Date(Number(s)); if(!isNaN(d.getTime())) return localDateStr(d); }     // epoch ms
+  if(/^\d{13}$/.test(s)){ const d=new Date(Number(s)); if(!isNaN(d.getTime())) return localDateStr(d); }     // epoch ms (เช็คก่อน กัน YYYYMMDD จับผิด)
   if(/^\d{10}$/.test(s)){ const d=new Date(Number(s)*1000); if(!isNaN(d.getTime())) return localDateStr(d); }// epoch s
+  let m=s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/); if(m) return ymd(m[1],m[2],m[3]);   // YYYY-MM-DD
+  m=s.match(/^(\d{4})(\d{2})(\d{2})(?!\d)/);     if(m) return ymd(m[1],m[2],m[3]);     // YYYYMMDD(Txx)
+  m=s.match(/^(\d{1,2})[\/.](\d{1,2})[\/.](\d{4})/); if(m) return ymd(m[3],m[2],m[1]); // DD/MM/YYYY
   const d=new Date(s); if(!isNaN(d.getTime())) return localDateStr(d);
   return todayStr();
 }
-function normalizeRec(r){ return (r && typeof r==='object') ? Object.assign({}, r, { date: normDate(r.date), bank: normBank(r.bank) }) : r; }
+function normalizeRec(r){ return (r && typeof r==='object') ? Object.assign({}, r, { date: normDate(r.date), bank: normBank(r.bank) }) : null; }
 
 /* ---------- data layer (local or realtime) ---------- */
 function loadLocal() {
-  try { data = (JSON.parse(localStorage.getItem(LKEY)) || []).map(normalizeRec); } catch (e) { data = []; }
+  try { data = (JSON.parse(localStorage.getItem(LKEY)) || []).map(normalizeRec).filter(Boolean); } catch (e) { data = []; }
 }
 function persistLocal() { localStorage.setItem(LKEY, JSON.stringify(data)); }
 
@@ -766,7 +766,7 @@ function connectRT(cfg, room) {
 
     dbRef.on('value', snap => {
       const val = snap.val() || {};
-      data = Object.values(val).map(normalizeRec);
+      data = Object.values(val).map(normalizeRec).filter(Boolean);
       rtOn = true;
       render();
     }, err => {
@@ -876,13 +876,14 @@ function openModal(id) {
   document.getElementById('modal').classList.add('show');
   if (id) {
     const it = data.find(x => x.id === id);
+    if (!it) { closeModal(); return; }   // รายการถูกลบจากอีกเครื่องระหว่างนี้
     document.getElementById('modalTitle').textContent = 'แก้ไขรายการ';
     document.getElementById('editId').value = it.id;
     document.getElementById('fAmount').value = it.amount;
-    document.getElementById('fName').value = it.name;
-    document.getElementById('fBank').value = it.bank;
-    document.getElementById('fDate').value = it.date;
-    document.getElementById('fNote').value = it.note;
+    document.getElementById('fName').value = it.name || '';
+    document.getElementById('fBank').value = it.bank || '';
+    document.getElementById('fDate').value = it.date || todayStr();
+    document.getElementById('fNote').value = it.note || '';
     document.getElementById('fSlipRef').value = it.slipRef || '';
     document.getElementById('fSlipHash').value = it.slipHash || '';
     document.getElementById('fSlipVerified').value = it.slipVerified ? '1' : '';
@@ -919,15 +920,18 @@ async function save() {
     const amount = parseFloat(document.getElementById('fAmount').value);
     if (!amount || amount <= 0) { alert('กรุณาใส่จำนวนเงินให้ถูกต้อง'); return; }
     const old = data.find(x => x.id === editId) || {};
-    putRecord({
+    const amtChanged = Number(old.amount) !== amount;
+    putRecord(Object.assign({}, old, {
       id: editId, amount,
       name: document.getElementById('fName').value.trim() || 'ไม่ระบุชื่อ',
       bank: document.getElementById('fBank').value,
       date: document.getElementById('fDate').value || todayStr(), note,
       slipRef: qr || '', slipHash: document.getElementById('fSlipHash').value || '',
-      slipVerified: document.getElementById('fSlipVerified').value === '1',
-      hasImg: currentSlipImg ? true : !!old.hasImg
-    });
+      // แก้ยอด = ยกเลิกสถานะ "ยืนยันธนาคาร" (ยอดไม่ตรงสลิปแล้ว) + ทำเครื่องหมายว่าถูกแก้
+      slipVerified: amtChanged ? false : (document.getElementById('fSlipVerified').value === '1'),
+      hasImg: currentSlipImg ? true : !!old.hasImg,
+      edited: amtChanged || !!old.edited
+    }));
     if (currentSlipImg) putSlipImage(editId, currentSlipImg);
     closeModal(); return;
   }
@@ -1151,6 +1155,7 @@ function del(id) {
   if (role === 'employee') { alert('พนักงานลบรายการไม่ได้'); return; }
   if (!confirm('ลบรายการนี้?')) return;
   removeRecord(id);
+  const sr = slipsRef(); if (sr) { try { sr.child(id).remove().catch(()=>{}); } catch(e){} }   // ลบรูปสลิปด้วย
 }
 const BACKUPKEY = 'bank_backup';
 function clearAll() {
@@ -1160,8 +1165,12 @@ function clearAll() {
   const typed = prompt('กันกดพลาด — พิมพ์คำว่า  ล้าง  เพื่อยืนยัน');
   if (typed === null) return;
   if (typed.trim() !== 'ล้าง') { alert('ยกเลิก (พิมพ์ไม่ตรง)'); return; }
-  try { localStorage.setItem(BACKUPKEY, JSON.stringify({ when: Date.now(), items: data })); } catch (e) {}
-  if (rtOn && dbRef) { dbRef.remove(); }
+  // ต้องสำรองสำเร็จก่อน ถึงจะลบ (กันลบทิ้งโดยไม่มีที่กู้คืน)
+  try { localStorage.setItem(BACKUPKEY, JSON.stringify({ when: Date.now(), items: data })); }
+  catch (e) {
+    if (!confirm('⚠️ สำรองข้อมูลในเครื่องไม่สำเร็จ (พื้นที่อาจเต็ม)\nถ้าล้างตอนนี้จะกู้คืนไม่ได้ — ยืนยันจะล้างเลยไหม?')) return;
+  }
+  if (rtOn && dbRef && dbRef.parent) { dbRef.parent.child('slips').remove().catch(()=>{}); dbRef.remove(); }   // ลบรูปสลิปด้วย
   else { data = []; persistLocal(); render(); }
   alert('ล้างข้อมูลแล้ว ✅\nถ้าพลาด กดปุ่ม "↩️ กู้คืน" เพื่อเอากลับได้ (จากเครื่องนี้)');
 }
@@ -1180,9 +1189,10 @@ function restoreBackup() {
 function exportCSV() {
   if (!data.length) { alert('ยังไม่มีข้อมูล'); return; }
   let csv = '﻿วันที่,ผู้โอน,ธนาคาร,จำนวนเงิน,โน้ต\n';
-  [...data].sort((a,b) => a.date.localeCompare(b.date)).forEach(it => {
-    csv += `${it.date},"${it.name}","${it.bank}",${it.amount},"${(it.note||'').replace(/"/g,'""')}"\n`;
-  });
+  const cell = v => { let s = (v == null ? '' : v).toString(); if (/^[=+\-@\t\r]/.test(s)) s = "'" + s; return '"' + s.replace(/"/g, '""') + '"'; };  // กัน CSV/formula injection
+  data.filter(x => x && typeof x === 'object')
+      .sort((a,b) => String(a.date||'').localeCompare(String(b.date||'')))
+      .forEach(it => { csv += [it.date||'', cell(it.name), cell(it.bank), amt(it), cell(it.note)].join(',') + '\n'; });
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
@@ -1191,8 +1201,11 @@ function exportCSV() {
 }
 
 /* ---------- render ---------- */
+const amt = x => Number(x && x.amount) || 0;   // กัน NaN
+const jsq = s => (s == null ? '' : s.toString()).replace(/[\\'"<>&]/g, c => '\\u' + c.charCodeAt(0).toString(16).padStart(4,'0'));  // escape id ใน onclick
 function render() {
-  const months = [...new Set(data.map(x => x.date.slice(0,7)))].sort().reverse();
+  const all = data.filter(x => x && typeof x === 'object' && x.date);   // ตัดข้อมูลเสีย
+  const months = [...new Set(all.map(x => x.date.slice(0,7)))].sort().reverse();
   const fm = document.getElementById('filterMonth');
   fm.innerHTML = '<option value="all">เลือกเดือน...</option>' +
     months.map(m => `<option value="${m}">${monthLabel(m)}</option>`).join('');
@@ -1201,13 +1214,13 @@ function render() {
 
   const q = document.getElementById('search').value.trim().toLowerCase();
 
-  let rows = data.filter(it => {
+  let rows = all.filter(it => {
     if (!inRange(it.date)) return false;
-    if (q && !((it.name + ' ' + it.bank + ' ' + it.note).toLowerCase().includes(q))) return false;
+    if (q && !(((it.name||'') + ' ' + (it.bank||'') + ' ' + (it.note||'')).toLowerCase().includes(q))) return false;
     return true;
   }).sort((a,b) => b.date.localeCompare(a.date) || String(b.id).localeCompare(String(a.id)));
 
-  const total = rows.reduce((s,x) => s + Number(x.amount), 0);
+  const total = rows.reduce((s,x) => s + amt(x), 0);
   document.getElementById('totalAmt').textContent = fmt(total);
   document.getElementById('count').textContent = rows.length;
   document.getElementById('avg').textContent = rows.length ? fmt(Math.round(total/rows.length)) : '0';
@@ -1215,8 +1228,8 @@ function render() {
   document.getElementById('sumLabel').textContent = rangeLabel();
 
   const tm = todayStr().slice(0,7), td = todayStr();
-  document.getElementById('thisMonth').textContent = fmtShort(data.filter(x => x.date.slice(0,7) === tm).reduce((s,x) => s + Number(x.amount), 0));
-  document.getElementById('today').textContent = fmtShort(data.filter(x => x.date === td).reduce((s,x) => s + Number(x.amount), 0));
+  document.getElementById('thisMonth').textContent = fmtShort(all.filter(x => x.date.slice(0,7) === tm).reduce((s,x) => s + amt(x), 0));
+  document.getElementById('today').textContent = fmtShort(all.filter(x => x.date === td).reduce((s,x) => s + amt(x), 0));
 
   const list = document.getElementById('list');
   if (!rows.length) {
@@ -1228,22 +1241,23 @@ function render() {
   rows.forEach(it => {
     if (it.date !== lastDate) {
       lastDate = it.date;
-      const dayTotal = rows.filter(x => x.date === it.date).reduce((s,x) => s + Number(x.amount), 0);
+      const dayTotal = rows.filter(x => x.date === it.date).reduce((s,x) => s + amt(x), 0);
       html += `<div class="group-date"><span>${thaiDate(it.date)}</span><span>${fmt(dayTotal)} ฿</span></div>`;
     }
+    const eid = jsq(it.id);
     html += `
-      <div class="item" onclick="openModal('${it.id}')">
+      <div class="item" onclick="openModal('${eid}')">
         <div class="ava">↓</div>
         <div class="info">
           <div class="name">${esc(it.name)}</div>
           <div class="sub">${esc(it.bank) || 'ไม่ระบุธนาคาร'}</div>
           ${it.note ? `<div class="note">${esc(it.note)}</div>` : ''}
           ${it.slipVerified ? `<div class="slip has">🛡️ ยืนยันธนาคารแล้ว</div>` : ((it.slipRef || it.slipHash) ? `<div class="slip has">📎 มีสลิป${it.slipRef ? ' · QR ✓' : ''}</div>` : '')}
-          ${(it.hasImg || it.slipVerified) ? `<button class="slipview" onclick="event.stopPropagation(); openSlip('${it.id}')">👁️ ดูสลิป</button>` : ''}
+          ${(it.hasImg || it.slipVerified) ? `<button class="slipview" onclick="event.stopPropagation(); openSlip('${eid}')">👁️ ดูสลิป</button>` : ''}
         </div>
         <div class="amt">
-          <b>+${fmt(it.amount)}</b>
-          <button class="del" onclick="event.stopPropagation(); del('${it.id}')">ลบ</button>
+          <b>+${fmt(amt(it))}</b>
+          <button class="del" onclick="event.stopPropagation(); del('${eid}')">ลบ</button>
         </div>
       </div>`;
   });
