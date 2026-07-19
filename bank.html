@@ -548,25 +548,6 @@
     </div>
 
     <hr style="border:none;border-top:1px solid var(--line);margin:22px 0 18px">
-    <h2 style="margin-bottom:12px">🛡️ ยืนยันสลิปกับธนาคาร (กันสลิปปลอม)</h2>
-    <div class="hint">
-      ตรวจสลิป<b>ตัดต่อ/ปลอม</b>โดยยืนยันกับธนาคารจริงผ่าน <b>EasySlip</b>
-      <ol>
-        <li>สมัครที่ <a href="https://developer.easyslip.com" target="_blank">developer.easyslip.com</a> (มีแพ็กเกจฟรีให้ลอง)</li>
-        <li>คัดลอก <b>API Key (Access Token)</b> มาวางช่องล่างนี้ → กดบันทึก</li>
-        <li>เวลาเพิ่มรายการ แนบสลิป ระบบจะเช็คกับธนาคารให้อัตโนมัติ</li>
-      </ol>
-    </div>
-    <div class="field">
-      <label>EasySlip API Key</label>
-      <input id="sEasySlip" type="text" placeholder="วาง Access Token ที่นี่" autocomplete="off">
-    </div>
-    <div class="btns">
-      <button class="btn-cancel" onclick="closeSettings()">ปิด</button>
-      <button class="btn-save" onclick="saveEasySlip()">บันทึก API Key</button>
-    </div>
-
-    <hr style="border:none;border-top:1px solid var(--line);margin:22px 0 18px">
     <h2 style="margin-bottom:12px">🆓 SlipOK (ฟรี 100 สลิป/เดือน)</h2>
     <div class="hint">
       ทางเลือก<b>ฟรีรายเดือน</b> ผ่าน SlipOK — ต้องมี <b>พร็อกซี Cloudflare</b> คั่น (ฟรี ตั้งครั้งเดียว)
@@ -575,7 +556,6 @@
         <li>สร้าง Cloudflare Worker ฟรี วางโค้ดที่ผมเตรียมให้ (ใส่ Key + Branch ในนั้น)</li>
         <li>เอา <b>URL ของ Worker</b> มาวางช่องล่าง → บันทึก</li>
       </ol>
-      <small>ถ้าตั้งทั้ง EasySlip และ SlipOK ระบบจะใช้ SlipOK ก่อน (เพราะฟรี)</small>
     </div>
     <div class="field">
       <label>SlipOK Proxy URL (จาก Cloudflare Worker)</label>
@@ -616,7 +596,6 @@
 const LKEY = 'bank_transfers_v1';      // local fallback store
 const CFGKEY = 'bank_fb_config';        // saved firebase config (JSON string)
 const ROOMKEY = 'bank_room';            // saved room code
-const ESKEY = 'bank_easyslip_key';      // saved EasySlip API key (per device)
 const SOKEY = 'bank_slipok_proxy';      // saved SlipOK proxy URL (Cloudflare Worker)
 
 // Real-time แบบฝังไว้ในตัว: ทุกเครื่องที่เปิดลิงก์จะ sync อัตโนมัติ ไม่ต้องตั้งค่า
@@ -778,36 +757,14 @@ function connectRT(cfg, room) {
     rtOn = false;
   }
 }
-function tryAutoConnect() {
-  const rawCfg = localStorage.getItem(CFGKEY);
-  const room = localStorage.getItem(ROOMKEY);
-  if (rawCfg && room) {
-    const cfg = parseConfig(rawCfg);
-    if (cfg) { connectRT(cfg, room); return true; }
-  }
-  // ใช้ค่าที่ฝังไว้ → sync อัตโนมัติทุกเครื่องโดยไม่ต้องตั้งค่า
-  if (BAKED_CONFIG && BAKED_CONFIG.apiKey) {
-    connectRT(BAKED_CONFIG, BAKED_ROOM);
-    return true;
-  }
-  return false;
-}
-
 /* ---------- settings modal ---------- */
 function openSettings() {
   document.getElementById('settings').classList.add('show');
   document.getElementById('sCfg').value = localStorage.getItem(CFGKEY) || '';
   document.getElementById('sRoom').value = localStorage.getItem(ROOMKEY) || '';
-  document.getElementById('sEasySlip').value = localStorage.getItem(ESKEY) || '';
   document.getElementById('sSlipOK').value = localStorage.getItem(SOKEY) || '';
 }
 function closeSettings() { document.getElementById('settings').classList.remove('show'); }
-function saveEasySlip() {
-  const k = document.getElementById('sEasySlip').value.trim();
-  if (k) localStorage.setItem(ESKEY, k); else localStorage.removeItem(ESKEY);
-  alert(k ? 'บันทึก API Key แล้ว — เวลาแนบสลิปจะยืนยันกับธนาคารอัตโนมัติ' : 'ลบ API Key แล้ว (กลับไปตรวจเฉพาะสลิปซ้ำ)');
-  closeSettings();
-}
 function saveSlipOK() {
   let u = document.getElementById('sSlipOK').value.trim();
   if (u && !/^https?:\/\//.test(u)) u = 'https://' + u;
@@ -1077,80 +1034,6 @@ async function handleSlip(input) {
   }
 }
 function esc2(s) { return (s||'').toString().replace(/[<>&]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;'}[c])); }
-// จับชื่อธนาคารจากสลิป (เช่น "ธ.กสิกรไทย", "KBANK") ให้ตรงกับตัวเลือกในฟอร์ม
-function setBankSelect(bankName) {
-  const sel = document.getElementById('fBank');
-  const opts = [...sel.options].map(o => o.value).filter(Boolean);
-  const n = bankName.replace(/^ธนาคาร|^ธ\.?\s*/,'').trim();
-  let hit = opts.find(o => n.includes(o) || o.includes(n));
-  if (!hit) {
-    const map = { 'กสิกร':'กสิกรไทย','KBANK':'กสิกรไทย','SCB':'ไทยพาณิชย์','ไทยพาณิชย์':'ไทยพาณิชย์',
-      'กรุงเทพ':'กรุงเทพ','BBL':'กรุงเทพ','กรุงไทย':'กรุงไทย','KTB':'กรุงไทย','กรุงศรี':'กรุงศรีอยุธยา','BAY':'กรุงศรีอยุธยา',
-      'ทหารไทย':'ทหารไทยธนชาต','ธนชาต':'ทหารไทยธนชาต','TTB':'ทหารไทยธนชาต','ออมสิน':'ออมสิน','GSB':'ออมสิน',
-      'พร้อมเพย์':'พร้อมเพย์','PromptPay':'พร้อมเพย์','TrueMoney':'TrueMoney','ทรู':'TrueMoney' };
-    for (const k in map) { if (n.toUpperCase().includes(k.toUpperCase())) { hit = map[k]; break; } }
-  }
-  sel.value = hit || 'อื่นๆ';
-}
-// เรียก SlipOK ผ่านพร็อกซี Cloudflare (พร็อกซีถือ key+branch เอง) ส่งเฉพาะ payload ของ QR
-async function verifySlipOK(payload, proxyUrl, doLog) {
-  if (doLog === undefined) doLog = true;
-  try {
-    const resp = await fetch(proxyUrl, {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ data: payload, log: doLog })
-    });
-    const j = await resp.json().catch(() => ({}));
-    const d = (j && j.data) ? j.data : j;
-    if (resp.ok && j && j.success !== false && d && (d.amount != null || d.transRef)) {
-      const sName = d.sender && (d.sender.displayName || d.sender.name || (d.sender.account && d.sender.account.name));
-      const rName = d.receiver && (d.receiver.displayName || d.receiver.name);
-      const sBank = d.sendingBank || (d.sender && d.sender.bank);
-      const dt = d.transDate ? (d.transDate + (d.transTime ? 'T' + d.transTime : '')) : (d.transTimestamp || '');
-      return { ok: true, transRef: d.transRef || '', amount: d.amount != null ? Number(d.amount) : null,
-        sender: sName || '', senderBank: sBank || '', receiver: rName || '', date: dt };
-    }
-    const code = j && (j.code || (j.data && j.data.code));
-    if (code === 1012) {
-      // SlipOK เคยเห็นสลิปนี้แล้ว — ดึงข้อมูลจริงอีกครั้งแบบไม่ log แล้วให้ระบบเราตัดสินว่าซ้ำจริงไหม
-      if (doLog) { const retry = await verifySlipOK(payload, proxyUrl, false); if (retry.ok) retry.sokDup = true; return retry; }
-      return { ok: false, dup: true };
-    }
-    if (code === 1011 || code === 1008 || code === 1013)
-      return { ok: false, notFound: true, reason: j && j.message }; // QR ปลอม/หมดอายุ/ไม่ใช่สลิป/ยอดไม่ตรง
-    return { ok: false, error: (j && j.message) || ('โค้ด ' + (code || resp.status)) };
-  } catch (e) {
-    return { ok: false, error: 'เชื่อมต่อ SlipOK proxy ไม่ได้ (เช็ค URL)' };
-  }
-}
-// เรียก EasySlip ตรงจากเบราว์เซอร์ (CORS รองรับ) — ส่งเฉพาะ payload ของ QR ไม่ใช่รูป
-async function verifyEasySlip(payload, key) {
-  try {
-    const resp = await fetch('https://api.easyslip.com/v2/verify/bank', {
-      method: 'POST',
-      headers: { 'Authorization': 'Bearer ' + key, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ payload })
-    });
-    const j = await resp.json().catch(() => ({}));
-    if (resp.ok && j && j.success && j.data) {
-      const raw = j.data.rawSlip || j.data;
-      const amt = raw.amount && (raw.amount.amount != null ? raw.amount.amount
-        : (raw.amount.local && raw.amount.local.amount)) || j.data.amountInSlip || null;
-      const sName = raw.sender && raw.sender.account && raw.sender.account.name && (raw.sender.account.name.th || raw.sender.account.name.en);
-      const rName = raw.receiver && raw.receiver.account && raw.receiver.account.name && (raw.receiver.account.name.th || raw.receiver.account.name.en);
-      const sBank = raw.sender && raw.sender.bank && raw.sender.bank.name;
-      return { ok: true, transRef: raw.transRef || '', amount: amt ? Number(amt) : null,
-        sender: sName || '', senderBank: sBank || '', receiver: rName || '', date: raw.date || '' };
-    }
-    const code = (j && j.error && (j.error.code || j.error)) || (resp.status === 404 ? 'SLIP_NOT_FOUND' : 'ERROR');
-    if (resp.status === 404 || code === 'SLIP_NOT_FOUND') return { ok: false, notFound: true };
-    const msgMap = { INVALID_API_KEY: 'API key ไม่ถูกต้อง (เช็คในตั้งค่า)', QUOTA_EXCEEDED: 'โควต้า EasySlip หมด',
-      VALIDATION_ERROR: 'อ่านสลิปไม่ได้ (payload ไม่ถูกต้อง)' };
-    return { ok: false, error: msgMap[code] || ('โค้ด ' + code) };
-  } catch (e) {
-    return { ok: false, error: 'เชื่อมต่อ EasySlip ไม่ได้' };
-  }
-}
 function del(id) {
   if (role === 'employee') { alert('พนักงานลบรายการไม่ได้'); return; }
   if (!confirm('ลบรายการนี้?')) return;
