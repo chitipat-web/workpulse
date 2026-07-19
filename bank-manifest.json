@@ -7,7 +7,7 @@
   "display": "standalone",
   "orientation": "portrait-primary",
   "background_color": "#0b1620",
-  "theme_color": "#3b82f6",
+  "theme_color": "#00a4e4",
   "lang": "th",
   "icons": [
     { "src": "hurt-logo.jpg", "sizes": "192x192", "type": "image/jpeg", "purpose": "any" },
