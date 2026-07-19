@@ -325,12 +325,61 @@ function botReply(text){
   // ---- ช่วยเหลือ ----
   if(/ช่วยเหลือ|ทำอะไรได้|help|วิธีใช้|ใช้ยังไง/.test(t)){
     return '🤖 น้องเฮิร์ตช่วยได้แบบนี้ค่ะ:\n\n' +
+      '• "สรุป" — ภาพรวมทั้งร้าน\n' +
       '• "ยอดวันนี้" / "ยอดเมื่อวาน" / "ยอด 7 วัน" / "ยอดเดือนนี้" / "ยอดเดือนที่แล้ว" / "ยอดทั้งหมด"\n' +
+      '• "เทียบเดือน" / "เทียบสัปดาห์" — เทียบยอดกับช่วงก่อน\n' +
+      '• "ลูกค้าประจำ" — ใครโอนบ่อยสุด\n' +
       '• "รายการล่าสุด" — ดู 5 รายการล่าสุด\n' +
       '• "เช็ค 500" — เช็คว่ามียอดโอน 500 บาทเข้ามาไหม\n' +
       '• "ค้นหา สมชาย" — หารายการตามชื่อลูกค้า\n' +
       '• "ดูสลิป" — ดูรูปสลิป (หรือ "ดูสลิป สมชาย")\n' +
       '• "แยกตามธนาคาร" / "ยอดสูงสุด" / "ยังไม่ตรวจสลิป"';
+  }
+
+  // ---- สรุปภาพรวม ----
+  if(/สรุป|ภาพรวม|overview|เป็นไงบ้าง|โดยรวม|dashboard/.test(t)){
+    if(!data.length) return 'ยังไม่มีรายการในระบบเลยค่ะ';
+    const tD = sum(filterRange(today,today));
+    const t7 = sum(filterRange(daysAgoStr(6),today));
+    const tM = sum(data.filter(r => (r.date||'').slice(0,7) === monthStr(0)));
+    const tAll = sum(data);
+    const custs = new Set(data.map(r => r.name || 'ไม่ระบุ')).size;
+    const verified = data.filter(r => r.slipVerified).length;
+    return '📋 สรุปภาพรวม HURT SHOP\n\n' +
+      '• วันนี้: ' + fmt(tD) + ' ฿\n' +
+      '• 7 วันล่าสุด: ' + fmt(t7) + ' ฿\n' +
+      '• เดือนนี้: ' + fmt(tM) + ' ฿\n' +
+      '• ทั้งหมด: ' + fmt(tAll) + ' ฿ (' + data.length + ' รายการ)\n' +
+      '• ลูกค้า: ' + custs + ' ราย · ตรวจสลิปแล้ว ' + verified + '/' + data.length;
+  }
+
+  // ---- เทียบยอด (เดือน/สัปดาห์) ----
+  if(/เทียบ|เปรียบเทียบ|เยอะกว่า|มากกว่า|น้อยกว่า|ดีกว่า|โตขึ้น/.test(t)){
+    let cur, prev, curLabel, prevLabel;
+    if(/สัปดาห์|อาทิตย์|7\s*วัน/.test(t)){
+      cur = sum(filterRange(daysAgoStr(6),today)); prev = sum(filterRange(daysAgoStr(13),daysAgoStr(7)));
+      curLabel = '7 วันล่าสุด'; prevLabel = '7 วันก่อนหน้า';
+    } else {
+      cur = sum(data.filter(r => (r.date||'').slice(0,7) === monthStr(0)));
+      prev = sum(data.filter(r => (r.date||'').slice(0,7) === monthStr(-1)));
+      curLabel = 'เดือนนี้'; prevLabel = 'เดือนที่แล้ว';
+    }
+    const diff = cur - prev;
+    const pct = prev > 0 ? Math.round(Math.abs(diff)/prev*100) : (cur > 0 ? 100 : 0);
+    const arrow = diff > 0 ? '📈 เพิ่มขึ้น' : (diff < 0 ? '📉 ลดลง' : '➡️ เท่าเดิม');
+    return '⚖️ เทียบ ' + curLabel + ' กับ ' + prevLabel + '\n\n' +
+      '• ' + curLabel + ': ' + fmt(cur) + ' ฿\n' +
+      '• ' + prevLabel + ': ' + fmt(prev) + ' ฿\n\n' +
+      arrow + ' ' + fmt(Math.abs(diff)) + ' ฿' + (prev > 0 ? ' (' + pct + '%)' : '');
+  }
+
+  // ---- ลูกค้าประจำ (โอนบ่อยสุด) ----
+  if(/ลูกค้าประจำ|ขาประจำ|โอนบ่อย|บ่อยสุด|ประจำ/.test(t)){
+    if(!data.length) return 'ยังไม่มีรายการในระบบเลยค่ะ';
+    const g = {};
+    data.forEach(r => { const n = r.name || 'ไม่ระบุ'; g[n] = g[n] || {n:0,s:0}; g[n].n++; g[n].s += Number(r.amount||0); });
+    const rows = Object.entries(g).sort((a,b) => b[1].n - a[1].n || b[1].s - a[1].s).slice(0,5);
+    return '⭐ ลูกค้าที่โอนบ่อยสุด (Top 5):\n\n' + rows.map(([n,v],i) => (i+1) + '. ' + n + ' — ' + v.n + ' ครั้ง (รวม ' + fmt(v.s) + ' ฿)').join('\n');
   }
 
   // ---- รายการล่าสุด ----
@@ -409,7 +458,7 @@ function botReply(text){
   }
   if(/ขอบคุณ|ขอบใจ|thank|โอเค/.test(t)) return 'ยินดีค่ะ 💙';
 
-  return 'ขออภัยค่ะ น้องเฮิร์ตยังไม่เข้าใจคำถามนี้ 🙏\nลองพิมพ์ "ช่วยเหลือ" เพื่อดูตัวอย่างคำถามได้ค่ะ';
+  return 'ขออภัยค่ะ น้องเฮิร์ตยังไม่เข้าใจคำถามนี้ 🙏\nลองถามแบบนี้ดูนะคะ:\n• "สรุป" — ภาพรวมร้าน\n• "เทียบเดือน" — เทียบยอด\n• "ลูกค้าประจำ" — ใครโอนบ่อย\n• "ดูสลิป" / "รายการล่าสุด"\nหรือพิมพ์ "ช่วยเหลือ" เพื่อดูทั้งหมดค่ะ';
 }
 
 /* ═══════════ โหมด AI (Claude ผ่าน Worker) ═══════════ */
@@ -458,7 +507,7 @@ async function aiReply(text){
 /* ═══════════ chat UI ═══════════ */
 const chatEl = document.getElementById('chat');
 const inputEl = document.getElementById('input');
-const QUICK = ['ยอดวันนี้', 'รายการล่าสุด', 'ดูสลิป', 'ยอดเดือนนี้', 'แยกตามธนาคาร', 'ยังไม่ตรวจสลิป', 'ช่วยเหลือ'];
+const QUICK = ['สรุป', 'ยอดวันนี้', 'รายการล่าสุด', 'ดูสลิป', 'ลูกค้าประจำ', 'เทียบเดือน', 'ยอดเดือนนี้', 'แยกตามธนาคาร', 'ยังไม่ตรวจสลิป', 'ช่วยเหลือ'];
 
 function escHtml(s){ return (s||'').toString().replace(/[<>&]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;'}[c])); }
 function addMsg(text, who){
