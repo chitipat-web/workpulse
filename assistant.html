@@ -273,6 +273,26 @@ function thaiDate(s){
 function daysAgoStr(n){ const d = new Date(); d.setDate(d.getDate()-n); return localDateStr(d); }
 function monthStr(offset){ const d = new Date(); d.setDate(1); d.setMonth(d.getMonth()+offset); return localDateStr(d).slice(0,7); }
 
+/* ── normalize (รหัสธนาคาร/วันที่ ให้ตรงกับหน้าหลัก) ── */
+const BANK_CODE = { '001':'ธปท.','002':'กรุงเทพ','004':'กสิกรไทย','006':'กรุงไทย','008':'JPMorgan','009':'OCBC',
+  '011':'ทหารไทยธนชาต','014':'ไทยพาณิชย์','017':'ซิตี้แบงก์','018':'ซูมิโตโม','020':'สแตนดาร์ดชาร์เตอร์ด',
+  '022':'CIMB','024':'UOB','025':'กรุงศรีอยุธยา','030':'ออมสิน','031':'HSBC','033':'ธอส.','034':'ธ.ก.ส.',
+  '039':'มิซูโฮ','045':'BNP','065':'ธนชาต','066':'อิสลาม','067':'ทิสโก้','069':'เกียรตินาคินภัทร',
+  '070':'ICBC','071':'ไทยเครดิต','073':'แลนด์แอนด์เฮ้าส์','098':'SME Bank' };
+function normBank(b){ b=(b||'').toString().trim(); const c=b.replace(/\D/g,''); if(/^\d{2,3}$/.test(c)) return BANK_CODE[c.padStart(3,'0')] || ('ธนาคาร '+c); return b; }
+function ymd(y,mo,da){ y=Number(y); if(y>2200) y-=543; return String(y).padStart(4,'0')+'-'+String(Number(mo)).padStart(2,'0')+'-'+String(Number(da)).padStart(2,'0'); }
+function normDate(s){
+  s=(s||'').toString().trim();
+  let m=s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/); if(m) return ymd(m[1],m[2],m[3]);
+  m=s.match(/^(\d{4})(\d{2})(\d{2})/);          if(m) return ymd(m[1],m[2],m[3]);
+  m=s.match(/^(\d{1,2})[\/.](\d{1,2})[\/.](\d{4})/); if(m) return ymd(m[3],m[2],m[1]);
+  if(/^\d{13}$/.test(s)){ const d=new Date(Number(s)); if(!isNaN(d.getTime())) return localDateStr(d); }
+  if(/^\d{10}$/.test(s)){ const d=new Date(Number(s)*1000); if(!isNaN(d.getTime())) return localDateStr(d); }
+  const d=new Date(s); if(!isNaN(d.getTime())) return localDateStr(d);
+  return todayStr();
+}
+function normalizeRec(r){ return (r && typeof r==='object') ? Object.assign({}, r, { date: normDate(r.date), bank: normBank(r.bank) }) : r; }
+
 function filterRange(from, to){
   return data.filter(r => r.date >= from && r.date <= to);
 }
@@ -309,6 +329,7 @@ function botReply(text){
       '• "รายการล่าสุด" — ดู 5 รายการล่าสุด\n' +
       '• "เช็ค 500" — เช็คว่ามียอดโอน 500 บาทเข้ามาไหม\n' +
       '• "ค้นหา สมชาย" — หารายการตามชื่อลูกค้า\n' +
+      '• "ดูสลิป" — ดูรูปสลิป (หรือ "ดูสลิป สมชาย")\n' +
       '• "แยกตามธนาคาร" / "ยอดสูงสุด" / "ยังไม่ตรวจสลิป"';
   }
 
@@ -317,6 +338,16 @@ function botReply(text){
     const list = sortRecent(data).slice(0,5);
     if(!list.length) return 'ยังไม่มีรายการในระบบเลยค่ะ';
     return '🕐 5 รายการล่าสุด:\n\n' + list.map(recLine).join('\n');
+  }
+
+  // ---- ดูสลิป (แสดงรายการที่มีสลิป พร้อมปุ่มดู) ----
+  if(/ดูสลิป|ขอสลิป|เปิดสลิป|รูปสลิป|ดูรูป/.test(t)){
+    const q = text.toLowerCase().replace(/ขอ|ดู|เปิด|รูป|สลิป|หน่อย|ให้|ครับ|ค่ะ|คะ|ที|ของ|อยาก/g,'').trim();
+    let list = sortRecent(data.filter(r => r.slipVerified || r.hasImg));
+    if(q) list = list.filter(r => (r.name||'').toLowerCase().includes(q) || (r.note||'').toLowerCase().includes(q));
+    if(!list.length) return q ? ('🔍 ไม่พบสลิปของ "' + q + '" ค่ะ') : '📭 ยังไม่มีรายการที่มีสลิปเก็บไว้ค่ะ\n(สลิปจะเก็บให้เฉพาะรายการที่เพิ่มหลังเปิดฟีเจอร์นี้)';
+    const show = list.slice(0,8);
+    return '📎 รายการที่มีสลิป' + (q ? ' ของ "' + q + '"' : '') + ' (' + list.length + ' รายการ) — กดปุ่มดูสลิปได้เลยค่ะ:\n\n' + show.map(recLine).join('\n') + (list.length > 8 ? '\n...และอีก ' + (list.length-8) + ' รายการ' : '');
   }
 
   // ---- ยังไม่ตรวจสลิป ----
@@ -427,7 +458,7 @@ async function aiReply(text){
 /* ═══════════ chat UI ═══════════ */
 const chatEl = document.getElementById('chat');
 const inputEl = document.getElementById('input');
-const QUICK = ['ยอดวันนี้', 'รายการล่าสุด', 'ยอดเดือนนี้', 'แยกตามธนาคาร', 'ยังไม่ตรวจสลิป', 'ช่วยเหลือ'];
+const QUICK = ['ยอดวันนี้', 'รายการล่าสุด', 'ดูสลิป', 'ยอดเดือนนี้', 'แยกตามธนาคาร', 'ยังไม่ตรวจสลิป', 'ช่วยเหลือ'];
 
 function escHtml(s){ return (s||'').toString().replace(/[<>&]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;'}[c])); }
 function addMsg(text, who){
@@ -552,7 +583,7 @@ function connectRT(cfg, room){
       else setSync(false, 'กำลังเชื่อมต่อ...');
     });
     db.ref('rooms/' + room + '/transfers').on('value', snap => {
-      data = Object.values(snap.val() || {});
+      data = Object.values(snap.val() || {}).map(normalizeRec);
       const first = !ready;
       ready = true;
       setSync(true, 'Real-time · ' + data.length + ' รายการ' + (AI_PROXY ? ' · AI ✨' : ''));
@@ -567,7 +598,7 @@ function connectRT(cfg, room){
   }
 }
 function loadLocalFallback(){
-  try { data = JSON.parse(localStorage.getItem(LKEY)) || []; } catch(e){ data = []; }
+  try { data = (JSON.parse(localStorage.getItem(LKEY)) || []).map(normalizeRec); } catch(e){ data = []; }
   ready = true;
   setSync(false, 'โหมดออฟไลน์ · ' + data.length + ' รายการ');
   addMsg('⚠️ เชื่อมต่อฐานข้อมูลไม่ได้ ใช้ข้อมูลสำรองในเครื่องนี้แทน (' + data.length + ' รายการ)', 'bot');
