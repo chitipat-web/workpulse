@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#03d0f5">
+<title>ผู้ช่วย — HURT SHOP</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="apple-touch-icon" href="hurt-logo.jpg">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="ผู้ช่วย HURT">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  input, select, textarea, button { font-family: inherit; }
+  :root {
+    --bg: #0b1620; --card: #15242f; --card2: #1d3340; --line: #2c4452;
+    --text: #f1f5f9; --muted: #93acba; --green: #22c55e; --green-d: #16a34a;
+    --blue: #06b6d4; --red: #ef4444; --accent: #06d6f5; --amber: #f59e0b;
+    --cyan: #03d0f5; --cyan-d: #0496c7;
+    --glass:    rgba(255,255,255,.035);
+    --glass-2:  rgba(255,255,255,.06);
+    --glass-bd: rgba(255,255,255,.14);
+    --glass-hi: rgba(255,255,255,.28);
+    --blur:     saturate(180%) blur(22px);
+    --glass-sh: 0 8px 30px rgba(0,0,0,.30);
+    --inset-hi: inset 0 1px 0 var(--glass-hi), inset 0 0 0 .5px rgba(255,255,255,.05);
+  }
+  html, body { height: 100%; }
+  body {
+    font-family: 'IBM Plex Sans Thai', -apple-system, BlinkMacSystemFont, "Segoe UI", "Sukhumvit Set", "Helvetica Neue", sans-serif;
+    color: var(--text);
+    background:
+      radial-gradient(1100px 620px at 82% -8%,  rgba(3,208,245,.22), transparent 60%),
+      radial-gradient(820px 520px at -12% 18%,  rgba(6,182,212,.18), transparent 55%),
+      var(--bg);
+    background-attachment: fixed;
+    display: flex; flex-direction: column;
+    height: 100dvh;
+    -webkit-text-size-adjust: 100%;
+  }
+  header {
+    padding: calc(10px + env(safe-area-inset-top)) 16px 10px;
+    display: flex; align-items: center; gap: 11px;
+    background: var(--glass); -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur);
+    border-bottom: 1px solid var(--glass-bd);
+    flex-shrink: 0;
+  }
+  header a.back {
+    color: var(--accent); text-decoration: none; font-size: 20px;
+    width: 36px; height: 36px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--glass-2); border: 1px solid var(--glass-bd);
+    box-shadow: var(--inset-hi);
+  }
+  .bot-ava {
+    width: 40px; height: 40px; border-radius: 13px; flex-shrink: 0;
+    background: linear-gradient(135deg, rgba(3,208,245,.35), rgba(6,182,212,.12));
+    border: 1px solid var(--glass-bd);
+    display: flex; align-items: center; justify-content: center; font-size: 21px;
+    box-shadow: var(--inset-hi);
+  }
+  header .t h1 { font-size: 16px; font-weight: 700; letter-spacing: .3px; }
+  header .t p { font-size: 11.5px; color: var(--muted); display: flex; align-items: center; gap: 5px; }
+  .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); display: inline-block; }
+  .dot.on { background: var(--green); box-shadow: 0 0 8px rgba(34,197,94,.8); }
+  #chat {
+    flex: 1; overflow-y: auto;
+    padding: 16px 14px 6px;
+    display: flex; flex-direction: column; gap: 10px;
+    scroll-behavior: smooth;
+  }
+  .msg {
+    max-width: 86%;
+    padding: 11px 14px;
+    border-radius: 17px;
+    font-size: 14.5px; line-height: 1.6;
+    white-space: pre-line; word-break: break-word;
+    animation: pop .18s ease-out;
+  }
+  @keyframes pop { from { transform: translateY(6px); opacity: 0; } to { transform: none; opacity: 1; } }
+  .msg.bot {
+    background: var(--glass); -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur);
+    border: 1px solid var(--glass-bd);
+    box-shadow: var(--glass-sh), var(--inset-hi);
+    align-self: flex-start; border-bottom-left-radius: 6px;
+  }
+  .msg.user {
+    background: linear-gradient(135deg, var(--cyan), var(--cyan-d));
+    color: #04222c; font-weight: 500;
+    align-self: flex-end; border-bottom-right-radius: 6px;
+    box-shadow: 0 4px 18px rgba(3,208,245,.25);
+  }
+  .msg .big { font-size: 22px; font-weight: 700; color: var(--accent); }
+  .msg .ok { color: #86efac; }
+  .msg .warn { color: #fcd34d; }
+  .msg .bad { color: #fca5a5; }
+  .msg .sub { color: var(--muted); font-size: 12.5px; }
+  .typing {
+    align-self: flex-start;
+    background: var(--glass); -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur);
+    border: 1px solid var(--glass-bd);
+    border-radius: 17px; border-bottom-left-radius: 6px;
+    padding: 13px 16px; display: flex; gap: 5px;
+    box-shadow: var(--glass-sh), var(--inset-hi);
+  }
+  .typing span { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); animation: blink 1.2s infinite; }
+  .typing span:nth-child(2) { animation-delay: .2s; }
+  .typing span:nth-child(3) { animation-delay: .4s; }
+  @keyframes blink { 0%,80%,100% { opacity: .25; } 40% { opacity: 1; } }
+  #quick {
+    display: flex; gap: 8px;
+    padding: 8px 14px;
+    overflow-x: auto; flex-shrink: 0;
+    -webkit-overflow-scrolling: touch;
+  }
+  #quick::-webkit-scrollbar { display: none; }
+  #quick button {
+    flex-shrink: 0;
+    background: var(--glass-2); -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur);
+    color: var(--accent);
+    border: 1px solid var(--glass-bd);
+    border-radius: 999px;
+    padding: 8px 14px; font-size: 13px;
+    cursor: pointer; white-space: nowrap;
+    box-shadow: var(--inset-hi);
+  }
+  #quick button:active { background: rgba(3,208,245,.15); }
+  #inputbar {
+    display: flex; gap: 8px;
+    padding: 10px 14px calc(12px + env(safe-area-inset-bottom));
+    background: var(--glass); -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur);
+    border-top: 1px solid var(--glass-bd);
+    flex-shrink: 0;
+  }
+  #inputbar input {
+    flex: 1;
+    background: var(--glass-2);
+    border: 1px solid var(--glass-bd);
+    border-radius: 999px;
+    padding: 11px 16px;
+    font-size: 15px; color: var(--text);
+    outline: none;
+    box-shadow: var(--inset-hi);
+  }
+  #inputbar input::placeholder { color: var(--muted); }
+  #inputbar input:focus { border-color: var(--accent); }
+  #inputbar button {
+    background: linear-gradient(135deg, var(--cyan), var(--cyan-d));
+    color: #04222c;
+    border: none; border-radius: 50%;
+    width: 46px; height: 46px; font-size: 18px;
+    cursor: pointer; flex-shrink: 0;
+    box-shadow: 0 4px 18px rgba(3,208,245,.35);
+  }
+  #inputbar button:active { transform: scale(.94); }
+  /* login screen — เหมือน bank.html */
+  #loginScreen {
+    position: fixed; inset: 0; z-index: 150;
+    background: var(--bg);
+    background:
+      radial-gradient(1100px 620px at 82% -8%,  rgba(3,208,245,.22), transparent 60%),
+      radial-gradient(820px 520px at -12% 18%,  rgba(6,182,212,.18), transparent 55%),
+      var(--bg);
+    display: none; align-items: center; justify-content: center;
+    padding: 24px; text-align: center;
+  }
+  #loginScreen .card {
+    background: var(--glass); -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur);
+    border: 1px solid var(--glass-bd); border-radius: 22px;
+    box-shadow: var(--glass-sh), var(--inset-hi);
+    padding: 34px 26px; max-width: 340px; width: 100%;
+  }
+  #loginScreen img { width: 74px; height: 74px; border-radius: 20px; margin-bottom: 14px; }
+  #loginScreen h2 { font-size: 19px; margin-bottom: 6px; }
+  #loginScreen p { color: var(--muted); font-size: 13.5px; white-space: pre-line; line-height: 1.6; margin-bottom: 20px; }
+  #gBtn {
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    width: 100%; background: #fff; color: #1f2933;
+    border: none; border-radius: 14px; padding: 13px;
+    font-size: 15px; font-weight: 600; cursor: pointer;
+  }
+  #loginSignout { display: none; margin-top: 14px; background: none; border: none; color: var(--accent); font-size: 13.5px; cursor: pointer; text-decoration: underline; }
+</style>
+</head>
+<body>
+
+<header>
+  <a class="back" href="bank.html" aria-label="กลับ">‹</a>
+  <div class="bot-ava">🤖</div>
+  <div class="t">
+    <h1>น้องเฮิร์ต — ผู้ช่วยร้าน</h1>
+    <p><span class="dot" id="syncDot"></span> <span id="syncText">กำลังเชื่อมต่อ...</span></p>
+  </div>
+</header>
+
+<div id="chat"></div>
+<div id="quick"></div>
+
+<div id="inputbar">
+  <input id="input" type="text" placeholder="ถามได้เลย เช่น ยอดวันนี้เท่าไหร่..." autocomplete="off"
+         onkeydown="if(event.key==='Enter')send()">
+  <button onclick="send()" aria-label="ส่ง">➤</button>
+</div>
+
+<div id="loginScreen">
+  <div class="card">
+    <img src="hurt-logo.jpg" alt="HURT SHOP" onerror="this.style.display='none'">
+    <h2>ผู้ช่วย HURT SHOP</h2>
+    <p id="loginMsg">เข้าสู่ระบบเพื่อใช้งาน</p>
+    <button id="gBtn" onclick="googleSignIn()">
+      <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.1H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3l5.7-5.7C34.3 6.1 29.4 4 24 4 13 4 4 13 4 24s9 20 20 20 20-9 20-20c0-1.3-.1-2.6-.4-3.9z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.9 1.2 8 3l5.7-5.7C34.3 6.1 29.4 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.1H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C40.9 35.4 44 30.2 44 24c0-1.3-.1-2.6-.4-3.9z"/></svg>
+      เข้าสู่ระบบด้วย Google
+    </button>
+    <button id="loginSignout" onclick="googleSignOut()">ออกจากระบบ / เปลี่ยนบัญชี</button>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script>
+/* ═══════════ config เดียวกับ bank.html ═══════════ */
+const LKEY = 'bank_transfers_v1';
+const CFGKEY = 'bank_fb_config';
+const ROOMKEY = 'bank_room';
+const BAKED_CONFIG = {
+  apiKey: "AIzaSyA68TcgHOPQb8FwiOZYD36gkBJNLl3juEg",
+  authDomain: "bank-48baf.firebaseapp.com",
+  databaseURL: "https://bank-48baf-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "bank-48baf",
+  storageBucket: "bank-48baf.firebasestorage.app",
+  messagingSenderId: "273049715377",
+  appId: "1:273049715377:web:9e8f042190a69b92d91890",
+  measurementId: "G-TW7M8QZ3KW"
+};
+const BAKED_ROOM = "main";
+
+// ── โหมด AI เต็มตัว (Claude) ──
+// วาง URL ของ Claude Proxy Worker ที่ deploy แล้ว เช่น "https://hurt-ai.xxx.workers.dev"
+// ถ้าเว้นว่าง "" → ใช้โหมดตอบตามกติกา (rule-based) เหมือนเดิม ไม่มีค่าใช้จ่าย
+const AI_PROXY = "";
+
+const OWNER_EMAILS = ["chitipat.kao@gmail.com"];
+const EMPLOYEE_EMAILS = ["dynosgaming01@gmail.com", "chitipat.kee@gmail.com"];
+const ALLOWED_EMAILS = [...OWNER_EMAILS, ...EMPLOYEE_EMAILS];
+
+let data = [];
+let app = null;
+let ready = false;
+
+/* ═══════════ helpers ═══════════ */
+const MON_TH = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+function fmt(n){ return Number(n).toLocaleString('th-TH',{minimumFractionDigits:0,maximumFractionDigits:2}); }
+function localDateStr(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function todayStr(){ return localDateStr(new Date()); }
+function thaiDate(s){
+  if(!s) return '-';
+  const p = s.split('-');
+  const m = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+  return Number(p[2]) + ' ' + m[Number(p[1])-1] + ' ' + (Number(p[0])+543).toString().slice(-2);
+}
+function daysAgoStr(n){ const d = new Date(); d.setDate(d.getDate()-n); return localDateStr(d); }
+function monthStr(offset){ const d = new Date(); d.setDate(1); d.setMonth(d.getMonth()+offset); return localDateStr(d).slice(0,7); }
+
+function filterRange(from, to){
+  return data.filter(r => r.date >= from && r.date <= to);
+}
+function sum(list){ return list.reduce((s,r) => s + Number(r.amount||0), 0); }
+function recLine(r){
+  const v = r.slipVerified ? '✅' : (r.slipRef ? '⏳' : '📝');
+  return v + ' ' + fmt(r.amount) + ' ฿ — ' + (r.name||'ไม่ระบุชื่อ') + (r.bank ? ' (' + r.bank + ')' : '') + ' · ' + thaiDate(r.date) + (r.note ? '\n    💬 ' + r.note : '');
+}
+function sortRecent(list){
+  return [...list].sort((a,b) => (b.date||'').localeCompare(a.date||'') || String(b.id||'').localeCompare(String(a.id||'')));
+}
+
+/* ═══════════ สมองผู้ช่วย ═══════════ */
+function summaryReply(list, label){
+  if(!list.length) return '📊 ' + label + ': ยังไม่มีรายการเลยค่ะ';
+  const total = sum(list);
+  const verified = list.filter(r => r.slipVerified).length;
+  return '📊 ' + label + '\n' +
+    'ยอดรวม: ' + fmt(total) + ' ฿\n' +
+    'จำนวน: ' + list.length + ' รายการ (ตรวจสลิปแล้ว ' + verified + ')\n' +
+    'เฉลี่ย: ' + fmt(total/list.length) + ' ฿/รายการ';
+}
+
+function botReply(text){
+  if(!ready) return 'ยังโหลดข้อมูลไม่เสร็จเลยค่ะ รอสักครู่แล้วถามใหม่นะคะ ⏳';
+  const t = text.toLowerCase().replace(/,/g,'');
+  const today = todayStr();
+
+  // ---- ช่วยเหลือ ----
+  if(/ช่วยเหลือ|ทำอะไรได้|help|วิธีใช้|ใช้ยังไง/.test(t)){
+    return '🤖 น้องเฮิร์ตช่วยได้แบบนี้ค่ะ:\n\n' +
+      '• "ยอดวันนี้" / "ยอดเมื่อวาน" / "ยอด 7 วัน" / "ยอดเดือนนี้" / "ยอดเดือนที่แล้ว" / "ยอดทั้งหมด"\n' +
+      '• "รายการล่าสุด" — ดู 5 รายการล่าสุด\n' +
+      '• "เช็ค 500" — เช็คว่ามียอดโอน 500 บาทเข้ามาไหม\n' +
+      '• "ค้นหา สมชาย" — หารายการตามชื่อลูกค้า\n' +
+      '• "แยกตามธนาคาร" / "ยอดสูงสุด" / "ยังไม่ตรวจสลิป"';
+  }
+
+  // ---- รายการล่าสุด ----
+  if(/ล่าสุด|รายการใหม่|เพิ่งเข้า|เมื่อกี้/.test(t)){
+    const list = sortRecent(data).slice(0,5);
+    if(!list.length) return 'ยังไม่มีรายการในระบบเลยค่ะ';
+    return '🕐 5 รายการล่าสุด:\n\n' + list.map(recLine).join('\n');
+  }
+
+  // ---- ยังไม่ตรวจสลิป ----
+  if(/ไม่ตรวจ|ยังไม่ได้ตรวจ|ไม่ผ่าน|ไม่มีสลิป|ค้าง/.test(t)){
+    const list = sortRecent(data.filter(r => !r.slipVerified));
+    if(!list.length) return '✅ ทุกรายการตรวจสลิปเรียบร้อยหมดแล้วค่ะ';
+    const show = list.slice(0,8);
+    return '⚠️ รายการที่ยังไม่ผ่านการตรวจสลิป (' + list.length + ' รายการ):\n\n' + show.map(recLine).join('\n') + (list.length > 8 ? '\n...และอีก ' + (list.length-8) + ' รายการ' : '');
+  }
+
+  // ---- แยกตามธนาคาร ----
+  if(/ธนาคาร|แบงค์|แบงก์|bank/.test(t)){
+    if(!data.length) return 'ยังไม่มีรายการในระบบเลยค่ะ';
+    const g = {};
+    data.forEach(r => { const b = r.bank || 'ไม่ระบุ'; g[b] = g[b] || {n:0,s:0}; g[b].n++; g[b].s += Number(r.amount||0); });
+    const rows = Object.entries(g).sort((a,b) => b[1].s - a[1].s)
+      .map(([b,v]) => '🏦 ' + b + ': ' + fmt(v.s) + ' ฿ (' + v.n + ' รายการ)');
+    return '📊 ยอดแยกตามธนาคาร (ทั้งหมด):\n\n' + rows.join('\n');
+  }
+
+  // ---- สูงสุด ----
+  if(/สูงสุด|มากสุด|เยอะสุด|top/.test(t)){
+    if(!data.length) return 'ยังไม่มีรายการในระบบเลยค่ะ';
+    const top = [...data].sort((a,b) => Number(b.amount||0) - Number(a.amount||0)).slice(0,3);
+    return '🏆 ยอดโอนสูงสุด 3 อันดับ:\n\n' + top.map((r,i) => (i+1) + '. ' + recLine(r)).join('\n');
+  }
+
+  // ---- ค้นหาตามชื่อ ----
+  let m = text.match(/(?:ค้นหา|หาชื่อ|ชื่อ|ของ)\s*[:：]?\s*(\S.*)/);
+  if(m && !/ยอด|วัน|เดือน|สลิป|ธนาคาร/.test(m[1])){
+    const q = m[1].trim().toLowerCase();
+    const list = sortRecent(data.filter(r => (r.name||'').toLowerCase().includes(q) || (r.note||'').toLowerCase().includes(q)));
+    if(!list.length) return '🔍 ไม่พบรายการของ "' + m[1].trim() + '" ค่ะ';
+    const show = list.slice(0,8);
+    return '🔍 พบ ' + list.length + ' รายการของ "' + m[1].trim() + '" (รวม ' + fmt(sum(list)) + ' ฿):\n\n' + show.map(recLine).join('\n') + (list.length > 8 ? '\n...และอีก ' + (list.length-8) + ' รายการ' : '');
+  }
+
+  // ---- ช่วงเวลา ----
+  if(/วันนี้/.test(t)) return summaryReply(filterRange(today, today), 'ยอดวันนี้ (' + thaiDate(today) + ')');
+  if(/เมื่อวาน/.test(t)){ const y = daysAgoStr(1); return summaryReply(filterRange(y, y), 'ยอดเมื่อวาน (' + thaiDate(y) + ')'); }
+  if(/7\s*วัน|เจ็ดวัน|สัปดาห์|อาทิตย์/.test(t)) return summaryReply(filterRange(daysAgoStr(6), today), 'ยอด 7 วันล่าสุด');
+  if(/เดือนที่แล้ว|เดือนก่อน/.test(t)){ const ym = monthStr(-1); const list = data.filter(r => (r.date||'').slice(0,7) === ym); return summaryReply(list, 'ยอด' + MON_TH[Number(ym.slice(5))-1] + ' ' + (Number(ym.slice(0,4))+543)); }
+  if(/เดือนนี้/.test(t)){ const ym = monthStr(0); const list = data.filter(r => (r.date||'').slice(0,7) === ym); return summaryReply(list, 'ยอดเดือนนี้ (' + MON_TH[Number(ym.slice(5))-1] + ')'); }
+  if(/ทั้งหมด|รวมทุก|ตั้งแต่ต้น/.test(t)) return summaryReply(data, 'ยอดทั้งหมด');
+
+  // ---- เช็คยอดเงินตามจำนวน ----
+  m = t.match(/(\d+(?:\.\d+)?)/);
+  if(m && /เช็ค|โอน|เข้า|มี|หา|สลิป|check|ยอด/.test(t)){
+    const amt = Number(m[1]);
+    const list = sortRecent(data.filter(r => Number(r.amount) === amt));
+    if(!list.length) return '🔍 ไม่พบยอดโอน ' + fmt(amt) + ' ฿ ในระบบค่ะ\nลองเช็คจำนวนเงินอีกครั้ง หรือรายการอาจยังไม่ถูกบันทึกนะคะ';
+    const show = list.slice(0,5);
+    return '🔍 พบยอด ' + fmt(amt) + ' ฿ จำนวน ' + list.length + ' รายการ:\n\n' + show.map(recLine).join('\n') + (list.length > 5 ? '\n...และอีก ' + (list.length-5) + ' รายการ' : '') + '\n\n✅ = ตรวจสลิปกับธนาคารแล้ว · ⏳ = มีสลิปแต่ยังไม่ยืนยัน · 📝 = กรอกเอง';
+  }
+
+  // ---- ทักทาย ----
+  if(/สวัสดี|หวัดดี|ดีครับ|ดีค่ะ|hello|hi/.test(t)){
+    return 'สวัสดีค่ะ 🙏 น้องเฮิร์ตพร้อมช่วยเช็คยอดแล้วค่ะ\nตอนนี้มี ' + data.length + ' รายการในระบบ ยอดรวม ' + fmt(sum(data)) + ' ฿\nพิมพ์ "ช่วยเหลือ" เพื่อดูว่าถามอะไรได้บ้างนะคะ';
+  }
+  if(/ขอบคุณ|ขอบใจ|thank|โอเค/.test(t)) return 'ยินดีค่ะ 💙';
+
+  return 'ขออภัยค่ะ น้องเฮิร์ตยังไม่เข้าใจคำถามนี้ 🙏\nลองพิมพ์ "ช่วยเหลือ" เพื่อดูตัวอย่างคำถามได้ค่ะ';
+}
+
+/* ═══════════ โหมด AI (Claude ผ่าน Worker) ═══════════ */
+const chatHistory = [];   // เก็บบทสนทนาไว้ให้ AI คุยต่อเนื่อง
+
+// สรุปข้อมูลแบบกะทัดรัดส่งให้ AI (ยอดรวมช่วงต่าง ๆ + รายการล่าสุด)
+function buildContext(){
+  const today = todayStr();
+  const lines = [];
+  const agg = (list, label) => label + ': รวม ' + fmt(sum(list)) + ' ฿ / ' + list.length + ' รายการ';
+  lines.push('วันนี้คือ ' + today + ' (' + thaiDate(today) + ')');
+  lines.push(agg(filterRange(today, today), 'วันนี้'));
+  lines.push(agg(filterRange(daysAgoStr(1), daysAgoStr(1)), 'เมื่อวาน'));
+  lines.push(agg(filterRange(daysAgoStr(6), today), '7วันล่าสุด'));
+  lines.push(agg(data.filter(r => (r.date||'').slice(0,7) === monthStr(0)), 'เดือนนี้'));
+  lines.push(agg(data.filter(r => (r.date||'').slice(0,7) === monthStr(-1)), 'เดือนที่แล้ว'));
+  lines.push(agg(data, 'ทั้งหมด'));
+  const g = {};
+  data.forEach(r => { const b = r.bank || 'ไม่ระบุ'; g[b] = (g[b]||0) + Number(r.amount||0); });
+  lines.push('แยกธนาคาร: ' + Object.entries(g).map(([b,s]) => b + '=' + fmt(s) + '฿').join(', '));
+  const recent = sortRecent(data).slice(0, 200);
+  lines.push('');
+  lines.push('รายการ (ใหม่→เก่า, ' + recent.length + ' จาก ' + data.length + ' รายการ):');
+  lines.push('รูปแบบ: วันที่ | ยอด | ชื่อ | ธนาคาร | สลิป | โน้ต');
+  recent.forEach(r => {
+    const slip = r.slipVerified ? 'verified' : (r.slipRef ? 'pending' : 'manual');
+    lines.push([r.date, Number(r.amount||0), r.name||'-', r.bank||'-', slip, r.note||''].join(' | '));
+  });
+  return lines.join('\n');
+}
+
+async function aiReply(text){
+  const user = firebase.auth().currentUser;
+  if(!user) throw new Error('no auth');
+  const idToken = await user.getIdToken();
+  const res = await fetch(AI_PROXY, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ idToken, question: text, context: buildContext(), history: chatHistory.slice(-8) })
+  });
+  const j = await res.json();
+  if(!j.ok) throw new Error(j.error || 'ai error');
+  return j.reply;
+}
+
+/* ═══════════ chat UI ═══════════ */
+const chatEl = document.getElementById('chat');
+const inputEl = document.getElementById('input');
+const QUICK = ['ยอดวันนี้', 'รายการล่าสุด', 'ยอดเดือนนี้', 'แยกตามธนาคาร', 'ยังไม่ตรวจสลิป', 'ช่วยเหลือ'];
+
+function addMsg(text, who){
+  const d = document.createElement('div');
+  d.className = 'msg ' + who;
+  d.textContent = text;
+  chatEl.appendChild(d);
+  chatEl.scrollTop = chatEl.scrollHeight;
+}
+async function send(preset){
+  const text = preset || inputEl.value.trim();
+  if(!text) return;
+  inputEl.value = '';
+  addMsg(text, 'user');
+  const typing = document.createElement('div');
+  typing.className = 'typing';
+  typing.innerHTML = '<span></span><span></span><span></span>';
+  chatEl.appendChild(typing);
+  chatEl.scrollTop = chatEl.scrollHeight;
+
+  let reply, viaAI = false;
+  if(AI_PROXY && ready && window.firebase && firebase.auth){
+    try { reply = await aiReply(text); viaAI = true; }
+    catch(e){ reply = null; }
+  }
+  if(reply == null){
+    await new Promise(r => setTimeout(r, 380));
+    reply = botReply(text) + (AI_PROXY && !viaAI && ready ? '\n\n(⚡ โหมดสำรอง — เชื่อมต่อ AI ไม่ได้ชั่วคราว)' : '');
+  }
+  typing.remove();
+  addMsg(reply, 'bot');
+  chatHistory.push({ role: 'user', content: text }, { role: 'assistant', content: reply });
+  if(chatHistory.length > 16) chatHistory.splice(0, chatHistory.length - 16);
+}
+(function renderQuick(){
+  const q = document.getElementById('quick');
+  QUICK.forEach(label => {
+    const b = document.createElement('button');
+    b.textContent = label;
+    b.onclick = () => send(label);
+    q.appendChild(b);
+  });
+})();
+
+/* ═══════════ sync / auth — ตรรกะเดียวกับ bank.html ═══════════ */
+function setSync(on, text){
+  document.getElementById('syncDot').className = 'dot' + (on ? ' on' : '');
+  document.getElementById('syncText').textContent = text;
+}
+function parseConfig(raw){
+  raw = raw.trim();
+  const i = raw.indexOf('{'), j = raw.lastIndexOf('}');
+  if(i >= 0 && j > i) raw = raw.slice(i, j+1);
+  try { return JSON.parse(raw); } catch(e){ try { return (new Function('return (' + raw + ')'))(); } catch(e2){ return null; } }
+}
+function activeConfig(){
+  const rawCfg = localStorage.getItem(CFGKEY);
+  if(rawCfg){ const c = parseConfig(rawCfg); if(c) return { cfg: c, room: localStorage.getItem(ROOMKEY) || BAKED_ROOM }; }
+  if(BAKED_CONFIG && BAKED_CONFIG.apiKey) return { cfg: BAKED_CONFIG, room: BAKED_ROOM };
+  return null;
+}
+function isAllowed(email){ return !!email && ALLOWED_EMAILS.map(e => e.toLowerCase()).includes(email.toLowerCase()); }
+function showLogin(msg, email){
+  document.getElementById('loginScreen').style.display = 'flex';
+  document.getElementById('loginMsg').textContent = msg || 'เข้าสู่ระบบเพื่อใช้งาน';
+  document.getElementById('gBtn').style.display = email ? 'none' : 'flex';
+  document.getElementById('loginSignout').style.display = email ? 'block' : 'none';
+}
+function hideLogin(){ document.getElementById('loginScreen').style.display = 'none'; }
+function googleSignIn(){
+  const provider = new firebase.auth.GoogleAuthProvider();
+  firebase.auth().signInWithPopup(provider).catch(err => {
+    if(err.code === 'auth/popup-closed-by-user' || err.code === 'auth/cancelled-popup-request') return;
+    if(err.code === 'auth/popup-blocked' || err.code === 'auth/operation-not-supported-in-this-environment'){
+      firebase.auth().signInWithRedirect(provider);
+    } else {
+      alert('เข้าสู่ระบบไม่สำเร็จ: ' + (err.message || err.code));
+    }
+  });
+}
+function googleSignOut(){ if(window.firebase && firebase.auth) firebase.auth().signOut().then(() => location.reload()); }
+
+function connectRT(cfg, room){
+  try { if(!app) app = firebase.initializeApp(cfg); } catch(e){}
+  setSync(false, 'กำลังเชื่อมต่อ...');
+  try {
+    const db = firebase.database();
+    db.ref('.info/connected').on('value', snap => {
+      if(snap.val() === true) setSync(true, 'Real-time · ' + data.length + ' รายการ' + (AI_PROXY ? ' · AI ✨' : ''));
+      else setSync(false, 'กำลังเชื่อมต่อ...');
+    });
+    db.ref('rooms/' + room + '/transfers').on('value', snap => {
+      data = Object.values(snap.val() || {});
+      const first = !ready;
+      ready = true;
+      setSync(true, 'Real-time · ' + data.length + ' รายการ' + (AI_PROXY ? ' · AI ✨' : ''));
+      if(first) addMsg('สวัสดีค่ะ 🙏 น้องเฮิร์ต ผู้ช่วยร้าน HURT SHOP พร้อมแล้วค่ะ\nตอนนี้มี ' + data.length + ' รายการ ยอดรวม ' + fmt(sum(data)) + ' ฿\nกดปุ่มด้านล่างหรือพิมพ์ถามได้เลยนะคะ', 'bot');
+    }, err => {
+      setSync(false, 'เชื่อมต่อไม่ได้');
+      loadLocalFallback();
+    });
+  } catch(e){
+    setSync(false, 'config ไม่ถูกต้อง');
+    loadLocalFallback();
+  }
+}
+function loadLocalFallback(){
+  try { data = JSON.parse(localStorage.getItem(LKEY)) || []; } catch(e){ data = []; }
+  ready = true;
+  setSync(false, 'โหมดออฟไลน์ · ' + data.length + ' รายการ');
+  addMsg('⚠️ เชื่อมต่อฐานข้อมูลไม่ได้ ใช้ข้อมูลสำรองในเครื่องนี้แทน (' + data.length + ' รายการ)', 'bot');
+}
+
+/* ═══════════ boot ═══════════ */
+(function boot(){
+  const ac = activeConfig();
+  if(!ac){ hideLogin(); loadLocalFallback(); return; }
+  try { if(!app) app = firebase.initializeApp(ac.cfg); } catch(e){}
+  showLogin('กำลังตรวจสอบ...');
+  firebase.auth().onAuthStateChanged(user => {
+    if(user && isAllowed(user.email)){
+      hideLogin();
+      connectRT(ac.cfg, ac.room);
+    } else if(user){
+      showLogin('บัญชี ' + user.email + ' ไม่มีสิทธิ์เข้าถึงระบบนี้\nติดต่อเจ้าของระบบเพื่อขอสิทธิ์', user.email);
+    } else {
+      showLogin('เข้าสู่ระบบด้วย Google เพื่อใช้งาน');
+    }
+  });
+})();
+</script>
+</body>
+</html>
