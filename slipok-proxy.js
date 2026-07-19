@@ -24,7 +24,9 @@ const ALLOW_ORIGIN = "https://chitipat-web.github.io"; // จำกัดเฉ�
 // แปลงวันที่จาก SlipOK (มักเป็น YYYYMMDD ไม่มีขีด) ให้เป็น YYYY-MM-DD
 function toYMD(s) {
   s = (s || "").toString().trim();
-  let m = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/) || s.match(/^(\d{4})(\d{2})(\d{2})/);
+  if (/^\d{13}$/.test(s)) { const d = new Date(Number(s)); return isNaN(d.getTime()) ? "" : d.toISOString().slice(0,10); }   // epoch ms (เช็คก่อน)
+  if (/^\d{10}$/.test(s)) { const d = new Date(Number(s)*1000); return isNaN(d.getTime()) ? "" : d.toISOString().slice(0,10); }
+  let m = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/) || s.match(/^(\d{4})(\d{2})(\d{2})(?!\d)/);
   if (m) { let y = +m[1]; if (y > 2200) y -= 543; return `${String(y).padStart(4,"0")}-${String(+m[2]).padStart(2,"0")}-${String(+m[3]).padStart(2,"0")}`; }
   const d = new Date(s); return isNaN(d.getTime()) ? "" : d.toISOString().slice(0, 10);
 }
@@ -79,6 +81,7 @@ export default {
 
     const id = (v.transRef || "").toString().replace(/[.#$\[\]\/]/g, "_").slice(0, 120);
     if (!id) return J({ ok: false, error: "no transRef" });
+    if (v.amount == null || !(Number(v.amount) > 0)) return J({ ok: false, error: "ยอดเงินจากสลิปไม่ถูกต้อง" });   // กันบันทึกยอด null/0
     const g = await fetch(FB_DB + "/rooms/" + ROOM + "/transfers/" + id + ".json?auth=" + FB_SECRET);
     const exist = await g.json().catch(() => null);
     if (exist && exist.id) return J({ ok: false, alreadyExists: true, record: exist });
