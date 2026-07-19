@@ -16,7 +16,7 @@
 
 const FB_APIKEY = "AIzaSyA68TcgHOPQb8FwiOZYD36gkBJNLl3juEg"; // public web api key (ใช้ตรวจ idToken)
 const ALLOWED = ["chitipat.kao@gmail.com", "dynosgaming01@gmail.com", "chitipat.kee@gmail.com"];
-const ALLOW_ORIGIN = "*"; // แนะนำ: เปลี่ยนเป็นโดเมนเว็บจริง เช่น "https://chitipat-web.github.io"
+const ALLOW_ORIGIN = "https://chitipat-web.github.io"; // ล็อกเฉพาะโดเมนเว็บเรา (กันเว็บอื่นเรียก)
 const MODEL = "claude-haiku-4-5"; // เร็ว+ถูก เหมาะกับงานตอบแชท (เปลี่ยนเป็นรุ่นอื่นได้)
 
 const SYSTEM_PROMPT = `คุณคือ "น้องเฮิร์ต" ผู้ช่วย AI ของร้าน HURT SHOP พูดไทย สุภาพ ลงท้าย "ค่ะ" กระชับ ตรงประเด็น
