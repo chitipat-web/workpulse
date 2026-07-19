@@ -231,15 +231,22 @@
   .toprow b { color: var(--green); }
 
   @media print {
-    body > *:not(#report) { display: none !important; }
-    #report { display: block !important; position: static !important; background: #fff !important; }
+    body:not(.pdf-mode) > *:not(#report) { display: none !important; }
+    body:not(.pdf-mode) #report { display: block !important; position: static !important; background: #fff !important; }
     #report .sheet { max-height: none !important; box-shadow: none !important; border-radius: 0 !important; background: #fff !important; padding: 0 !important; animation: none !important; }
     #report, #report * { color: #000 !important; }
     #report .btns { display: none !important; }
     .rstat div, .toprow { background: #f0f4f7 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     .cbar { background: #006aa3 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     .toprow b { color: #0a7d3a !important; }
+    /* ส่งออก PDF (รายการทั้งหมด) */
+    body.pdf-mode > *:not(#pdfDoc) { display: none !important; }
+    body.pdf-mode #pdfDoc { display: block !important; color: #000; }
+    #pdfDoc table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    #pdfDoc th, #pdfDoc td { border: 1px solid #ccc; padding: 6px 8px; text-align: left; }
+    #pdfDoc th { background: #eef4f7 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   }
+  #pdfDoc { display: none; }
 
   /* login gate */
   /* หน้าโหลด (วิดีโอ intro) */
@@ -511,16 +518,20 @@
       <div style="min-width:0"><div style="font-size:11px;color:var(--muted)">เข้าสู่ระบบในชื่อ</div><div id="userEmail" style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">-</div></div>
       <button onclick="googleSignOut()" style="flex-shrink:0;background:var(--card);border:1px solid var(--line);color:var(--text);border-radius:10px;padding:8px 12px;font-size:13px;cursor:pointer">ออกจากระบบ</button>
     </div>
-    <p class="emp-only" style="display:none;color:var(--muted);font-size:13px;text-align:center;margin:10px 0">โหมดพนักงาน — ไม่มีการตั้งค่าให้แก้ไข</p>
+    <h2 style="margin-bottom:12px">📤 ส่งออกข้อมูล</h2>
+    <div class="btns" style="margin-bottom:18px">
+      <button class="btn-cancel" style="flex:1" onclick="exportCSV()">📄 CSV</button>
+      <button class="btn-cancel" style="flex:1" onclick="exportExcel()">📊 Excel</button>
+      <button class="btn-cancel" style="flex:1" onclick="exportPDF()">🧾 PDF</button>
+    </div>
+    <p class="emp-only" style="display:none;color:var(--muted);font-size:13px;text-align:center;margin:14px 0 4px">โหมดพนักงาน — ส่งออกข้อมูลได้ ส่วนตั้งค่าอื่นเฉพาะเจ้าของ</p>
     <div class="btns emp-only" style="display:none;margin-bottom:6px"><button class="btn-cancel" style="flex:1" onclick="closeSettings()">ปิด</button></div>
     <div id="ownerOnlySettings">
-    <h2 style="margin-bottom:12px">🧰 เครื่องมือข้อมูล</h2>
+    <hr style="border:none;border-top:1px solid var(--line);margin:4px 0 18px">
+    <h2 style="margin-bottom:12px">🧰 สำรอง / ล้างข้อมูล</h2>
     <div class="btns" style="margin-bottom:8px">
-      <button class="btn-cancel" style="flex:1" onclick="exportCSV()">⬇️ ส่งออก CSV</button>
       <button class="btn-cancel" style="flex:1" id="restoreBtn" onclick="restoreBackup()">↩️ กู้คืน</button>
-    </div>
-    <div class="btns" style="margin-bottom:18px">
-      <button class="btn-cancel" style="flex:1;color:#fca5a5" id="clearBtn" onclick="clearAll()">🗑️ ล้างข้อมูลทั้งหมด</button>
+      <button class="btn-cancel" style="flex:1;color:#fca5a5" id="clearBtn" onclick="clearAll()">🗑️ ล้างข้อมูล</button>
     </div>
     <hr style="border:none;border-top:1px solid var(--line);margin:4px 0 18px">
     <h2>🔄 ตั้งค่า Real-time (Firebase)</h2>
@@ -584,6 +595,9 @@
     <iframe id="asstFrame" title="ผู้ช่วย HURT SHOP" loading="lazy"></iframe>
   </div>
 </div>
+
+<!-- PDF statement (print-only) -->
+<div id="pdfDoc"></div>
 
 <!-- Report Modal -->
 <div class="modal" id="report">
@@ -1087,6 +1101,69 @@ function exportCSV() {
   a.href = URL.createObjectURL(blob);
   a.download = 'ยอดโอนเข้า_' + todayStr() + '.csv';
   a.click();
+}
+
+// ---- ข้อมูลที่จะส่งออก (เรียงตามวันที่) + ยอดรวม ----
+function exportRows() {
+  return data.filter(x => x && typeof x === 'object')
+             .sort((a,b) => String(a.date||'').localeCompare(String(b.date||'')));
+}
+
+function exportExcel() {
+  if (!data.length) { alert('ยังไม่มีข้อมูล'); return; }
+  const esc = s => (s == null ? '' : s).toString().replace(/[<>&]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
+  const rows = exportRows();
+  const total = rows.reduce((s,x) => s + amt(x), 0);
+  let html = '<html xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="utf-8"></head><body>';
+  html += '<table border="1"><thead><tr>' +
+    ['วันที่','ผู้โอน','ธนาคาร','จำนวนเงิน','โน้ต'].map(h => `<th>${h}</th>`).join('') +
+    '</tr></thead><tbody>';
+  rows.forEach(it => {
+    html += '<tr>' +
+      `<td>${esc(it.date||'')}</td>` +
+      `<td>${esc(it.name)}</td>` +
+      `<td>${esc(it.bank)}</td>` +
+      `<td>${amt(it)}</td>` +
+      `<td>${esc(it.note)}</td>` +
+      '</tr>';
+  });
+  html += `<tr><td colspan="3"><b>รวม (${rows.length} รายการ)</b></td><td><b>${total}</b></td><td></td></tr>`;
+  html += '</tbody></table></body></html>';
+  const blob = new Blob(['﻿' + html], { type: 'application/vnd.ms-excel;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'ยอดโอนเข้า_' + todayStr() + '.xls';
+  a.click();
+}
+
+function exportPDF() {
+  if (!data.length) { alert('ยังไม่มีข้อมูล'); return; }
+  const esc = s => (s || '').toString().replace(/[<>&"]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));
+  const rows = exportRows();
+  const total = rows.reduce((s,x) => s + amt(x), 0);
+  let html = '<h2 style="text-align:center;margin:0 0 4px">HURT SHOP — รายการยอดโอนเข้า</h2>';
+  html += `<p style="text-align:center;margin:0 0 14px;color:#555;font-size:13px">พิมพ์เมื่อ ${thaiDate(todayStr())} · ${rows.length} รายการ · รวม ${fmt(total)} ฿</p>`;
+  html += '<table><thead><tr>' +
+    ['วันที่','ผู้โอน','ธนาคาร','จำนวนเงิน (฿)','โน้ต'].map(h => `<th>${h}</th>`).join('') +
+    '</tr></thead><tbody>';
+  const safeDate = d => /^\d{4}-\d{2}-\d{2}/.test(d || '') ? thaiDate(d) : (d || '-');
+  rows.forEach(it => {
+    html += '<tr>' +
+      `<td>${esc(safeDate(it.date))}</td>` +
+      `<td>${esc(it.name)}</td>` +
+      `<td>${esc(it.bank)}</td>` +
+      `<td style="text-align:right">${fmt(amt(it))}</td>` +
+      `<td>${esc(it.note)}</td>` +
+      '</tr>';
+  });
+  html += `<tr><td colspan="3" style="text-align:right"><b>รวมทั้งหมด</b></td><td style="text-align:right"><b>${fmt(total)}</b></td><td></td></tr>`;
+  html += '</tbody></table>';
+  const doc = document.getElementById('pdfDoc');
+  doc.innerHTML = html;
+  document.body.classList.add('pdf-mode');
+  const cleanup = () => { document.body.classList.remove('pdf-mode'); doc.innerHTML = ''; window.removeEventListener('afterprint', cleanup); };
+  window.addEventListener('afterprint', cleanup);
+  setTimeout(() => { window.print(); setTimeout(cleanup, 800); }, 60);
 }
 
 /* ---------- render ---------- */
