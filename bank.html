@@ -290,6 +290,16 @@
     .item:hover { border-color: var(--accent); transform: translateY(-3px); box-shadow: 0 8px 22px rgba(0,0,0,.32); }
     .fab:hover { filter: brightness(1.05); }
   }
+  /* ───── ripple (คลื่นตอนแตะ) + เด้ง modal นุ่มขึ้น ───── */
+  .fab, .asst-fab, .gear, .btns button, .g-btn, .tools button, .seg-btn, .slipview { overflow: hidden; }
+  .btns button, .g-btn, .tools button, .seg-btn, .slipview { position: relative; }
+  .rip { position: absolute; border-radius: 50%; transform: scale(0); background: rgba(255,255,255,.38); pointer-events: none; animation: rip .55s cubic-bezier(.25,.7,.35,1) forwards; z-index: 3; }
+  .g-btn .rip { background: rgba(0,0,0,.13); }
+  .seg-btn.active .rip { background: rgba(4,34,44,.22); }
+  @keyframes rip { to { transform: scale(2.5); opacity: 0; } }
+  .sheet { animation: up .34s cubic-bezier(.22,1,.36,1); }
+  .modal.show { animation: fade .22s ease; }
+  @media (prefers-reduced-motion: reduce) { .rip { display: none; } }
 
   /* ───── จอคอม/แท็บเล็ต (กว้างขึ้น) ───── */
   @media (min-width: 768px) {
@@ -801,6 +811,21 @@ function disconnectRT() {
   closeSettings();
   location.reload();
 }
+
+/* ---------- ripple ตอนแตะปุ่ม/เมนู ---------- */
+document.addEventListener('pointerdown', function(e){
+  const el = e.target.closest('.fab, .asst-fab, .gear, .btns button, .g-btn, .tools button, .seg-btn, .slipview');
+  if (!el) return;
+  const r = el.getBoundingClientRect();
+  const size = Math.max(r.width, r.height);
+  const rip = document.createElement('span');
+  rip.className = 'rip';
+  rip.style.width = rip.style.height = size + 'px';
+  rip.style.left = (e.clientX - r.left - size / 2) + 'px';
+  rip.style.top = (e.clientY - r.top - size / 2) + 'px';
+  el.appendChild(rip);
+  setTimeout(function(){ rip.remove(); }, 560);
+}, true);
 
 /* ---------- ป๊อปอัพผู้ช่วย (iframe) ---------- */
 function openAssistant() {

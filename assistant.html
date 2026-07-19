@@ -191,6 +191,13 @@
   .slip-lightbox img { max-width: 100%; max-height: 82vh; border-radius: 14px; box-shadow: 0 12px 44px rgba(0,0,0,.7); }
   .slip-lb-msg { color: #cfeef7; font-size: 14px; margin-top: 14px; text-align: center; }
   .slip-lb-close { color: #cfeef7; font-size: 13px; margin-top: 16px; opacity: .8; }
+  /* ripple ตอนแตะ */
+  #quick button, #inputbar button, .slipchip, #gBtn { position: relative; overflow: hidden; }
+  .rip { position: absolute; border-radius: 50%; transform: scale(0); background: rgba(255,255,255,.38); pointer-events: none; animation: rip .55s cubic-bezier(.25,.7,.35,1) forwards; z-index: 3; }
+  #gBtn .rip { background: rgba(0,0,0,.13); }
+  #inputbar button .rip { background: rgba(4,34,44,.28); }
+  @keyframes rip { to { transform: scale(2.5); opacity: 0; } }
+  @media (prefers-reduced-motion: reduce) { .rip { display: none; } }
 </style>
 </head>
 <body>
@@ -508,6 +515,21 @@ async function aiReply(text){
 const chatEl = document.getElementById('chat');
 const inputEl = document.getElementById('input');
 const QUICK = ['สรุป', 'ยอดวันนี้', 'รายการล่าสุด', 'ดูสลิป', 'ลูกค้าประจำ', 'เทียบเดือน', 'ยอดเดือนนี้', 'แยกตามธนาคาร', 'ยังไม่ตรวจสลิป', 'ช่วยเหลือ'];
+
+/* ripple ตอนแตะปุ่ม/เมนู */
+document.addEventListener('pointerdown', function(e){
+  const el = e.target.closest('#quick button, #inputbar button, .slipchip, #gBtn');
+  if (!el) return;
+  const r = el.getBoundingClientRect();
+  const size = Math.max(r.width, r.height);
+  const rip = document.createElement('span');
+  rip.className = 'rip';
+  rip.style.width = rip.style.height = size + 'px';
+  rip.style.left = (e.clientX - r.left - size / 2) + 'px';
+  rip.style.top = (e.clientY - r.top - size / 2) + 'px';
+  el.appendChild(rip);
+  setTimeout(function(){ rip.remove(); }, 560);
+}, true);
 
 function escHtml(s){ return (s||'').toString().replace(/[<>&]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;'}[c])); }
 function addMsg(text, who){
