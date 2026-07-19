@@ -54,27 +54,6 @@
     border-radius: 14px; font-size: 18px; cursor: pointer;
     box-shadow: var(--glass-sh), var(--inset-hi);
   }
-  /* เมนู (bottom sheet เด้งจากล่าง) */
-  .menu-modal { position: fixed; inset: 0; z-index: 55; background: rgba(4,12,18,.5); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); display: none; align-items: flex-end; justify-content: center; }
-  .menu-modal.show { display: flex; animation: fade .2s ease; }
-  .menu-sheet {
-    width: 100%; max-width: 560px; background: rgba(18,32,42,.92);
-    -webkit-backdrop-filter: saturate(180%) blur(26px); backdrop-filter: saturate(180%) blur(26px);
-    border-top: 1px solid var(--glass-bd); border-radius: 24px 24px 0 0;
-    padding: 10px 14px calc(22px + env(safe-area-inset-bottom));
-    box-shadow: 0 -14px 44px rgba(0,0,0,.5); animation: up .3s cubic-bezier(.22,1,.36,1);
-  }
-  .menu-sheet::before { content: ""; display: block; width: 40px; height: 4px; border-radius: 99px; background: rgba(255,255,255,.28); margin: 2px auto 14px; }
-  .menu-sheet-title { text-align: center; font-weight: 700; font-size: 16px; margin-bottom: 12px; }
-  .menu-sheet button {
-    display: flex; align-items: center; gap: 12px; width: 100%; text-align: left;
-    background: var(--glass-2); border: 1px solid var(--glass-bd); color: var(--text); font-family: inherit;
-    padding: 15px 16px; border-radius: 14px; font-size: 15px; margin-bottom: 9px; cursor: pointer;
-    position: relative; overflow: hidden; transition: background .15s ease;
-  }
-  .menu-sheet button:active { background: rgba(255,255,255,.1); }
-  @media (hover: hover) { .menu-sheet button:hover { border-color: var(--accent); } }
-  #clearBtn { color: #fca5a5; }
   /* sync status pill */
   .syncpill {
     display: inline-flex; align-items: center; gap: 6px; font-size: 12px;
@@ -472,23 +451,12 @@
 
 <nav class="tabbar">
   <button class="tab" onclick="goHome()"><span class="ti">🏠</span><span>หน้าแรก</span></button>
-  <button class="tab" onclick="openMenu()"><span class="ti">☰</span><span>เมนู</span></button>
+  <button class="tab" onclick="openReport()"><span class="ti">📊</span><span>รายงาน</span></button>
   <button class="tab center" onclick="openModal()" aria-label="เพิ่มยอด"><span class="tc">＋</span></button>
   <button class="tab" onclick="openAssistant()"><span class="ti">💬</span><span>ผู้ช่วย</span></button>
   <button class="tab" onclick="openSettings()"><span class="ti">⚙️</span><span>ตั้งค่า</span></button>
 </nav>
 
-<!-- เมนู (bottom sheet) -->
-<div class="menu-modal" id="menuModal">
-  <div class="menu-sheet">
-    <div class="menu-sheet-title">เมนู</div>
-    <button onclick="menuGo(openReport)">📊 รายงาน</button>
-    <button onclick="menuGo(exportCSV)">⬇️ ส่งออก CSV</button>
-    <button onclick="menuGo(openSettings)">🔄 ตั้งค่า</button>
-    <button id="restoreBtn" onclick="menuGo(restoreBackup)">↩️ กู้คืน</button>
-    <button id="clearBtn" onclick="menuGo(clearAll)">🗑️ ล้างข้อมูล</button>
-  </div>
-</div>
 
 <!-- Add/Edit Modal -->
 <div class="modal" id="modal">
@@ -546,6 +514,15 @@
     <p class="emp-only" style="display:none;color:var(--muted);font-size:13px;text-align:center;margin:10px 0">โหมดพนักงาน — ไม่มีการตั้งค่าให้แก้ไข</p>
     <div class="btns emp-only" style="display:none;margin-bottom:6px"><button class="btn-cancel" style="flex:1" onclick="closeSettings()">ปิด</button></div>
     <div id="ownerOnlySettings">
+    <h2 style="margin-bottom:12px">🧰 เครื่องมือข้อมูล</h2>
+    <div class="btns" style="margin-bottom:8px">
+      <button class="btn-cancel" style="flex:1" onclick="exportCSV()">⬇️ ส่งออก CSV</button>
+      <button class="btn-cancel" style="flex:1" id="restoreBtn" onclick="restoreBackup()">↩️ กู้คืน</button>
+    </div>
+    <div class="btns" style="margin-bottom:18px">
+      <button class="btn-cancel" style="flex:1;color:#fca5a5" id="clearBtn" onclick="clearAll()">🗑️ ล้างข้อมูลทั้งหมด</button>
+    </div>
+    <hr style="border:none;border-top:1px solid var(--line);margin:4px 0 18px">
     <h2>🔄 ตั้งค่า Real-time (Firebase)</h2>
     <div class="hint">
       ทำให้ <b>กรอกเครื่องนึง อีกเครื่องเห็นทันที</b> โดยต่อกับ Firebase ฟรีของ Google
@@ -829,15 +806,9 @@ function disconnectRT() {
 /* ---------- แถบล่าง (tab bar) ---------- */
 function goHome(){ window.scrollTo({ top: 0, behavior: 'smooth' }); }
 
-/* ---------- เมนู (bottom sheet) ---------- */
-function openMenu(){ document.getElementById('menuModal').classList.add('show'); }
-function closeMenu(){ document.getElementById('menuModal').classList.remove('show'); }
-function menuGo(fn){ closeMenu(); fn(); }
-document.getElementById('menuModal').addEventListener('click', e => { if (e.target.id === 'menuModal') closeMenu(); });
-
 /* ---------- ripple ตอนแตะปุ่ม/เมนู ---------- */
 document.addEventListener('pointerdown', function(e){
-  const el = e.target.closest('.tab.center .tc, .menu-sheet button, .btns button, .g-btn, .tools button, .seg-btn, .slipview');
+  const el = e.target.closest('.tab.center .tc, .btns button, .g-btn, .tools button, .seg-btn, .slipview');
   if (!el) return;
   const r = el.getBoundingClientRect();
   const size = Math.max(r.width, r.height);
