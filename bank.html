@@ -333,7 +333,8 @@
   }
   .tab { flex: 1 1 0; min-width: 0; overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; background: none; border: none; color: var(--muted); font-family: inherit; font-size: 11px; cursor: pointer; padding: 7px 0 6px; border-radius: 16px; transition: color .18s ease, background .22s ease; }
   .tab span:not(.ti):not(.tc) { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .tab .ti { font-size: 21px; line-height: 1; filter: drop-shadow(0 1px 1px rgba(0,0,0,.35)); transition: transform .2s cubic-bezier(.34,1.45,.5,1); }
+  .tab .ti { width: 23px; height: 23px; display: flex; align-items: center; justify-content: center; filter: drop-shadow(0 1px 1px rgba(0,0,0,.35)); transition: transform .2s cubic-bezier(.34,1.45,.5,1); }
+  .tab .ti svg { width: 23px; height: 23px; display: block; }
   .tab:active { color: var(--accent); }
   .tab:active .ti { transform: scale(.88); }
   @media (hover: hover) { .tab:hover { color: var(--text); } }
@@ -344,11 +345,12 @@
   .tab.active .ti { color: #fff; }
   .tab.center .tc {
     width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
-    font-size: 22px; color: #fff;
+    color: #fff;
     background: radial-gradient(125% 125% at 50% 22%, rgba(180,235,255,.98), var(--cyan) 46%, var(--cyan-d));
     box-shadow: inset 0 1.5px 0 rgba(255,255,255,.75), inset 0 -3px 6px rgba(0,90,140,.45), 0 4px 13px rgba(0,164,228,.6);
     transition: transform .2s cubic-bezier(.34,1.45,.5,1);
   }
+  .tab.center .tc svg { width: 20px; height: 20px; display: block; }
   .tab.center:active .tc { transform: scale(.88); }
 
   /* ───── จอคอม/แท็บเล็ต (กว้างขึ้น) ───── */
@@ -473,11 +475,11 @@
 </div>
 
 <nav class="tabbar">
-  <button class="tab active" onclick="goHome()"><span class="ti">🏠</span><span>หน้าแรก</span></button>
-  <button class="tab" onclick="openReport()"><span class="ti">📊</span><span>รายงาน</span></button>
-  <button class="tab center" onclick="openModal()" aria-label="เพิ่มยอด"><span class="tc">＋</span><span>เพิ่ม</span></button>
-  <button class="tab" onclick="openAssistant()"><span class="ti">💬</span><span>ผู้ช่วย</span></button>
-  <button class="tab" onclick="openSettings()"><span class="ti">⚙️</span><span>ตั้งค่า</span></button>
+  <button class="tab active" onclick="goHome()"><span class="ti"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.7 12 3.5l9 7.2"/><path d="M5.2 9.4V19a1.4 1.4 0 0 0 1.4 1.4h10.8A1.4 1.4 0 0 0 18.8 19V9.4"/><path d="M9.5 20.4v-5.2a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v5.2"/></svg></span><span>หน้าแรก</span></button>
+  <button class="tab" onclick="openReport()"><span class="ti"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.2" y="12.5" width="4" height="7.3" rx="1.2"/><rect x="10" y="7.5" width="4" height="12.3" rx="1.2"/><rect x="16.8" y="4" width="4" height="15.8" rx="1.2"/></svg></span><span>รายงาน</span></button>
+  <button class="tab center" onclick="openModal()" aria-label="เพิ่มยอด"><span class="tc"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="12" y1="5.5" x2="12" y2="18.5"/><line x1="5.5" y1="12" x2="18.5" y2="12"/></svg></span><span>เพิ่ม</span></button>
+  <button class="tab" onclick="openAssistant()"><span class="ti"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 11.5a7.5 7.5 0 0 1-10.9 6.7L4.5 20l1.8-5.1A7.5 7.5 0 1 1 20.5 11.5z"/><circle cx="8.6" cy="11.4" r=".7" fill="currentColor" stroke="none"/><circle cx="12" cy="11.4" r=".7" fill="currentColor" stroke="none"/><circle cx="15.4" cy="11.4" r=".7" fill="currentColor" stroke="none"/></svg></span><span>ผู้ช่วย</span></button>
+  <button class="tab" onclick="openSettings()"><span class="ti"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V15z"/></svg></span><span>ตั้งค่า</span></button>
 </nav>
 
 
