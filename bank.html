@@ -54,6 +54,32 @@
     border-radius: 14px; font-size: 18px; cursor: pointer;
     box-shadow: var(--glass-sh), var(--inset-hi);
   }
+  /* เมนูมุมซ้ายบน (รายงาน/CSV/ตั้งค่า/กู้คืน/ล้าง) */
+  .menu-wrap { position: absolute; top: 16px; left: 4px; z-index: 60; text-align: left; }
+  .menu-btn {
+    background: var(--glass); -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur);
+    border: 1px solid var(--glass-bd); color: var(--text); width: 40px; height: 40px;
+    border-radius: 14px; font-size: 18px; cursor: pointer; box-shadow: var(--glass-sh), var(--inset-hi);
+    position: relative; overflow: hidden;
+  }
+  .menu-panel {
+    position: absolute; top: 48px; left: 0; min-width: 194px;
+    background: rgba(18,32,42,.82); -webkit-backdrop-filter: saturate(180%) blur(24px); backdrop-filter: saturate(180%) blur(24px);
+    border: 1px solid var(--glass-bd); border-radius: 16px; padding: 6px;
+    box-shadow: 0 16px 40px rgba(0,0,0,.5), var(--inset-hi);
+    display: none; flex-direction: column; transform-origin: top left;
+  }
+  .menu-panel.show { display: flex; animation: menuIn .16s cubic-bezier(.22,1,.36,1); }
+  @keyframes menuIn { from { opacity: 0; transform: translateY(-6px) scale(.97); } to { opacity: 1; transform: none; } }
+  .menu-panel button {
+    display: flex; align-items: center; gap: 10px; width: 100%; text-align: left;
+    background: transparent; border: none; color: var(--text); font-family: inherit;
+    padding: 12px 14px; border-radius: 11px; font-size: 14.5px; cursor: pointer;
+    position: relative; overflow: hidden; transition: background .15s ease;
+  }
+  .menu-panel button:active { background: var(--glass-2); }
+  @media (hover: hover) { .menu-panel button:hover { background: var(--glass-2); } }
+  #clearBtn { color: #fca5a5; }
   /* sync status pill */
   .syncpill {
     display: inline-flex; align-items: center; gap: 6px; font-size: 12px;
@@ -385,6 +411,16 @@
 </div>
 <div class="wrap">
   <header>
+    <div class="menu-wrap">
+      <button class="menu-btn" onclick="toggleMenu(event)" aria-label="เมนู">☰</button>
+      <div class="menu-panel" id="menuPanel">
+        <button onclick="menuGo(openReport)">📊 รายงาน</button>
+        <button onclick="menuGo(exportCSV)">⬇️ ส่งออก CSV</button>
+        <button onclick="menuGo(openSettings)">🔄 ตั้งค่า</button>
+        <button id="restoreBtn" onclick="menuGo(restoreBackup)">↩️ กู้คืน</button>
+        <button id="clearBtn" onclick="menuGo(clearAll)">🗑️ ล้างข้อมูล</button>
+      </div>
+    </div>
     <button class="gear" onclick="openSettings()">⚙️</button>
     <h1><img src="hurt-logo.jpg" class="hdr-logo" alt="">HURT SHOP</h1>
     <p>บันทึกเงินที่โอนเข้าบัญชีธนาคาร</p>
@@ -422,13 +458,6 @@
 
   <div class="list" id="list"></div>
 
-  <div class="tools">
-    <button onclick="openReport()">📊 รายงาน</button>
-    <button onclick="exportCSV()">⬇️ CSV</button>
-    <button onclick="openSettings()">🔄 ตั้งค่า</button>
-    <button id="restoreBtn" onclick="restoreBackup()">↩️ กู้คืน</button>
-    <button id="clearBtn" onclick="clearAll()">🗑️ ล้าง</button>
-  </div>
 </div>
 
 <button class="asst-fab" onclick="openAssistant()" aria-label="ผู้ช่วย" title="ผู้ช่วย">💬</button>
@@ -812,9 +841,14 @@ function disconnectRT() {
   location.reload();
 }
 
+/* ---------- เมนูมุมซ้ายบน ---------- */
+function toggleMenu(e){ e.stopPropagation(); document.getElementById('menuPanel').classList.toggle('show'); }
+function menuGo(fn){ document.getElementById('menuPanel').classList.remove('show'); fn(); }
+document.addEventListener('click', function(){ const p = document.getElementById('menuPanel'); if (p) p.classList.remove('show'); });
+
 /* ---------- ripple ตอนแตะปุ่ม/เมนู ---------- */
 document.addEventListener('pointerdown', function(e){
-  const el = e.target.closest('.fab, .asst-fab, .gear, .btns button, .g-btn, .tools button, .seg-btn, .slipview');
+  const el = e.target.closest('.fab, .asst-fab, .gear, .menu-btn, .menu-panel button, .btns button, .g-btn, .tools button, .seg-btn, .slipview');
   if (!el) return;
   const r = el.getBoundingClientRect();
   const size = Math.max(r.width, r.height);
