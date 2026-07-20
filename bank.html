@@ -1374,15 +1374,14 @@ function googleSignIn() {
   if (isInAppBrowser()) { showAuthError({ code: 'inapp' }); return; }   // กัน Google บล็อก webview ในแอป
   const provider = new firebase.auth.GoogleAuthProvider();
   provider.setCustomParameters({ prompt: 'select_account' });
-  const el = document.getElementById('loginMsg'); if (el) el.textContent = 'กำลังพาไปหน้า Google...';
-  if (isMobile()) {   // มือถือ (โดยเฉพาะ iOS Safari) popup ไม่เสถียร — ใช้ redirect ทั้งหน้า
-    firebase.auth().signInWithRedirect(provider).catch(showAuthError);
-    return;
-  }
+  const el = document.getElementById('loginMsg'); if (el) el.textContent = 'กำลังเปิดหน้า Google...';
+  // ใช้ popup ทุกอุปกรณ์ — iOS Safari แบบ redirect เด้งกลับแล้วอ่านสถานะไม่ได้ (ITP)
+  // popup ทำงานในแท็บเดียว ไม่ต้องพึ่ง storage ข้ามโดเมนตอนกลับ
   firebase.auth().signInWithPopup(provider).catch(err => {
     if (err.code === 'auth/popup-closed-by-user' || err.code === 'auth/cancelled-popup-request') { if (el) el.textContent = 'เข้าสู่ระบบด้วย Google เพื่อใช้งาน'; return; }
     if (err.code === 'auth/popup-blocked' || err.code === 'auth/operation-not-supported-in-this-environment') {
-      firebase.auth().signInWithRedirect(provider).catch(showAuthError);
+      if (el) el.textContent = 'กำลังพาไปหน้า Google...';
+      firebase.auth().signInWithRedirect(provider).catch(showAuthError);   // สำรอง ถ้า popup ถูกบล็อก
     } else {
       showAuthError(err);
     }
