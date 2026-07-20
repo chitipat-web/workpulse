@@ -1359,6 +1359,7 @@ function isInAppBrowser() {
   const ua = (navigator.userAgent || '') + ' ' + (navigator.vendor || '');
   return /FBAN|FBAV|FB_IAB|Instagram|Line\/|Messenger|MicroMessenger|TikTok/i.test(ua);
 }
+function isMobile() { return /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent || ''); }
 function showAuthError(err) {
   const code = err && err.code || '';
   let msg = (err && (err.message || err.code)) || 'ไม่ทราบสาเหตุ';
@@ -1369,11 +1370,17 @@ function showAuthError(err) {
   const el = document.getElementById('loginMsg'); if (el) el.textContent = 'เข้าสู่ระบบไม่สำเร็จ: ' + msg;
 }
 function googleSignIn() {
+  if (!(window.firebase && firebase.auth)) { showAuthError({ code: 'noload', message: 'โหลด Firebase ไม่สำเร็จ — เช็คเน็ตแล้วรีเฟรชหน้า' }); return; }
   if (isInAppBrowser()) { showAuthError({ code: 'inapp' }); return; }   // กัน Google บล็อก webview ในแอป
   const provider = new firebase.auth.GoogleAuthProvider();
   provider.setCustomParameters({ prompt: 'select_account' });
+  const el = document.getElementById('loginMsg'); if (el) el.textContent = 'กำลังพาไปหน้า Google...';
+  if (isMobile()) {   // มือถือ (โดยเฉพาะ iOS Safari) popup ไม่เสถียร — ใช้ redirect ทั้งหน้า
+    firebase.auth().signInWithRedirect(provider).catch(showAuthError);
+    return;
+  }
   firebase.auth().signInWithPopup(provider).catch(err => {
-    if (err.code === 'auth/popup-closed-by-user' || err.code === 'auth/cancelled-popup-request') return;
+    if (err.code === 'auth/popup-closed-by-user' || err.code === 'auth/cancelled-popup-request') { if (el) el.textContent = 'เข้าสู่ระบบด้วย Google เพื่อใช้งาน'; return; }
     if (err.code === 'auth/popup-blocked' || err.code === 'auth/operation-not-supported-in-this-environment') {
       firebase.auth().signInWithRedirect(provider).catch(showAuthError);
     } else {
@@ -1392,10 +1399,15 @@ function startApp(room) { if (started) return; started = true; connectRT(activeC
   if (!ac) {   // ไม่มี config → โหมดออฟไลน์ ไม่ต้องล็อกอิน
     hideLogin(); setSync('', 'โหมดออฟไลน์ (เครื่องนี้)'); loadLocal(); render(); return;
   }
+  if (!(window.firebase && firebase.auth)) {   // SDK โหลดไม่ขึ้น (เน็ต/บล็อก)
+    showLogin('โหลด Firebase ไม่สำเร็จ — เช็คอินเทอร์เน็ตแล้วรีเฟรชหน้า'); return;
+  }
   try { if (!app) app = firebase.initializeApp(ac.cfg); } catch (e) {}
   showLogin('กำลังตรวจสอบ...');
+  let authFired = false;
   firebase.auth().getRedirectResult().catch(showAuthError);   // แสดงสาเหตุถ้า redirect ล้มเหลว
   firebase.auth().onAuthStateChanged(user => {
+    authFired = true;
     if (user && isAllowed(user.email)) {
       currentUser = user;
       role = isOwnerEmail(user.email) ? 'owner' : 'employee';
@@ -1411,6 +1423,12 @@ function startApp(room) { if (started) return; started = true; connectRT(activeC
       showLogin('เข้าสู่ระบบด้วย Google เพื่อใช้งาน');
     }
   });
+  // watchdog: ถ้า auth ค้าง (iOS Safari บล็อก iframe ข้ามโดเมน) ไม่ให้ค้างที่ "กำลังตรวจสอบ"
+  setTimeout(function(){
+    if (authFired || currentUser) return;
+    if (isInAppBrowser()) return;   // มีข้อความ in-app แยกแล้ว
+    showLogin('เข้าสู่ระบบด้วย Google เพื่อใช้งาน\n(ถ้ากดแล้วไม่ไปหน้า Google: Safari → ตั้งค่า → ปิด "ป้องกันการติดตามข้ามเว็บไซต์")');
+  }, 5000);
 })();
 </script>
 </body>
