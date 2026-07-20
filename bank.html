@@ -628,9 +628,26 @@
   </div>
 </div>
 
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script>
+// ⚠️ ถอน Service Worker ค้างจากโปรเจกต์อื่นในโดเมนเดียวกัน (map/ลาล่า) ที่ดักจับไฟล์
+// แบบ Network-First จนคืน error ให้ Firebase ตอนเน็ตกระตุก → "โหลด Firebase ไม่สำเร็จ"
+(function () {
+  if (!('serviceWorker' in navigator)) return;
+  var controlled = !!navigator.serviceWorker.controller;
+  navigator.serviceWorker.getRegistrations()
+    .then(function (rs) { return Promise.all(rs.map(function (r) { return r.unregister(); })); })
+    .then(function () {
+      if (controlled && !sessionStorage.getItem('swCleared')) {
+        sessionStorage.setItem('swCleared', '1');
+        location.reload();   // ถอน SW เสร็จแล้ว โหลดสดอีกครั้งแบบไม่มี SW คั่น
+      }
+    })
+    .catch(function () {});
+})();
+</script>
+<script src="vendor/firebase/firebase-app-compat.js"></script>
+<script src="vendor/firebase/firebase-database-compat.js"></script>
+<script src="vendor/firebase/firebase-auth-compat.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
 <script>
 const LKEY = 'bank_transfers_v1';      // local fallback store
