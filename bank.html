@@ -428,7 +428,7 @@
   <div class="login-box">
     <img src="hurt-logo.jpg" alt="HURT SHOP" class="login-logo-img">
     <h1>HURT SHOP</h1>
-    <p id="loginMsg">กำลังตรวจสอบ...</p>
+    <p id="loginMsg" style="white-space:pre-line">กำลังตรวจสอบ...</p>
     <button class="g-btn" id="gBtn" onclick="googleSignIn()" style="display:none">
       <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
       เข้าสู่ระบบด้วย Google
@@ -1355,14 +1355,29 @@ function showLogin(msg, email) {
   document.getElementById('loginSignout').style.display = email ? 'block' : 'none';
 }
 function hideLogin() { document.getElementById('loginScreen').style.display = 'none'; }
+function isInAppBrowser() {
+  const ua = (navigator.userAgent || '') + ' ' + (navigator.vendor || '');
+  return /FBAN|FBAV|FB_IAB|Instagram|Line\/|Messenger|MicroMessenger|TikTok/i.test(ua);
+}
+function showAuthError(err) {
+  const code = err && err.code || '';
+  let msg = (err && (err.message || err.code)) || 'ไม่ทราบสาเหตุ';
+  if (code === 'auth/unauthorized-domain') msg = 'โดเมนนี้ยังไม่ได้รับอนุญาตใน Firebase (Authentication → Settings → Authorized domains)';
+  if (code === 'auth/operation-not-allowed') msg = 'ยังไม่ได้เปิด Google sign-in ใน Firebase (Authentication → Sign-in method)';
+  if (/disallowed_useragent|operation-not-supported/i.test(code + msg) || isInAppBrowser())
+    msg = 'เบราว์เซอร์ในแอป (LINE/Facebook) ล็อกอิน Google ไม่ได้ — กดปุ่ม ••• มุมขวา แล้วเลือก "เปิดในเบราว์เซอร์" (Safari/Chrome)';
+  const el = document.getElementById('loginMsg'); if (el) el.textContent = 'เข้าสู่ระบบไม่สำเร็จ: ' + msg;
+}
 function googleSignIn() {
+  if (isInAppBrowser()) { showAuthError({ code: 'inapp' }); return; }   // กัน Google บล็อก webview ในแอป
   const provider = new firebase.auth.GoogleAuthProvider();
+  provider.setCustomParameters({ prompt: 'select_account' });
   firebase.auth().signInWithPopup(provider).catch(err => {
     if (err.code === 'auth/popup-closed-by-user' || err.code === 'auth/cancelled-popup-request') return;
     if (err.code === 'auth/popup-blocked' || err.code === 'auth/operation-not-supported-in-this-environment') {
-      firebase.auth().signInWithRedirect(provider);
+      firebase.auth().signInWithRedirect(provider).catch(showAuthError);
     } else {
-      alert('เข้าสู่ระบบไม่สำเร็จ: ' + (err.message || err.code));
+      showAuthError(err);
     }
   });
 }
@@ -1379,6 +1394,7 @@ function startApp(room) { if (started) return; started = true; connectRT(activeC
   }
   try { if (!app) app = firebase.initializeApp(ac.cfg); } catch (e) {}
   showLogin('กำลังตรวจสอบ...');
+  firebase.auth().getRedirectResult().catch(showAuthError);   // แสดงสาเหตุถ้า redirect ล้มเหลว
   firebase.auth().onAuthStateChanged(user => {
     if (user && isAllowed(user.email)) {
       currentUser = user;
@@ -1389,6 +1405,8 @@ function startApp(room) { if (started) return; started = true; connectRT(activeC
       startApp(ac.room);
     } else if (user) {
       showLogin('บัญชี ' + user.email + ' ไม่มีสิทธิ์เข้าถึงระบบนี้\nติดต่อเจ้าของระบบเพื่อขอสิทธิ์', user.email);
+    } else if (isInAppBrowser()) {
+      showLogin('กรุณาเปิดในเบราว์เซอร์ Safari หรือ Chrome\n(กดปุ่ม ••• มุมขวาบน แล้วเลือก "เปิดในเบราว์เซอร์")\nเพราะ Google ล็อกอินในแอป LINE/Facebook ไม่ได้');
     } else {
       showLogin('เข้าสู่ระบบด้วย Google เพื่อใช้งาน');
     }
