@@ -1360,11 +1360,6 @@ function isInAppBrowser() {
   return /FBAN|FBAV|FB_IAB|Instagram|Line\/|Messenger|MicroMessenger|TikTok/i.test(ua);
 }
 function isMobile() { return /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent || ''); }
-// เบราว์เซอร์อื่นบน iOS (Chrome/Firefox/Edge/Opera) — บล็อก popup + redirect ก็วนกลับ ต้องใช้ Safari
-function isIOSNonSafari() {
-  const ua = navigator.userAgent || '';
-  return /iPhone|iPad|iPod/i.test(ua) && /CriOS|FxiOS|EdgiOS|OPiOS|Mercury/i.test(ua);
-}
 function showAuthError(err) {
   const code = err && err.code || '';
   let msg = (err && (err.message || err.code)) || 'ไม่ทราบสาเหตุ';
@@ -1377,11 +1372,6 @@ function showAuthError(err) {
 function googleSignIn() {
   if (!(window.firebase && firebase.auth)) { showAuthError({ code: 'noload', message: 'โหลด Firebase ไม่สำเร็จ — เช็คเน็ตแล้วรีเฟรชหน้า' }); return; }
   if (isInAppBrowser()) { showAuthError({ code: 'inapp' }); return; }   // กัน Google บล็อก webview ในแอป
-  if (isIOSNonSafari()) {   // Chrome/เบราว์เซอร์อื่นบน iPhone ล็อกอินไม่ได้ — ให้ใช้ Safari
-    const el2 = document.getElementById('loginMsg');
-    if (el2) el2.textContent = 'กรุณาเปิดใน Safari แทน\nเบราว์เซอร์นี้บน iPhone ล็อกอิน Google ไม่ได้\n(แตะ ••• หรือช่องลิงก์ → "เปิดใน Safari")';
-    return;
-  }
   const provider = new firebase.auth.GoogleAuthProvider();
   provider.setCustomParameters({ prompt: 'select_account' });
   const el = document.getElementById('loginMsg'); if (el) el.textContent = 'กำลังเปิดหน้า Google...';
