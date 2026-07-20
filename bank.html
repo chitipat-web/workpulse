@@ -1399,9 +1399,18 @@ function startApp(room) { if (started) return; started = true; connectRT(activeC
   if (!ac) {   // ไม่มี config → โหมดออฟไลน์ ไม่ต้องล็อกอิน
     hideLogin(); setSync('', 'โหมดออฟไลน์ (เครื่องนี้)'); loadLocal(); render(); return;
   }
-  if (!(window.firebase && firebase.auth)) {   // SDK โหลดไม่ขึ้น (เน็ต/บล็อก)
-    showLogin('โหลด Firebase ไม่สำเร็จ — เช็คอินเทอร์เน็ตแล้วรีเฟรชหน้า'); return;
+  if (!(window.firebase && firebase.auth)) {   // SDK โหลดไม่ขึ้น (เน็ต/บล็อก/แคช)
+    try {
+      if (!sessionStorage.getItem('fbRetry')) {   // ลองโหลดใหม่อัตโนมัติ 1 ครั้ง (กันเน็ตกระตุก)
+        sessionStorage.setItem('fbRetry', '1'); location.reload(); return;
+      }
+    } catch (e) {}
+    showLogin('โหลด Firebase ไม่สำเร็จ\nแตะปุ่มด้านล่างเพื่อลองใหม่\nถ้ายังไม่ได้ ลองสลับ WiFi/เน็ต หรือปิดตัวบล็อกโฆษณาใน Safari');
+    const rb = document.getElementById('gBtn');
+    if (rb) { rb.style.display = 'flex'; rb.innerHTML = '🔄 ลองใหม่'; rb.onclick = function(){ try { sessionStorage.removeItem('fbRetry'); } catch (e) {} location.reload(); }; }
+    return;
   }
+  try { sessionStorage.removeItem('fbRetry'); } catch (e) {}   // โหลดสำเร็จแล้ว เคลียร์ธงกันลองซ้ำ
   try { if (!app) app = firebase.initializeApp(ac.cfg); } catch (e) {}
   showLogin('กำลังตรวจสอบ...');
   let authFired = false;
