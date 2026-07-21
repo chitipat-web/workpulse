@@ -1341,9 +1341,9 @@ setTimeout(() => {
   }
 }, 15000);
 
-// Service worker (PWA เดิมของแอป)
+// เอา Service Worker ออกแล้ว (เคยไปคุมทั้งโดเมนจนกวนแอปอื่น) — ถอนตัวที่ค้างในเครื่องด้วย
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/sw.js').catch(() => {});
+  navigator.serviceWorker.getRegistrations().then(rs => rs.forEach(r => r.unregister())).catch(() => {});
 }
 </script>
 </body>
