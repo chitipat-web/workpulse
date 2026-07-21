@@ -1112,6 +1112,7 @@ function submitPending() {
     .then(() => { setSlipStatus('ok', '✅ ส่งเข้าคิวรอเจ้าของอนุมัติแล้ว'); setTimeout(closeModal, 900); })
     .catch(e => {
       if (btn) { btn.disabled = false; btn.textContent = 'บันทึก'; }
+      const sr = slipsRef(); if (sr) { try { sr.child(id).remove().catch(() => {}); } catch (_) {} }   // ลบรูปที่ค้าง (ส่งคิวไม่สำเร็จ)
       alert('ส่งไม่สำเร็จ — เจ้าของยังไม่ได้เปิดสิทธิ์คิวรออนุมัติ (Firebase rules)\n\n' + (e && e.message ? e.message : ''));
     });
 }
@@ -1120,10 +1121,11 @@ function approvePending(id) {
   if (role !== 'owner') { alert('เฉพาะเจ้าของอนุมัติได้'); return; }
   const it = (pendingData || []).find(x => String(x.id) === String(id));
   if (!it) { alert('ไม่พบรายการในคิว'); return; }
-  const input = prompt('ยืนยันจำนวนเงิน (ตรวจให้ตรงกับสลิป)\nผู้ส่ง: ' + (it.submittedBy || '-') + '\nชื่อ: ' + (it.name || '-') + '\nยอดที่พนักงานกรอก: ' + fmt(amt(it)), amt(it));
+  // ไม่เติมยอดให้ล่วงหน้า — บังคับเจ้าของดูสลิปแล้วพิมพ์ยอดจริงเอง (กันกด OK รวดเดียว)
+  const input = prompt('พิมพ์จำนวนเงินจริงตามสลิป (กด "ดูสลิป" ตรวจก่อน)\nผู้ส่ง: ' + (it.submittedBy || '-') + '\nชื่อ: ' + (it.name || '-') + '\nยอดที่พนักงานแจ้ง: ' + fmt(amt(it)) + '  ← ตรวจให้ตรงกับสลิป', '');
   if (input === null) return;
   const amount = parseFloat(input);
-  if (!amount || amount <= 0) { alert('จำนวนเงินไม่ถูกต้อง'); return; }
+  if (!amount || amount <= 0) { alert('จำนวนเงินไม่ถูกต้อง — พิมพ์ยอดตามสลิป'); return; }
   putRecord({
     id: it.id, amount,
     name: it.name || 'ไม่ระบุชื่อ', bank: it.bank || '', date: it.date || todayStr(),
