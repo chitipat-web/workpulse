@@ -128,6 +128,12 @@
   .item .amt b { color: var(--green); font-size: 16px; font-weight: 700; }
   .item .amt .del { display: block; margin-top: 6px; color: var(--muted); font-size: 11px; cursor: pointer; background: none; border: none; }
   .item .amt .del:active { color: var(--red); }
+  .item .ava.out { background: rgba(239,68,68,.15); color: var(--red); }
+  .item .amt b.amt-out { color: var(--red); }
+  .item .info .slip.out-tag { color: #fca5a5; }
+  .summary .total.neg { color: #fecaca; }
+  .summary .meta div b.mt-in { color: #bbf7d0; }
+  .summary .meta div b.mt-out { color: #fecaca; }
   .slipview { display: inline-flex; align-items: center; gap: 4px; margin-top: 5px; background: var(--glass-2); -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur); border: 1px solid var(--glass-bd); color: var(--accent); border-radius: 9px; padding: 4px 10px; font-size: 11px; cursor: pointer; font-family: inherit; box-shadow: var(--inset-hi); }
   .slip-lightbox { position: fixed; inset: 0; z-index: 120; background: rgba(0,0,0,.86); -webkit-backdrop-filter: blur(5px); backdrop-filter: blur(5px); display: none; align-items: center; justify-content: center; padding: 20px; flex-direction: column; }
   .slip-lightbox.show { display: flex; animation: fade .2s ease; }
@@ -216,6 +222,11 @@
   .hint ol { margin: 6px 0 0 18px; }
   .hint li { margin-bottom: 3px; }
 
+  .io-toggle { display: flex; gap: 6px; background: var(--glass); -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur); border: 1px solid var(--glass-bd); border-radius: 14px; padding: 4px; margin-bottom: 12px; box-shadow: var(--inset-hi); }
+  .io-btn { flex: 1; background: transparent; border: none; color: var(--muted); border-radius: 11px; padding: 10px 6px; font-size: 14px; font-weight: 700; cursor: pointer; font-family: inherit; transition: background .2s, color .2s; }
+  .io-btn.active[data-io="in"] { background: linear-gradient(135deg, rgba(34,197,94,.95), rgba(22,163,74,.95)); color: #04220f; box-shadow: 0 4px 14px rgba(34,197,94,.4), inset 0 1px 0 rgba(255,255,255,.45); }
+  .io-btn.active[data-io="out"] { background: linear-gradient(135deg, rgba(239,68,68,.95), rgba(201,45,45,.95)); color: #2a0606; box-shadow: 0 4px 14px rgba(239,68,68,.4), inset 0 1px 0 rgba(255,255,255,.45); }
+  body.role-employee #ioToggle { display: none; }
   .slip-primary { background: rgba(56,189,248,.08); border: 1px dashed var(--accent); border-radius: 14px; padding: 14px; margin-bottom: 12px; }
   .slip-primary label { color: var(--accent); font-weight: 600; font-size: 14px; }
   .autofill-note { font-size: 12px; color: var(--muted); text-align: center; margin-bottom: 12px; }
@@ -415,6 +426,7 @@
   .stat span { text-transform: uppercase; letter-spacing: .8px; font-size: 11px; }
   /* ไอคอนรายการดูดีขึ้น */
   .item .ava { background: linear-gradient(135deg, rgba(34,197,94,.28), rgba(34,197,94,.05)); border: 1px solid rgba(34,197,94,.28); box-shadow: inset 0 1px 0 rgba(255,255,255,.14); font-weight: 700; }
+  .item .ava.out { background: linear-gradient(135deg, rgba(239,68,68,.28), rgba(239,68,68,.05)); border: 1px solid rgba(239,68,68,.28); }
   .sheet { position: relative; }
   #reportSheet::before { display: none; }
   @media (hover: hover) {
@@ -461,12 +473,12 @@
   <div class="top-row">
   <div class="summary">
     <div class="card-top"><span class="chip"></span> บัญชีร้าน · HURT SHOP</div>
-    <div class="label" id="sumLabel">ยอดรวมทั้งหมด</div>
+    <div class="label" id="sumLabel">ยอดคงเหลือ</div>
     <div class="total"><span id="totalAmt">0</span> <small>บาท</small></div>
     <div class="meta">
-      <div><span>จำนวนรายการ</span><b id="count">0</b></div>
-      <div><span>เฉลี่ยต่อรายการ</span><b id="avg">0</b></div>
-      <div><span>รายการล่าสุด</span><b id="last">-</b></div>
+      <div><span>รับเข้า</span><b id="sumIn" class="mt-in">0</b></div>
+      <div><span>จ่ายออก</span><b id="sumOut" class="mt-out">0</b></div>
+      <div><span>รายการ</span><b id="count">0</b></div>
     </div>
   </div>
 
@@ -507,6 +519,10 @@
   <div class="sheet">
     <h2 id="modalTitle">เพิ่มยอดโอนเข้า</h2>
     <input type="hidden" id="editId">
+    <div class="io-toggle" id="ioToggle">
+      <button type="button" class="io-btn active" data-io="in" onclick="setIO('in')">💰 รับเข้า</button>
+      <button type="button" class="io-btn" data-io="out" onclick="setIO('out')">💸 จ่ายออก</button>
+    </div>
     <div class="field slip-primary">
       <label>📎 แนบสลิป แล้วกดบันทึก (ยืนยันกับธนาคารอัตโนมัติ)</label>
       <input id="fSlip" type="file" accept="image/*" onchange="handleSlip(this)">
@@ -916,6 +932,19 @@ function closeAssistant() { document.getElementById('asstModal').classList.remov
 document.getElementById('asstModal').addEventListener('click', e => { if (e.target.id === 'asstModal') closeAssistant(); });
 
 /* ---------- add/edit modal ---------- */
+let modalIO = 'in';   // 'in' รับเข้า | 'out' จ่ายออก (เฉพาะเจ้าของ)
+function setIO(m) {
+  modalIO = (m === 'out') ? 'out' : 'in';
+  document.querySelectorAll('#ioToggle .io-btn').forEach(b => b.classList.toggle('active', b.dataset.io === modalIO));
+  const editing = !!document.getElementById('editId').value;
+  // แก้ไขรายการเดิม → ล็อกประเภท (กันเผลอสลับเข้า/ออกของรายการที่ยืนยันแล้ว); เพิ่มใหม่ → ให้ CSS ตัดสิน (เจ้าของเห็น พนักงานถูกซ่อน)
+  document.getElementById('ioToggle').style.display = editing ? 'none' : '';
+  document.getElementById('modalTitle').textContent =
+    modalIO === 'out' ? (editing ? 'แก้ไขรายการโอนออก' : 'บันทึกโอนออก')
+                      : (editing ? 'แก้ไขรายการ' : 'เพิ่มยอดโอนเข้า');
+  const af = document.querySelector('#modal .autofill-note'); if (af) af.style.display = (modalIO === 'out') ? 'none' : '';
+  const sl = document.querySelector('#modal .slip-primary label'); if (sl) sl.textContent = (modalIO === 'out') ? '📎 แนบสลิปโอนออก (ถ้ามี)' : '📎 แนบสลิป แล้วกดบันทึก (ยืนยันกับธนาคารอัตโนมัติ)';
+}
 function openModal(id) {
   if (id && role === 'employee') return;   // พนักงานแก้ไขรายการเดิมไม่ได้
   document.getElementById('modal').classList.add('show');
@@ -934,6 +963,7 @@ function openModal(id) {
     document.getElementById('fSlipVerified').value = it.slipVerified ? '1' : '';
     setSlipStatus(it.slipVerified ? 'ok' : (it.slipRef || it.slipHash ? 'ok' : ''),
       it.slipVerified ? '🛡️ ยืนยันกับธนาคารแล้ว' : (it.slipRef || it.slipHash ? '📎 มีสลิปแนบอยู่แล้ว' : ''));
+    setIO(it.type === 'out' ? 'out' : 'in');
   } else {
     document.getElementById('modalTitle').textContent = 'เพิ่มยอดโอนเข้า';
     document.getElementById('editId').value = '';
@@ -946,6 +976,7 @@ function openModal(id) {
     document.getElementById('fSlipHash').value = '';
     document.getElementById('fSlipVerified').value = '';
     setSlipStatus('', '');
+    setIO('in');
     setTimeout(() => document.getElementById('fAmount').focus(), 200);
   }
   currentSlipImg = '';
@@ -968,6 +999,7 @@ async function save() {
     const amtChanged = Number(old.amount) !== amount;
     putRecord(Object.assign({}, old, {
       id: editId, amount,
+      type: modalIO === 'out' ? 'out' : 'in',
       name: document.getElementById('fName').value.trim() || 'ไม่ระบุชื่อ',
       bank: document.getElementById('fBank').value,
       date: document.getElementById('fDate').value || todayStr(), note,
@@ -980,6 +1012,9 @@ async function save() {
     if (currentSlipImg) putSlipImage(editId, currentSlipImg);
     closeModal(); return;
   }
+
+  // รายการใหม่แบบ "โอนออก" (เจ้าของเท่านั้น) → เขียนตรง type:'out'
+  if (modalIO === 'out') { saveOutgoing(); return; }
 
   // รายการใหม่ + มีสลิป → ยืนยัน+บันทึกผ่าน Worker (ยอดมาจากธนาคาร กันเงินปลอม)
   if (qr) {
@@ -1034,6 +1069,24 @@ function ownerManualSave() {
     note: document.getElementById('fNote').value.trim(),
     slipRef: document.getElementById('fSlipRef').value || '',
     slipHash: document.getElementById('fSlipHash').value || '',
+    slipVerified: false, manual: true, hasImg: !!currentSlipImg
+  });
+  if (currentSlipImg) putSlipImage(id, currentSlipImg);
+  closeModal();
+}
+// เจ้าของบันทึกโอนออก (หักจากยอดคงเหลือ) → เขียนตรง type:'out'
+function saveOutgoing() {
+  if (role !== 'owner') { alert('เฉพาะเจ้าของบันทึกโอนออกได้'); return; }
+  const amount = parseFloat(document.getElementById('fAmount').value);
+  if (!amount || amount <= 0) { alert('ใส่จำนวนเงินที่โอนออกก่อน'); document.getElementById('fAmount').focus(); return; }
+  const id = 'o' + Date.now() + Math.floor(Math.random() * 1000);
+  putRecord({
+    id, amount, type: 'out',
+    name: document.getElementById('fName').value.trim() || 'จ่ายออก',
+    bank: document.getElementById('fBank').value || '',
+    date: document.getElementById('fDate').value || todayStr(),
+    note: document.getElementById('fNote').value.trim(),
+    slipRef: '', slipHash: document.getElementById('fSlipHash').value || '',
     slipVerified: false, manual: true, hasImg: !!currentSlipImg
   });
   if (currentSlipImg) putSlipImage(id, currentSlipImg);
@@ -1248,11 +1301,11 @@ function restoreBackup() {
 }
 function exportCSV() {
   if (!data.length) { alert('ยังไม่มีข้อมูล'); return; }
-  let csv = '﻿วันที่,ผู้โอน,ธนาคาร,จำนวนเงิน,โน้ต\n';
+  let csv = '﻿วันที่,ประเภท,ผู้โอน/ผู้รับ,ธนาคาร,จำนวนเงิน,โน้ต\n';
   const cell = v => { let s = (v == null ? '' : v).toString(); if (/^[=+\-@\t\r]/.test(s)) s = "'" + s; return '"' + s.replace(/"/g, '""') + '"'; };  // กัน CSV/formula injection
   data.filter(x => x && typeof x === 'object')
       .sort((a,b) => String(a.date||'').localeCompare(String(b.date||'')))
-      .forEach(it => { csv += [it.date||'', cell(it.name), cell(it.bank), amt(it), cell(it.note)].join(',') + '\n'; });
+      .forEach(it => { csv += [it.date||'', isOut(it) ? 'จ่ายออก' : 'รับเข้า', cell(it.name), cell(it.bank), signedAmt(it), cell(it.note)].join(',') + '\n'; });
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
@@ -1317,10 +1370,15 @@ function _xlsxBlob(aoa) {
 function exportExcel() {
   if (!data.length) { alert('ยังไม่มีข้อมูล'); return; }
   const rows = exportRows();
-  const total = rows.reduce((s, x) => s + amt(x), 0);
-  const aoa = [['วันที่', 'ผู้โอน', 'ธนาคาร', 'จำนวนเงิน', 'โน้ต']];
-  rows.forEach(it => aoa.push([it.date || '', it.name || '', it.bank || '', amt(it), it.note || '']));
-  aoa.push([`รวม (${rows.length} รายการ)`, '', '', total, '']);
+  const net = rows.reduce((s, x) => s + signedAmt(x), 0);
+  const sumIn = rows.filter(x => !isOut(x)).reduce((s, x) => s + amt(x), 0);
+  const sumOut = rows.filter(isOut).reduce((s, x) => s + amt(x), 0);
+  const aoa = [['วันที่', 'ประเภท', 'ผู้โอน/ผู้รับ', 'ธนาคาร', 'จำนวนเงิน', 'โน้ต']];
+  rows.forEach(it => aoa.push([it.date || '', isOut(it) ? 'จ่ายออก' : 'รับเข้า', it.name || '', it.bank || '', signedAmt(it), it.note || '']));
+  aoa.push(['', '', '', '', '', '']);
+  aoa.push([`รับเข้ารวม`, '', '', '', sumIn, '']);
+  aoa.push([`จ่ายออกรวม`, '', '', '', -sumOut, '']);
+  aoa.push([`ยอดคงเหลือ (${rows.length} รายการ)`, '', '', '', net, '']);
   const a = document.createElement('a');
   a.href = URL.createObjectURL(_xlsxBlob(aoa));
   a.download = 'ยอดโอนเข้า_' + todayStr() + '.xlsx';
@@ -1332,23 +1390,27 @@ function exportPDF() {
   if (!data.length) { alert('ยังไม่มีข้อมูล'); return; }
   const esc = s => (s || '').toString().replace(/[<>&"]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));
   const rows = exportRows();
-  const total = rows.reduce((s,x) => s + amt(x), 0);
-  let html = '<h2 style="text-align:center;margin:0 0 4px">HURT SHOP — รายการยอดโอนเข้า</h2>';
-  html += `<p style="text-align:center;margin:0 0 14px;color:#555;font-size:13px">พิมพ์เมื่อ ${thaiDate(todayStr())} · ${rows.length} รายการ · รวม ${fmt(total)} ฿</p>`;
+  const net = rows.reduce((s,x) => s + signedAmt(x), 0);
+  const sumIn = rows.filter(x => !isOut(x)).reduce((s,x) => s + amt(x), 0);
+  const sumOut = rows.filter(isOut).reduce((s,x) => s + amt(x), 0);
+  let html = '<h2 style="text-align:center;margin:0 0 4px">HURT SHOP — รายการบัญชีร้าน</h2>';
+  html += `<p style="text-align:center;margin:0 0 14px;color:#555;font-size:13px">พิมพ์เมื่อ ${thaiDate(todayStr())} · ${rows.length} รายการ · รับเข้า ${fmt(sumIn)} − จ่ายออก ${fmt(sumOut)} = คงเหลือ ${fmt(net)} ฿</p>`;
   html += '<table><thead><tr>' +
-    ['วันที่','ผู้โอน','ธนาคาร','จำนวนเงิน (฿)','โน้ต'].map(h => `<th>${h}</th>`).join('') +
+    ['วันที่','ประเภท','ผู้โอน/ผู้รับ','ธนาคาร','จำนวนเงิน (฿)','โน้ต'].map(h => `<th>${h}</th>`).join('') +
     '</tr></thead><tbody>';
   const safeDate = d => /^\d{4}-\d{2}-\d{2}/.test(d || '') ? thaiDate(d) : (d || '-');
   rows.forEach(it => {
+    const out = isOut(it);
     html += '<tr>' +
       `<td>${esc(safeDate(it.date))}</td>` +
+      `<td>${out ? 'จ่ายออก' : 'รับเข้า'}</td>` +
       `<td>${esc(it.name)}</td>` +
       `<td>${esc(it.bank)}</td>` +
-      `<td style="text-align:right">${fmt(amt(it))}</td>` +
+      `<td style="text-align:right${out ? ';color:#c0392b' : ''}">${(out ? '−' : '') + fmt(amt(it))}</td>` +
       `<td>${esc(it.note)}</td>` +
       '</tr>';
   });
-  html += `<tr><td colspan="3" style="text-align:right"><b>รวมทั้งหมด</b></td><td style="text-align:right"><b>${fmt(total)}</b></td><td></td></tr>`;
+  html += `<tr><td colspan="4" style="text-align:right"><b>ยอดคงเหลือ</b></td><td style="text-align:right"><b>${(net<0?'−':'')+fmt(Math.abs(net))}</b></td><td></td></tr>`;
   html += '</tbody></table>';
   const doc = document.getElementById('pdfDoc');
   doc.innerHTML = html;
@@ -1360,6 +1422,8 @@ function exportPDF() {
 
 /* ---------- render ---------- */
 const amt = x => Number(x && x.amount) || 0;   // กัน NaN
+const isOut = x => !!(x && x.type === 'out');   // รายการโอนออก
+const signedAmt = x => amt(x) * (isOut(x) ? -1 : 1);   // เข้า=+, ออก=−  (ใช้คิดยอดคงเหลือ)
 const jsq = s => (s == null ? '' : s.toString()).replace(/[\\'"<>&]/g, c => '\\u' + c.charCodeAt(0).toString(16).padStart(4,'0'));  // escape id ใน onclick
 function render() {
   const all = data.filter(x => x && typeof x === 'object' && x.date);   // ตัดข้อมูลเสีย
@@ -1378,16 +1442,20 @@ function render() {
     return true;
   }).sort((a,b) => b.date.localeCompare(a.date) || String(b.id).localeCompare(String(a.id)));
 
-  const total = rows.reduce((s,x) => s + amt(x), 0);
-  document.getElementById('totalAmt').textContent = fmt(total);
+  const net = rows.reduce((s,x) => s + signedAmt(x), 0);   // ยอดคงเหลือ = รับเข้า − จ่ายออก
+  const sumIn = rows.filter(x => !isOut(x)).reduce((s,x) => s + amt(x), 0);
+  const sumOut = rows.filter(isOut).reduce((s,x) => s + amt(x), 0);
+  const totalEl = document.getElementById('totalAmt');
+  totalEl.textContent = (net < 0 ? '−' : '') + fmt(Math.abs(net));
+  totalEl.parentElement.classList.toggle('neg', net < 0);
+  document.getElementById('sumIn').textContent = fmt(sumIn);
+  document.getElementById('sumOut').textContent = sumOut ? '−' + fmt(sumOut) : '0';
   document.getElementById('count').textContent = rows.length;
-  document.getElementById('avg').textContent = rows.length ? fmt(Math.round(total/rows.length)) : '0';
-  document.getElementById('last').textContent = rows.length ? thaiDate(rows[0].date) : '-';
   document.getElementById('sumLabel').textContent = rangeLabel();
 
   const tm = todayStr().slice(0,7), td = todayStr();
-  document.getElementById('thisMonth').textContent = fmtShort(all.filter(x => x.date.slice(0,7) === tm).reduce((s,x) => s + amt(x), 0));
-  document.getElementById('today').textContent = fmtShort(all.filter(x => x.date === td).reduce((s,x) => s + amt(x), 0));
+  document.getElementById('thisMonth').textContent = fmtShort(all.filter(x => x.date.slice(0,7) === tm).reduce((s,x) => s + signedAmt(x), 0));
+  document.getElementById('today').textContent = fmtShort(all.filter(x => x.date === td).reduce((s,x) => s + signedAmt(x), 0));
 
   const list = document.getElementById('list');
   if (!rows.length) {
@@ -1399,22 +1467,23 @@ function render() {
   rows.forEach(it => {
     if (it.date !== lastDate) {
       lastDate = it.date;
-      const dayTotal = rows.filter(x => x.date === it.date).reduce((s,x) => s + amt(x), 0);
-      html += `<div class="group-date"><span>${thaiDate(it.date)}</span><span>${fmt(dayTotal)} ฿</span></div>`;
+      const dayNet = rows.filter(x => x.date === it.date).reduce((s,x) => s + signedAmt(x), 0);
+      html += `<div class="group-date"><span>${thaiDate(it.date)}</span><span>${(dayNet<0?'−':'')+fmt(Math.abs(dayNet))} ฿</span></div>`;
     }
     const eid = jsq(it.id);
+    const out = isOut(it);
     html += `
       <div class="item" onclick="openModal('${eid}')">
-        <div class="ava">↓</div>
+        <div class="ava${out ? ' out' : ''}">${out ? '↑' : '↓'}</div>
         <div class="info">
           <div class="name">${esc(it.name)}</div>
           <div class="sub">${esc(it.bank) || 'ไม่ระบุธนาคาร'}</div>
           ${it.note ? `<div class="note">${esc(it.note)}</div>` : ''}
-          ${it.slipVerified ? `<div class="slip has">🛡️ ยืนยันธนาคารแล้ว</div>` : ((it.slipRef || it.slipHash) ? `<div class="slip has">📎 มีสลิป${it.slipRef ? ' · QR ✓' : ''}</div>` : '')}
+          ${out ? `<div class="slip out-tag">💸 โอนออก</div>` : (it.slipVerified ? `<div class="slip has">🛡️ ยืนยันธนาคารแล้ว</div>` : ((it.slipRef || it.slipHash) ? `<div class="slip has">📎 มีสลิป${it.slipRef ? ' · QR ✓' : ''}</div>` : ''))}
           ${(it.hasImg || it.slipVerified) ? `<button class="slipview" onclick="event.stopPropagation(); openSlip('${eid}')">👁️ ดูสลิป</button>` : ''}
         </div>
         <div class="amt">
-          <b>+${fmt(amt(it))}</b>
+          <b class="${out ? 'amt-out' : ''}">${out ? '−' : '+'}${fmt(amt(it))}</b>
           <button class="del" onclick="event.stopPropagation(); del('${eid}')">ลบ</button>
         </div>
       </div>`;
@@ -1434,14 +1503,17 @@ function printReport(){ window.print(); }
 function buildReport(){
   const esc = s => (s||'').toString().replace(/[<>&"]/g, c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));
   const byDay={}, byMonth={}, byCust={};
-  data.forEach(x=>{ const a=Number(x.amount)||0;
+  data.forEach(x=>{ if(isOut(x)) return;   // กราฟ + Top5 นับเฉพาะยอดรับเข้า
+    const a=Number(x.amount)||0;
     byDay[x.date]=(byDay[x.date]||0)+a;
     byMonth[x.date.slice(0,7)]=(byMonth[x.date.slice(0,7)]||0)+a;
     const c=(x.name||'ไม่ระบุ'); byCust[c]=(byCust[c]||0)+a; });
-  const grand=data.reduce((s,x)=>s+Number(x.amount||0),0);
+  const grand=data.reduce((s,x)=>s+signedAmt(x),0);   // ยอดคงเหลือ = รับเข้า − จ่ายออก
+  const grandIn=data.filter(x=>!isOut(x)).reduce((s,x)=>s+amt(x),0);
+  const grandOut=data.filter(isOut).reduce((s,x)=>s+amt(x),0);
   const tm=todayStr().slice(0,7), td=todayStr();
-  const monthTotal=data.filter(x=>x.date.slice(0,7)===tm).reduce((s,x)=>s+Number(x.amount||0),0);
-  const todayTotal=data.filter(x=>x.date===td).reduce((s,x)=>s+Number(x.amount||0),0);
+  const monthTotal=data.filter(x=>x.date.slice(0,7)===tm).reduce((s,x)=>s+signedAmt(x),0);
+  const todayTotal=data.filter(x=>x.date===td).reduce((s,x)=>s+signedAmt(x),0);
   const days=[]; for(let i=13;i>=0;i--){ const d=new Date(); d.setDate(d.getDate()-i); days.push(localDateStr(d)); }
   const dayMax=Math.max(1,...days.map(d=>byDay[d]||0));
   const dayBars=days.map(d=>{ const v=byDay[d]||0; const h=Math.round(v/dayMax*100); return `<div class="bar-col"><div class="cbar" style="height:${h}%" title="${fmt(v)}"></div><em>${Number(d.slice(8,10))}</em></div>`; }).join('');
@@ -1454,9 +1526,10 @@ function buildReport(){
   document.getElementById('reportBody').innerHTML =
     '<h2>📊 รายงานสรุป HURT SHOP</h2>'+
     '<div class="rsub">ออก ณ '+now.getDate()+' '+MON_TH[now.getMonth()]+' '+(now.getFullYear()+543)+' '+String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0')+' น.</div>'+
-    '<div class="rstat"><div><span>ยอดรวมทั้งหมด</span><b>'+fmt(grand)+' ฿</b></div><div><span>เดือนนี้</span><b>'+fmt(monthTotal)+' ฿</b></div><div><span>วันนี้</span><b>'+fmt(todayTotal)+' ฿</b></div></div>'+
-    '<h3>ยอดรายวัน (14 วันล่าสุด)</h3><div class="chart">'+dayBars+'</div>'+
-    '<h3>ยอดรายเดือน (6 เดือนล่าสุด)</h3><div class="chart">'+monBars+'</div>'+
+    '<div class="rstat"><div><span>ยอดคงเหลือ</span><b>'+(grand<0?'−':'')+fmt(Math.abs(grand))+' ฿</b></div><div><span>รับเข้าทั้งหมด</span><b>'+fmt(grandIn)+' ฿</b></div><div><span>จ่ายออกทั้งหมด</span><b>'+fmt(grandOut)+' ฿</b></div></div>'+
+    '<div class="rsub" style="margin-top:6px">เดือนนี้ (สุทธิ) '+(monthTotal<0?'−':'')+fmt(Math.abs(monthTotal))+' ฿ · วันนี้ (สุทธิ) '+(todayTotal<0?'−':'')+fmt(Math.abs(todayTotal))+' ฿</div>'+
+    '<h3>ยอดรับเข้ารายวัน (14 วันล่าสุด)</h3><div class="chart">'+dayBars+'</div>'+
+    '<h3>ยอดรับเข้ารายเดือน (6 เดือนล่าสุด)</h3><div class="chart">'+monBars+'</div>'+
     '<h3>ลูกค้าจ่ายเยอะสุด (Top 5)</h3><div class="toplist">'+topHTML+'</div>';
 }
 
