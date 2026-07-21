@@ -147,6 +147,23 @@
   .empty p { margin-top: 10px; font-size: 14px; }
   .group-date { color: var(--muted); font-size: 12px; font-weight: 600; margin: 10px 2px 2px; display: flex; justify-content: space-between; }
 
+  /* คิวรออนุมัติ (สลิปไม่มี QR) */
+  #pendingBox { margin: 4px 0 14px; }
+  .pending-head { font-size: 13px; font-weight: 700; color: var(--amber); margin: 0 2px 8px; }
+  .pending-item { background: rgba(245,158,11,.10); border: 1px solid rgba(245,158,11,.38); border-radius: 14px; padding: 12px 13px; margin-bottom: 8px; display: block; overflow: hidden; }
+  .pending-item .pi-info { min-width: 0; margin-bottom: 10px; }
+  .pi-amt { font-size: 16px; font-weight: 700; color: var(--text); }
+  .pi-tag { font-size: 10px; font-weight: 600; color: var(--amber); background: rgba(245,158,11,.18); border-radius: 6px; padding: 1px 6px; vertical-align: 1px; }
+  .pi-sub { font-size: 12px; color: var(--muted); margin-top: 2px; overflow-wrap: anywhere; }
+  .pi-by { font-size: 11px; color: var(--muted); margin-top: 2px; overflow-wrap: anywhere; }
+  .pi-actions { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+  .pi-ok { flex: 1 1 auto; }   /* ปุ่มอนุมัติกว้างเด่น กดง่าย */
+  .pi-btn { border: none; border-radius: 10px; padding: 8px 12px; font-size: 13px; font-family: inherit; font-weight: 600; cursor: pointer; }
+  .pi-view { background: var(--card2); color: var(--text); border: 1px solid var(--line); }
+  .pi-ok { background: linear-gradient(135deg, var(--green), var(--green-d)); color: #fff; }
+  .pi-no { background: rgba(239,68,68,.16); color: #fca5a5; }
+  .pi-wait { font-size: 12px; color: var(--amber); align-self: center; }
+
   .fab {
     position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
     width: calc(100% - 32px); max-width: 528px;
@@ -470,6 +487,8 @@
     <input id="search" type="search" placeholder="🔍 ค้นหา ชื่อ/ธนาคาร/โน้ต">
   </div>
 
+  <div id="pendingBox" style="display:none"></div>
+
   <div class="list" id="list"></div>
 
 </div>
@@ -673,6 +692,7 @@ let data = [];          // array of records
 let rtOn = false;       // realtime active?
 let dbRef = null;       // firebase ref
 let app = null;
+let pendingData = [];   // คิวสลิปที่พนักงานส่งรอเจ้าของอนุมัติ (สลิปไม่มี QR เช่น K BIZ)
 let dateRange = 'all';  // all | today | 7d | month | m:YYYY-MM
 
 function localDateStr(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
@@ -809,6 +829,13 @@ function connectRT(cfg, room) {
       setSync('err', 'เชื่อมต่อไม่ได้: ตรวจ config/สิทธิ์');
       rtOn = false;
     });
+
+    // คิวรออนุมัติ (สลิปไม่มี QR ที่พนักงานส่งมา) — ถ้ายังไม่ได้ตั้งกฎ pending จะเงียบ
+    db.ref('rooms/' + room + '/pending').on('value', snap => {
+      const val = snap.val() || {};
+      pendingData = Object.values(val).filter(x => x && typeof x === 'object' && x.id);
+      renderPending();
+    }, () => { pendingData = []; renderPending(); });
   } catch (e) {
     setSync('err', 'config ไม่ถูกต้อง');
     rtOn = false;
@@ -979,9 +1006,9 @@ async function save() {
     alert('บันทึกไม่สำเร็จ: ' + (r.error || 'ลองใหม่อีกครั้ง')); return;
   }
 
-  // รายการใหม่ ไม่มีสลิป → เจ้าของกรอกเองได้ / พนักงานไม่ได้
-  if (role === 'owner') ownerManualSave();
-  else alert('⚠️ ต้องแนบสลิปทุกครั้ง');
+  // รายการใหม่ + สลิปไม่มี QR (เช่น K BIZ) → เจ้าของกรอกเองตรง / พนักงานส่งเข้าคิวรออนุมัติ
+  if (role === 'owner') { ownerManualSave(); return; }
+  submitPending();
 }
 // บันทึกผ่าน Worker: ส่ง idToken + QR → Worker ตรวจ SlipOK แล้วเขียนเอง (ยอดจากธนาคาร)
 async function workerSave(qr, note) {
@@ -1053,6 +1080,94 @@ function putSlipImage(id, img) {
   const ref = slipsRef();
   if (ref) { try { ref.child(id).set(img).catch(() => {}); } catch (e) {} }
 }
+
+/* ---------- คิวรออนุมัติ (สลิปไม่มี QR เช่น K BIZ) ---------- */
+function pendingRef() {
+  if (rtOn && dbRef && dbRef.parent) return dbRef.parent.child('pending');
+  try { return firebase.database().ref('rooms/' + BAKED_ROOM + '/pending'); } catch (e) { return null; }
+}
+// พนักงานส่งสลิป (ที่ตรวจ QR อัตโนมัติไม่ได้) + ยอดที่อ้าง เข้าคิวให้เจ้าของอนุมัติ
+function submitPending() {
+  if (!currentSlipImg) { alert('⚠️ ต้องแนบรูปสลิปก่อนส่ง'); return; }
+  const amount = parseFloat(document.getElementById('fAmount').value);
+  if (!amount || amount <= 0) { alert('ใส่จำนวนเงินตามสลิปก่อนส่ง'); document.getElementById('fAmount').focus(); return; }
+  const pref = pendingRef();
+  if (!pref) { alert('ส่งไม่สำเร็จ (ยังไม่ได้เชื่อมต่อระบบ)'); return; }
+  const id = 'p' + Date.now() + Math.floor(Math.random() * 1000);
+  const rec = {
+    id, amount,
+    name: document.getElementById('fName').value.trim() || 'ไม่ระบุชื่อ',
+    bank: document.getElementById('fBank').value || '',
+    date: document.getElementById('fDate').value || todayStr(),
+    note: document.getElementById('fNote').value.trim(),
+    slipHash: document.getElementById('fSlipHash').value || '',
+    submittedBy: (currentUser && currentUser.email) || '',
+    submittedAt: Date.now(),
+    hasImg: true
+  };
+  const btn = document.getElementById('saveBtn');
+  if (btn) { btn.disabled = true; btn.textContent = 'กำลังส่ง...'; }
+  putSlipImage(id, currentSlipImg);   // เก็บรูปที่ slips/{id} (พนักงานสร้างได้)
+  pref.child(id).set(rec)
+    .then(() => { setSlipStatus('ok', '✅ ส่งเข้าคิวรอเจ้าของอนุมัติแล้ว'); setTimeout(closeModal, 900); })
+    .catch(e => {
+      if (btn) { btn.disabled = false; btn.textContent = 'บันทึก'; }
+      const sr = slipsRef(); if (sr) { try { sr.child(id).remove().catch(() => {}); } catch (_) {} }   // ลบรูปที่ค้าง (ส่งคิวไม่สำเร็จ)
+      alert('ส่งไม่สำเร็จ — เจ้าของยังไม่ได้เปิดสิทธิ์คิวรออนุมัติ (Firebase rules)\n\n' + (e && e.message ? e.message : ''));
+    });
+}
+// เจ้าของอนุมัติ: ยืนยันยอดจริง (ดูจากสลิป) แล้วเขียนเป็นรายการจริง
+function approvePending(id) {
+  if (role !== 'owner') { alert('เฉพาะเจ้าของอนุมัติได้'); return; }
+  const it = (pendingData || []).find(x => String(x.id) === String(id));
+  if (!it) { alert('ไม่พบรายการในคิว'); return; }
+  // ไม่เติมยอดให้ล่วงหน้า — บังคับเจ้าของดูสลิปแล้วพิมพ์ยอดจริงเอง (กันกด OK รวดเดียว)
+  const input = prompt('พิมพ์จำนวนเงินจริงตามสลิป (กด "ดูสลิป" ตรวจก่อน)\nผู้ส่ง: ' + (it.submittedBy || '-') + '\nชื่อ: ' + (it.name || '-') + '\nยอดที่พนักงานแจ้ง: ' + fmt(amt(it)) + '  ← ตรวจให้ตรงกับสลิป', '');
+  if (input === null) return;
+  const amount = parseFloat(input);
+  if (!amount || amount <= 0) { alert('จำนวนเงินไม่ถูกต้อง — พิมพ์ยอดตามสลิป'); return; }
+  putRecord({
+    id: it.id, amount,
+    name: it.name || 'ไม่ระบุชื่อ', bank: it.bank || '', date: it.date || todayStr(),
+    note: it.note || '', slipRef: '', slipHash: it.slipHash || '',
+    slipVerified: false, manual: true,
+    approvedBy: (currentUser && currentUser.email) || '', submittedBy: it.submittedBy || '',
+    hasImg: !!it.hasImg
+  });   // รูปสลิปอยู่ที่ slips/{id} แล้ว carry over อัตโนมัติ (id เดียวกัน)
+  const pref = pendingRef(); if (pref) pref.child(it.id).remove().catch(() => {});
+}
+function rejectPending(id) {
+  if (role !== 'owner') { alert('เฉพาะเจ้าของจัดการได้'); return; }
+  if (!confirm('ปฏิเสธและลบรายการนี้ออกจากคิว?')) return;
+  const pref = pendingRef(); if (pref) pref.child(id).remove().catch(() => {});
+  const sr = slipsRef(); if (sr) { try { sr.child(id).remove().catch(() => {}); } catch (e) {} }
+}
+function renderPending() {
+  const box = document.getElementById('pendingBox');
+  if (!box) return;
+  const items = (pendingData || []).slice().sort((a, b) => (b.submittedAt || 0) - (a.submittedAt || 0));
+  if (!items.length) { box.style.display = 'none'; box.innerHTML = ''; return; }
+  box.style.display = 'block';
+  let html = '<div class="pending-head">🕒 รออนุมัติ ' + items.length + ' รายการ</div>';
+  items.forEach(it => {
+    const eid = jsq(it.id);
+    const acts = (role === 'owner')
+      ? `<button class="pi-btn pi-ok" onclick="approvePending('${eid}')">✓ อนุมัติ</button><button class="pi-btn pi-no" onclick="rejectPending('${eid}')">✕</button>`
+      : '<span class="pi-wait">รออนุมัติ</span>';
+    html += `<div class="pending-item">
+      <div class="pi-info">
+        <div class="pi-amt">${fmt(amt(it))} ฿ <span class="pi-tag">พนักงานกรอก</span></div>
+        <div class="pi-sub">${esc2(it.name || 'ไม่ระบุชื่อ')} · ${esc2(it.bank || '-')} · ${esc2(it.date || '')}</div>
+        <div class="pi-by">ส่งโดย ${esc2(it.submittedBy || '-')}</div>
+      </div>
+      <div class="pi-actions">
+        <button class="pi-btn pi-view" onclick="openSlip('${eid}')">ดูสลิป</button>
+        ${acts}
+      </div>
+    </div>`;
+  });
+  box.innerHTML = html;
+}
 async function openSlip(id) {
   let box = document.getElementById('slipLightbox');
   if (!box) {
@@ -1089,7 +1204,8 @@ async function handleSlip(input) {
     document.getElementById('fSlipRef').value = qr || '';
     document.getElementById('fSlipVerified').value = '';
     if (qr) setSlipStatus('ok', '📎 อ่านสลิปสำเร็จ — กด <b>"บันทึก"</b> เพื่อยืนยันกับธนาคารและบันทึก<br><small>ยอด/ชื่อ/วันที่ จะดึงจากธนาคารให้อัตโนมัติ (กันเงินปลอม)</small>');
-    else setSlipStatus('warn', '⚠️ อ่าน QR ไม่เจอ (ภาพไม่ชัด/ครอบไม่ติด QR หรือไม่ใช่สลิป) — ถ่ายให้เห็น QR ชัดๆ');
+    else if (role === 'owner') setSlipStatus('warn', '⚠️ อ่าน QR ไม่เจอ (สลิป K BIZ/ภาพครอบไม่ติด QR) — ถ้าจะบันทึกให้ <b>ใส่จำนวนเงินเอง</b> แล้วกด "บันทึก"');
+    else setSlipStatus('warn', '⚠️ สลิปนี้ไม่มี QR (เช่น K BIZ) — ใส่ <b>จำนวนเงินตามสลิป</b> แล้วกด "บันทึก" เพื่อ <b>ส่งให้เจ้าของอนุมัติ</b>');
   } catch (e) {
     setSlipStatus('warn', '⚠️ อ่านไฟล์ไม่สำเร็จ ลองใหม่อีกครั้ง');
   }
