@@ -934,6 +934,7 @@ document.getElementById('asstModal').addEventListener('click', e => { if (e.targ
 /* ---------- add/edit modal ---------- */
 let modalIO = 'in';   // 'in' รับเข้า | 'out' จ่ายออก (เฉพาะเจ้าของ)
 function setIO(m) {
+  if (typeof _ocrToken !== 'undefined') _ocrToken++;   // สลับเข้า/ออกระหว่างอ่านสลิป → ทิ้งผลอ่านเดิม (กันเติมผิดฝั่ง)
   modalIO = (m === 'out') ? 'out' : 'in';
   document.querySelectorAll('#ioToggle .io-btn').forEach(b => b.classList.toggle('active', b.dataset.io === modalIO));
   const editing = !!document.getElementById('editId').value;
@@ -1378,7 +1379,12 @@ async function handleSlip(input) {
     document.getElementById('fSlipHash').value = hash;
     document.getElementById('fSlipRef').value = qr || '';
     document.getElementById('fSlipVerified').value = '';
-    if (qr) setSlipStatus('ok', '📎 อ่านสลิปสำเร็จ — กด <b>"บันทึก"</b> เพื่อยืนยันกับธนาคารและบันทึก<br><small>ยอด/ชื่อ/วันที่ จะดึงจากธนาคารให้อัตโนมัติ (กันเงินปลอม)</small>');
+    if (modalIO === 'out') {
+      // จ่ายออก: ไม่ยืนยันกับธนาคาร (SlipOK ใช้เช็คเฉพาะเงินเข้า) — อ่านสลิปด้วย OCR เติมให้เสมอ ไม่ว่ามี QR หรือไม่
+      const baseMsg = '📎 แนบสลิปโอนออกแล้ว — ตรวจ <b>จำนวนเงิน/ผู้รับ</b> ให้ตรงกับสลิปก่อนกด "บันทึก"';
+      setSlipStatus('warn', baseMsg + '<br>🔍 <b>กำลังอ่านตัวหนังสือในสลิป…</b> <small>(ครั้งแรกรอโหลดตัวอ่านสักครู่)</small>');
+      ocrAutofill(img, baseMsg);
+    } else if (qr) setSlipStatus('ok', '📎 อ่านสลิปสำเร็จ — กด <b>"บันทึก"</b> เพื่อยืนยันกับธนาคารและบันทึก<br><small>ยอด/ชื่อ/วันที่ จะดึงจากธนาคารให้อัตโนมัติ (กันเงินปลอม)</small>');
     else {
       const baseMsg = role === 'owner'
         ? '⚠️ อ่าน QR ไม่เจอ (สลิป K BIZ/ภาพครอบไม่ติด QR) — ตรวจ <b>จำนวนเงิน</b> แล้วกด "บันทึก"'
