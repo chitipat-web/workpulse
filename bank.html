@@ -982,7 +982,7 @@ function openModal(id) {
   currentSlipImg = '';
   document.getElementById('fSlip').value = '';
 }
-function closeModal() { document.getElementById('modal').classList.remove('show'); homeTab(); }
+function closeModal() { _ocrToken++; document.getElementById('modal').classList.remove('show'); homeTab(); }
 document.getElementById('modal').addEventListener('click', e => { if (e.target.id === 'modal') closeModal(); });
 document.getElementById('settings').addEventListener('click', e => { if (e.target.id === 'settings') closeSettings(); });
 
@@ -1113,6 +1113,127 @@ function readQRfromImage(img) {
   try { const r = (typeof jsQR === 'function') ? jsQR(d.data, c.width, c.height) : null; return r ? r.data : ''; }
   catch (e) { return ''; }
 }
+
+/* ---------- อ่านสลิปไม่มี QR ด้วย OCR ในเครื่อง (Tesseract self-host — ฟรี ไม่ส่งรูปออกนอกเครื่อง) ---------- */
+let _ocrScript = null, _ocrToken = 0;
+function loadTesseract() {
+  if (window.Tesseract) return Promise.resolve();
+  if (_ocrScript) return _ocrScript;
+  _ocrScript = new Promise((res, rej) => {
+    const s = document.createElement('script');
+    s.src = 'vendor/tesseract/tesseract.min.js';
+    s.onload = res;
+    s.onerror = () => { _ocrScript = null; rej(new Error('load fail')); };
+    document.head.appendChild(s);
+  });
+  return _ocrScript;
+}
+// เครื่องเก่าบางรุ่นไม่รองรับ wasm SIMD → เลือก core ให้ตรงรุ่น
+const _wasmSimd = (() => { try { return WebAssembly.validate(new Uint8Array([0,97,115,109,1,0,0,0,1,5,1,96,0,1,123,3,2,1,0,10,10,1,8,0,65,0,253,15,253,98,11])); } catch (e) { return false; } })();
+async function ocrSlipText(img) {
+  await loadTesseract();
+  const worker = await Tesseract.createWorker('tha', 1, {
+    workerPath: 'vendor/tesseract/worker.min.js',
+    corePath: 'vendor/tesseract/tesseract-core-' + (_wasmSimd ? 'simd-' : '') + 'lstm.wasm.js',
+    langPath: 'vendor/tesseract/',
+    gzip: true,
+  });
+  try {
+    const scale = Math.min(2, 2000 / Math.max(img.width, img.height));   // ขยายช่วยตัวหนังสือเล็ก
+    const c = document.createElement('canvas');
+    c.width = Math.round(img.width * scale); c.height = Math.round(img.height * scale);
+    c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+    const r = await worker.recognize(c);
+    return (r && r.data && r.data.text) || '';
+  } finally { try { worker.terminate(); } catch (e) {} }
+}
+// แยก ยอด/ธนาคาร/ชื่อ/วันที่ จากข้อความในสลิป (เผื่อ OCR อ่านเพี้ยนเล็กน้อย)
+function parseSlipInfo(text) {
+  const out = {};
+  const lines = text.split('\n').map(s => s.trim()).filter(Boolean);
+  const thCount = s => (s.match(/[ก-๙]/g) || []).length;
+  const numRe = /(\d[\d,]*\.\d{2})/;
+  // จำนวนเงิน — สระอำอาจถูกอ่านเป็น ํ+า แยกกัน
+  const li = lines.findIndex(l => /จ[ำํ]?า?นวนเงิน/.test(l));
+  if (li >= 0) {
+    for (let i = li; i < Math.min(li + 3, lines.length); i++) {
+      const m = lines[i].match(numRe);
+      if (m) { out.amount = parseFloat(m[1].replace(/,/g, '')); break; }
+    }
+  }
+  if (!out.amount) {   // สำรอง: เลข x.xx ที่มีคำว่า บาท และไม่ใช่ค่าธรรมเนียม
+    const cand = lines.filter(l => /บาท/.test(l) && !/ธรรมเนียม/.test(l))
+      .map(l => (l.match(numRe) || [])[1]).filter(Boolean)
+      .map(s => parseFloat(s.replace(/,/g, ''))).filter(n => n > 0);
+    if (cand.length) out.amount = Math.max(...cand);
+  }
+  if (out.amount && !(out.amount > 0 && out.amount < 100000000)) delete out.amount;
+  // ธนาคาร: ต้นทาง = ก่อนคำว่า "ไปยัง", ปลายทาง = หลัง
+  const cut = text.indexOf('ไปยัง');
+  const head = cut > 0 ? text.slice(0, cut) : text;
+  const tail = cut > 0 ? text.slice(cut) : '';
+  const BANKS = [
+    [/กสิกร|kbank|k\s?biz|k\+/i, 'กสิกรไทย'], [/ไทยพาณิชย์|scb/i, 'ไทยพาณิชย์'],
+    [/กรุงเทพ/i, 'กรุงเทพ'], [/กรุงไทย|krungthai/i, 'กรุงไทย'],
+    [/กรุงศรี|krungsri/i, 'กรุงศรีอยุธยา'], [/ทหารไทย|ธนชาต|ttb/i, 'ทหารไทยธนชาต'],
+    [/ออมสิน|gsb/i, 'ออมสิน'], [/พร้อมเพย์|promptpay/i, 'พร้อมเพย์'],
+    [/true\s?money|ทรูมันนี่/i, 'TrueMoney'],
+  ];
+  for (const [re, name] of BANKS) { if (re.test(head)) { out.bankFrom = name; break; } }
+  for (const [re, name] of BANKS) { if (tail && re.test(tail)) { out.bankTo = name; break; } }
+  // ชื่อ: บรรทัดไทยยาวๆ แรกหลัง "จาก" (ผู้โอน) / หลัง "ไปยัง" (ผู้รับ)
+  const pickName = startIdx => {
+    for (let i = startIdx + 1; i < Math.min(startIdx + 5, lines.length); i++) {
+      if (/ธนาคาร|ไปยัง|จ[ำํ]?า?นวนเงิน/.test(lines[i])) break;
+      if (thCount(lines[i]) >= 4 || /^(นาย|นาง|น\.ส\.|หจก|บจก|บมจ)/.test(lines[i])) return lines[i];
+    }
+    return '';
+  };
+  const fi = lines.findIndex(l => /^[จอ]าก\b|^[จอ]าก$/.test(l));
+  if (fi >= 0) out.nameFrom = pickName(fi);
+  const ti = lines.findIndex(l => /ไปยัง/.test(l));
+  if (ti >= 0) out.nameTo = pickName(ti);
+  // วันที่ไทยย่อ เช่น "21 ก.ค. 69" (พ.ศ. 2 หรือ 4 หลัก)
+  const dm = text.match(/(\d{1,2})\s*(มี\.?\s?ค|มิ\.?\s?ย|เม\.?\s?ย|ม\.?\s?ค|ก\.?\s?พ|พ\.?\s?ค|ก\.?\s?ค|ส\.?\s?ค|ก\.?\s?ย|ต\.?\s?ค|พ\.?\s?ย|ธ\.?\s?ค)\.?\s*(\d{2,4})/);
+  if (dm) {
+    const MON = { 'มค':1,'กพ':2,'มีค':3,'เมย':4,'พค':5,'มิย':6,'กค':7,'สค':8,'กย':9,'ตค':10,'พย':11,'ธค':12 };
+    const mon = MON[dm[2].replace(/[.\s]/g, '')];
+    const day = parseInt(dm[1], 10);
+    let y = parseInt(dm[3], 10);
+    if (y < 100) y += 2500;
+    if (y > 2400) y -= 543;
+    if (mon && day >= 1 && day <= 31 && y >= 2020 && y <= 2100)
+      out.date = y + '-' + String(mon).padStart(2, '0') + '-' + String(day).padStart(2, '0');
+  }
+  return out;
+}
+// อ่านเสร็จแล้วเติมเฉพาะช่องที่ยังว่าง — เป็นแค่ตัวช่วยกรอก ผู้ใช้ต้องตรวจเอง (ไม่ใช่การยืนยันธนาคาร)
+async function ocrAutofill(img, baseMsg) {
+  const token = ++_ocrToken;
+  try {
+    const text = await ocrSlipText(img);
+    if (token !== _ocrToken) return;   // ผู้ใช้เปลี่ยนสลิปไปแล้ว
+    const info = parseSlipInfo(text);
+    const isOutForm = (typeof modalIO !== 'undefined' && modalIO === 'out');
+    const name = isOutForm ? info.nameTo : info.nameFrom;     // เข้า=ผู้โอน, ออก=ผู้รับ
+    const bank = isOutForm ? (info.bankTo || info.bankFrom) : info.bankFrom;
+    const filled = [];
+    const fA = document.getElementById('fAmount');
+    if (info.amount && !fA.value) { fA.value = info.amount; filled.push('ยอด ' + fmt(info.amount)); }
+    const fN = document.getElementById('fName');
+    if (name && !fN.value.trim()) { fN.value = name; filled.push('ชื่อ'); }
+    const fB = document.getElementById('fBank');
+    if (bank && !fB.value && [...fB.options].some(o => o.value === bank)) { fB.value = bank; filled.push('ธนาคาร' + bank); }
+    const fD = document.getElementById('fDate');
+    if (info.date && fD.value === todayStr()) { fD.value = info.date; filled.push('วันที่'); }
+    if (filled.length)
+      setSlipStatus('warn', baseMsg + '<br>🔍 อ่านจากสลิปให้แล้ว: <b>' + esc2(filled.join(' · ')) + '</b> — ตรวจให้ตรงกับสลิปก่อนกดบันทึก');
+    else
+      setSlipStatus('warn', baseMsg + '<br>🔍 อ่านตัวหนังสือในสลิปไม่ออก — กรอกเองได้เลย');
+  } catch (e) {
+    if (token === _ocrToken) setSlipStatus('warn', baseMsg);   // อ่านไม่ได้ก็เงียบๆ กลับข้อความเดิม
+  }
+}
 /* ---------- เก็บรูปสลิป (บีบอัด + โหนดแยก slips) ---------- */
 let currentSlipImg = '';   // dataURL ของสลิปที่กำลังจะบันทึก
 function compressToDataURL(img) {
@@ -1242,6 +1363,7 @@ async function openSlip(id) {
   } catch (e) { msg.textContent = 'โหลดสลิปไม่ได้: ' + (e.message || ''); }
 }
 async function handleSlip(input) {
+  _ocrToken++;   // ยกเลิกผลอ่านสลิปใบก่อน (ถ้ายังอ่านค้างอยู่)
   const file = input.files && input.files[0];
   if (!file) { setSlipStatus('', ''); currentSlipImg=''; document.getElementById('fSlipRef').value=''; document.getElementById('fSlipHash').value=''; return; }
   setSlipStatus('busy', '⏳ กำลังอ่านสลิป...');
@@ -1257,8 +1379,13 @@ async function handleSlip(input) {
     document.getElementById('fSlipRef').value = qr || '';
     document.getElementById('fSlipVerified').value = '';
     if (qr) setSlipStatus('ok', '📎 อ่านสลิปสำเร็จ — กด <b>"บันทึก"</b> เพื่อยืนยันกับธนาคารและบันทึก<br><small>ยอด/ชื่อ/วันที่ จะดึงจากธนาคารให้อัตโนมัติ (กันเงินปลอม)</small>');
-    else if (role === 'owner') setSlipStatus('warn', '⚠️ อ่าน QR ไม่เจอ (สลิป K BIZ/ภาพครอบไม่ติด QR) — ถ้าจะบันทึกให้ <b>ใส่จำนวนเงินเอง</b> แล้วกด "บันทึก"');
-    else setSlipStatus('warn', '⚠️ สลิปนี้ไม่มี QR (เช่น K BIZ) — ใส่ <b>จำนวนเงินตามสลิป</b> แล้วกด "บันทึก" เพื่อ <b>ส่งให้เจ้าของอนุมัติ</b>');
+    else {
+      const baseMsg = role === 'owner'
+        ? '⚠️ อ่าน QR ไม่เจอ (สลิป K BIZ/ภาพครอบไม่ติด QR) — ตรวจ <b>จำนวนเงิน</b> แล้วกด "บันทึก"'
+        : '⚠️ สลิปนี้ไม่มี QR (เช่น K BIZ) — ตรวจ <b>จำนวนเงินตามสลิป</b> แล้วกด "บันทึก" เพื่อ <b>ส่งให้เจ้าของอนุมัติ</b>';
+      setSlipStatus('warn', baseMsg + '<br>🔍 <b>กำลังอ่านตัวหนังสือในสลิป…</b> <small>(ครั้งแรกรอโหลดตัวอ่านสักครู่)</small>');
+      ocrAutofill(img, baseMsg);   // อ่านในเครื่อง เติมช่องที่ว่างให้ (ฟรี ไม่ส่งรูปออกไปไหน)
+    }
   } catch (e) {
     setSlipStatus('warn', '⚠️ อ่านไฟล์ไม่สำเร็จ ลองใหม่อีกครั้ง');
   }
