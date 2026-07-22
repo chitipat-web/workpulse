@@ -934,8 +934,9 @@ document.getElementById('asstModal').addEventListener('click', e => { if (e.targ
 /* ---------- add/edit modal ---------- */
 let modalIO = 'in';   // 'in' รับเข้า | 'out' จ่ายออก (เฉพาะเจ้าของ)
 function setIO(m) {
-  if (typeof _ocrToken !== 'undefined') _ocrToken++;   // สลับเข้า/ออกระหว่างอ่านสลิป → ทิ้งผลอ่านเดิม (กันเติมผิดฝั่ง)
-  modalIO = (m === 'out') ? 'out' : 'in';
+  const next = (m === 'out') ? 'out' : 'in';
+  const ioChanged = next !== modalIO;
+  modalIO = next;
   document.querySelectorAll('#ioToggle .io-btn').forEach(b => b.classList.toggle('active', b.dataset.io === modalIO));
   const editing = !!document.getElementById('editId').value;
   // แก้ไขรายการเดิม → ล็อกประเภท (กันเผลอสลับเข้า/ออกของรายการที่ยืนยันแล้ว); เพิ่มใหม่ → ให้ CSS ตัดสิน (เจ้าของเห็น พนักงานถูกซ่อน)
@@ -945,10 +946,29 @@ function setIO(m) {
                       : (editing ? 'แก้ไขรายการ' : 'เพิ่มยอดโอนเข้า');
   const af = document.querySelector('#modal .autofill-note'); if (af) af.style.display = (modalIO === 'out') ? 'none' : '';
   const sl = document.querySelector('#modal .slip-primary label'); if (sl) sl.textContent = (modalIO === 'out') ? '📎 แนบสลิปโอนออก (ถ้ามี)' : '📎 แนบสลิป แล้วกดบันทึก (ยืนยันกับธนาคารอัตโนมัติ)';
+  // สลับฝั่งจริงๆ (ไม่ใช่กดปุ่มเดิมซ้ำ) → ทิ้งผลอ่านเดิม + ล้างค่าที่ OCR เติม (ไม่แตะที่ผู้ใช้พิมพ์เอง) + อ่านสลิปที่แนบอยู่ใหม่
+  if (ioChanged) {
+    _ocrToken++;
+    Object.entries(_ocrFilledVals).forEach(([fid, val]) => {
+      const el = document.getElementById(fid);
+      if (el && el.value === val) el.value = (fid === 'fDate') ? todayStr() : '';
+    });
+    _ocrFilledVals = {};
+    if (currentSlipImg) {
+      const qr = document.getElementById('fSlipRef').value;
+      const im = new Image();
+      im.onload = () => slipRoute(im, qr);
+      im.src = currentSlipImg;
+    }
+  }
 }
 function openModal(id) {
   if (id && role === 'employee') return;   // พนักงานแก้ไขรายการเดิมไม่ได้
   document.getElementById('modal').classList.add('show');
+  // ล้างสลิปเก่าก่อนเรียก setIO (setIO จะประเมินสลิปที่แนบอยู่ใหม่ — ต้องไม่เห็นของค้างจากรอบก่อน)
+  currentSlipImg = '';
+  _ocrFilledVals = {};
+  document.getElementById('fSlip').value = '';
   if (id) {
     const it = data.find(x => x.id === id);
     if (!it) { closeModal(); return; }   // รายการถูกลบจากอีกเครื่องระหว่างนี้
@@ -980,8 +1000,6 @@ function openModal(id) {
     setIO('in');
     setTimeout(() => document.getElementById('fAmount').focus(), 200);
   }
-  currentSlipImg = '';
-  document.getElementById('fSlip').value = '';
 }
 function closeModal() { _ocrToken++; document.getElementById('modal').classList.remove('show'); homeTab(); }
 document.getElementById('modal').addEventListener('click', e => { if (e.target.id === 'modal') closeModal(); });
@@ -1117,6 +1135,7 @@ function readQRfromImage(img) {
 
 /* ---------- อ่านสลิปไม่มี QR ด้วย OCR ในเครื่อง (Tesseract self-host — ฟรี ไม่ส่งรูปออกนอกเครื่อง) ---------- */
 let _ocrScript = null, _ocrToken = 0;
+let _ocrFilledVals = {};   // {fieldId: ค่าที่ OCR เติม} — ไว้ล้างตอนสลับฝั่งเข้า/ออก โดยไม่แตะค่าที่ผู้ใช้พิมพ์เอง
 function loadTesseract() {
   if (window.Tesseract) return Promise.resolve();
   if (_ocrScript) return _ocrScript;
@@ -1220,13 +1239,13 @@ async function ocrAutofill(img, baseMsg) {
     const bank = isOutForm ? (info.bankTo || info.bankFrom) : info.bankFrom;
     const filled = [];
     const fA = document.getElementById('fAmount');
-    if (info.amount && !fA.value) { fA.value = info.amount; filled.push('ยอด ' + fmt(info.amount)); }
+    if (info.amount && !fA.value) { fA.value = info.amount; _ocrFilledVals.fAmount = fA.value; filled.push('ยอด ' + fmt(info.amount)); }
     const fN = document.getElementById('fName');
-    if (name && !fN.value.trim()) { fN.value = name; filled.push('ชื่อ'); }
+    if (name && !fN.value.trim()) { fN.value = name; _ocrFilledVals.fName = fN.value; filled.push('ชื่อ'); }
     const fB = document.getElementById('fBank');
-    if (bank && !fB.value && [...fB.options].some(o => o.value === bank)) { fB.value = bank; filled.push('ธนาคาร' + bank); }
+    if (bank && !fB.value && [...fB.options].some(o => o.value === bank)) { fB.value = bank; _ocrFilledVals.fBank = fB.value; filled.push('ธนาคาร' + bank); }
     const fD = document.getElementById('fDate');
-    if (info.date && fD.value === todayStr()) { fD.value = info.date; filled.push('วันที่'); }
+    if (info.date && fD.value === todayStr()) { fD.value = info.date; _ocrFilledVals.fDate = fD.value; filled.push('วันที่'); }
     if (filled.length)
       setSlipStatus('warn', baseMsg + '<br>🔍 อ่านจากสลิปให้แล้ว: <b>' + esc2(filled.join(' · ')) + '</b> — ตรวจให้ตรงกับสลิปก่อนกดบันทึก');
     else
@@ -1379,21 +1398,25 @@ async function handleSlip(input) {
     document.getElementById('fSlipHash').value = hash;
     document.getElementById('fSlipRef').value = qr || '';
     document.getElementById('fSlipVerified').value = '';
-    if (modalIO === 'out') {
-      // จ่ายออก: ไม่ยืนยันกับธนาคาร (SlipOK ใช้เช็คเฉพาะเงินเข้า) — อ่านสลิปด้วย OCR เติมให้เสมอ ไม่ว่ามี QR หรือไม่
-      const baseMsg = '📎 แนบสลิปโอนออกแล้ว — ตรวจ <b>จำนวนเงิน/ผู้รับ</b> ให้ตรงกับสลิปก่อนกด "บันทึก"';
-      setSlipStatus('warn', baseMsg + '<br>🔍 <b>กำลังอ่านตัวหนังสือในสลิป…</b> <small>(ครั้งแรกรอโหลดตัวอ่านสักครู่)</small>');
-      ocrAutofill(img, baseMsg);
-    } else if (qr) setSlipStatus('ok', '📎 อ่านสลิปสำเร็จ — กด <b>"บันทึก"</b> เพื่อยืนยันกับธนาคารและบันทึก<br><small>ยอด/ชื่อ/วันที่ จะดึงจากธนาคารให้อัตโนมัติ (กันเงินปลอม)</small>');
-    else {
-      const baseMsg = role === 'owner'
-        ? '⚠️ อ่าน QR ไม่เจอ (สลิป K BIZ/ภาพครอบไม่ติด QR) — ตรวจ <b>จำนวนเงิน</b> แล้วกด "บันทึก"'
-        : '⚠️ สลิปนี้ไม่มี QR (เช่น K BIZ) — ตรวจ <b>จำนวนเงินตามสลิป</b> แล้วกด "บันทึก" เพื่อ <b>ส่งให้เจ้าของอนุมัติ</b>';
-      setSlipStatus('warn', baseMsg + '<br>🔍 <b>กำลังอ่านตัวหนังสือในสลิป…</b> <small>(ครั้งแรกรอโหลดตัวอ่านสักครู่)</small>');
-      ocrAutofill(img, baseMsg);   // อ่านในเครื่อง เติมช่องที่ว่างให้ (ฟรี ไม่ส่งรูปออกไปไหน)
-    }
+    slipRoute(img, qr);
   } catch (e) {
     setSlipStatus('warn', '⚠️ อ่านไฟล์ไม่สำเร็จ ลองใหม่อีกครั้ง');
+  }
+}
+// เลือกทางเดินของสลิปตามฝั่ง เข้า/ออก + มี/ไม่มี QR — เรียกซ้ำได้เมื่อสลับฝั่งหลังแนบสลิปแล้ว
+function slipRoute(img, qr) {
+  if (modalIO === 'out') {
+    // จ่ายออก: ไม่ยืนยันกับธนาคาร (SlipOK ใช้เช็คเฉพาะเงินเข้า) — อ่านสลิปด้วย OCR เติมให้เสมอ ไม่ว่ามี QR หรือไม่
+    const baseMsg = '📎 แนบสลิปโอนออกแล้ว — ตรวจ <b>จำนวนเงิน/ผู้รับ</b> ให้ตรงกับสลิปก่อนกด "บันทึก"';
+    setSlipStatus('warn', baseMsg + '<br>🔍 <b>กำลังอ่านตัวหนังสือในสลิป…</b> <small>(ครั้งแรกรอโหลดตัวอ่านสักครู่)</small>');
+    ocrAutofill(img, baseMsg);
+  } else if (qr) setSlipStatus('ok', '📎 อ่านสลิปสำเร็จ — กด <b>"บันทึก"</b> เพื่อยืนยันกับธนาคารและบันทึก<br><small>ยอด/ชื่อ/วันที่ จะดึงจากธนาคารให้อัตโนมัติ (กันเงินปลอม)</small>');
+  else {
+    const baseMsg = role === 'owner'
+      ? '⚠️ อ่าน QR ไม่เจอ (สลิป K BIZ/ภาพครอบไม่ติด QR) — ตรวจ <b>จำนวนเงิน</b> แล้วกด "บันทึก"'
+      : '⚠️ สลิปนี้ไม่มี QR (เช่น K BIZ) — ตรวจ <b>จำนวนเงินตามสลิป</b> แล้วกด "บันทึก" เพื่อ <b>ส่งให้เจ้าของอนุมัติ</b>';
+    setSlipStatus('warn', baseMsg + '<br>🔍 <b>กำลังอ่านตัวหนังสือในสลิป…</b> <small>(ครั้งแรกรอโหลดตัวอ่านสักครู่)</small>');
+    ocrAutofill(img, baseMsg);   // อ่านในเครื่อง เติมช่องที่ว่างให้ (ฟรี ไม่ส่งรูปออกไปไหน)
   }
 }
 function esc2(s) { return (s||'').toString().replace(/[<>&]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;'}[c])); }
