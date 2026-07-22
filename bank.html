@@ -702,6 +702,7 @@
 /* รับผลล็อกอินแบบ redirect (iOS): Google ส่ง access_token กลับมาใน #hash ของ URL
    ต้องเก็บ+ล้างออกจาก URL ทันทีก่อนโค้ดอื่นทำงาน (ไม่ให้ token ติดอยู่ในประวัติเบราว์เซอร์) */
 window._oauthToken = '';
+window._oauthStateLost = false;
 (function () {
   if (location.hash.indexOf('access_token=') === -1) return;
   try {
@@ -711,9 +712,11 @@ window._oauthToken = '';
     try { expect = sessionStorage.getItem('oauthState') || ''; sessionStorage.removeItem('oauthState'); } catch (e) {}
     history.replaceState(null, '', location.pathname + location.search);
     if (tok && st && expect && st === expect) window._oauthToken = tok;   // state ไม่ตรง = ไม่รับ (กัน token แปลกปลอม)
+    else if (tok) window._oauthStateLost = true;   // มี token แต่รหัสยืนยันหาย — ต้องบอกผู้ใช้ ไม่ทิ้งเงียบ
   } catch (e) {}
 })();
 
+const APP_VER = 'v7.22-4';   // โชว์บนหน้า login — เช็คจากภาพหน้าจอได้ว่าเครื่องรันโค้ดรุ่นไหน (กันงงเรื่องแคช)
 const LKEY = 'bank_transfers_v1';      // local fallback store
 const CFGKEY = 'bank_fb_config';        // saved firebase config (JSON string)
 const ROOMKEY = 'bank_room';            // saved room code
@@ -1961,6 +1964,7 @@ function startApp(room) { if (started) return; started = true; connectRT(activeC
   };
   const _loginFootnote = function () {
     let s = '';
+    if (window._oauthStateLost) s += '\n⚠️ ล็อกอินเด้งกลับมาแต่รหัสยืนยันหายกลางทาง — แตะปุ่มล็อกอินอีกครั้ง';
     try {
       const lu = JSON.parse(localStorage.getItem('_lastUser') || 'null');
       if (lu && lu.e) {
@@ -1971,6 +1975,7 @@ function startApp(room) { if (started) return; started = true; connectRT(activeC
       if (pd) s += '\nรอบก่อน: ' + pd;
     } catch (e) {}
     if (window._stProbe) s += '\n' + window._stProbe;
+    s += '\n' + APP_VER;
     return s;
   };
   // เรียก getRedirectResult เฉพาะตอน "เพิ่งกลับจากหน้า Google แบบ redirect" จริงๆ (Android เท่านั้น)
