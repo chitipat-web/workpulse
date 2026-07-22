@@ -684,6 +684,15 @@
     })
     .catch(function () {});
 })();
+// ⚠️ iOS Safari: indexedDB มีบั๊กค้าง (โดยเฉพาะเปิดหลายแท็บ) ทำให้ Firebase auth
+// รอ storage จน timeout ~30 วิ และจำบัญชีไม่ได้ → ปิด indexedDB บน iOS ก่อนโหลด Firebase
+// SDK จะถอยไปใช้ localStorage เอง (เร็ว เสถียร — แอปนี้ไม่มีส่วนอื่นใช้ indexedDB)
+(function () {
+  var ua = navigator.userAgent || '';
+  var ios = /iPhone|iPad|iPod/i.test(ua) || (/Macintosh/.test(ua) && 'ontouchend' in document);
+  if (!ios) return;
+  try { Object.defineProperty(window, 'indexedDB', { get: function () { return undefined; }, configurable: true }); } catch (e) {}
+})();
 </script>
 <script src="vendor/firebase/firebase-app-compat.js"></script>
 <script src="vendor/firebase/firebase-database-compat.js"></script>
@@ -1853,6 +1862,7 @@ function startApp(room) { if (started) return; started = true; connectRT(activeC
     try { localStorage.setItem('_t', '1'); ls = localStorage.getItem('_t') === '1' ? '✓' : '✗'; localStorage.removeItem('_t'); } catch (e) {}
     let idb = 'ไม่ตอบ';
     const fin = () => { window._stProbe = 'ความจำเครื่อง: iDB ' + idb + ' · LS ' + ls; };
+    if (!window.indexedDB) { idb = isIOSWebKit() ? 'ปิดใช้บนiOS(ตั้งใจ)' : '✗'; fin(); return; }
     try {
       const rq = indexedDB.open('_probe', 1);
       const to = setTimeout(() => { idb = 'ช้า>3วิ'; fin(); }, 3000);
@@ -1917,7 +1927,7 @@ function startApp(room) { if (started) return; started = true; connectRT(activeC
   setTimeout(function(){
     if (authFired || currentUser) return;
     if (isInAppBrowser()) return;   // มีข้อความ in-app แยกแล้ว
-    showLogin('เข้าสู่ระบบด้วย Google เพื่อใช้งาน\n(ถ้ากดแล้วไม่ไปหน้า Google: Safari → ตั้งค่า → ปิด "ป้องกันการติดตามข้ามเว็บไซต์")');
+    showLogin('เข้าสู่ระบบด้วย Google เพื่อใช้งาน' + (window._stProbe ? '\n' + window._stProbe : ''));
   }, 5000);
 })();
 </script>
