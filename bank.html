@@ -7,6 +7,11 @@
 <title>HURT SHOP</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<!-- ต่อ TLS ล่วงหน้าให้เซิร์ฟเวอร์ล็อกอิน/ฐานข้อมูล — ลดเวลารอบนเน็ตมือถือ -->
+<link rel="preconnect" href="https://accounts.google.com">
+<link rel="preconnect" href="https://identitytoolkit.googleapis.com">
+<link rel="preconnect" href="https://securetoken.googleapis.com">
+<link rel="preconnect" href="https://bank-48baf-default-rtdb.asia-southeast1.firebasedatabase.app">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="manifest" href="bank-manifest.json">
 <link rel="apple-touch-icon" href="hurt-logo.jpg">
@@ -1840,7 +1845,19 @@ function startApp(room) { if (started) return; started = true; connectRT(activeC
   loadGIS().catch(() => {});   // อุ่นตัวล็อกอิน Google ไว้ก่อนผู้ใช้แตะปุ่ม (ถ้าโหลดไม่ได้ก็มีวิธีเดิมสำรอง)
   showLogin('กำลังตรวจสอบ...');
   let authFired = false;
-  firebase.auth().getRedirectResult().catch(showAuthError);   // แสดงสาเหตุถ้า redirect ล้มเหลว
+  // เรียก getRedirectResult เฉพาะตอน "เพิ่งกลับจากหน้า Google แบบ redirect" จริงๆ (Android เท่านั้น)
+  // ธงค้างบน iOS = ของเก่าจากช่วงล็อกอินพัง — ถ้าปล่อยไว้ Firebase จะรอ iframe ข้ามโดเมนที่ Safari บล็อก ~30 วิ ทำให้ตรวจสอบช้ามาก
+  let pendingRedirect = false;
+  try {
+    const staleKeys = [];
+    for (let i = 0; i < sessionStorage.length; i++) {
+      const k = sessionStorage.key(i);
+      if (k && k.indexOf('firebase:pendingRedirect') === 0) staleKeys.push(k);
+    }
+    if (isIOSWebKit()) staleKeys.forEach(k => sessionStorage.removeItem(k));   // iOS ไม่ใช้ redirect แล้ว → ธงคือขยะ
+    else pendingRedirect = staleKeys.length > 0;
+  } catch (e) {}
+  if (pendingRedirect) firebase.auth().getRedirectResult().catch(showAuthError);   // แสดงสาเหตุถ้า redirect ล้มเหลว
   firebase.auth().onAuthStateChanged(user => {
     authFired = true;
     if (user && isAllowed(user.email)) {
