@@ -1778,6 +1778,7 @@ function googleSignIn() {
         callback: resp => {
           if (resp && resp.access_token) {
             if (el) el.textContent = 'กำลังตรวจสอบ...';
+            try { firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(function () {}); } catch (e) {}   // จำบัญชีไว้ในเครื่อง
             const cred = firebase.auth.GoogleAuthProvider.credential(null, resp.access_token);
             firebase.auth().signInWithCredential(cred).catch(showAuthError);
           } else {
@@ -1842,9 +1843,42 @@ function startApp(room) { if (started) return; started = true; connectRT(activeC
   }
   try { sessionStorage.removeItem('fbRetry'); } catch (e) {}   // โหลดสำเร็จแล้ว เคลียร์ธงกันลองซ้ำ
   try { if (!app) app = firebase.initializeApp(ac.cfg); } catch (e) {}
+  // บังคับ "จำบัญชีในเครื่อง" ชัดเจน (default ควรเป็นแบบนี้อยู่แล้ว แต่บางเครื่อง iOS ที่เก็บมีปัญหา)
+  try { firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(function () {}); } catch (e) {}
   loadGIS().catch(() => {});   // อุ่นตัวล็อกอิน Google ไว้ก่อนผู้ใช้แตะปุ่ม (ถ้าโหลดไม่ได้ก็มีวิธีเดิมสำรอง)
+  // ตรวจที่เก็บข้อมูลในเครื่อง (ไว้วินิจฉัยเคส "ไม่จำบัญชี") — แสดงผลบรรทัดเล็กใต้ข้อความ login
+  window._stProbe = '';
+  (function storageProbe() {
+    let ls = '✗';
+    try { localStorage.setItem('_t', '1'); ls = localStorage.getItem('_t') === '1' ? '✓' : '✗'; localStorage.removeItem('_t'); } catch (e) {}
+    let idb = 'ไม่ตอบ';
+    const fin = () => { window._stProbe = 'ความจำเครื่อง: iDB ' + idb + ' · LS ' + ls; };
+    try {
+      const rq = indexedDB.open('_probe', 1);
+      const to = setTimeout(() => { idb = 'ช้า>3วิ'; fin(); }, 3000);
+      rq.onupgradeneeded = () => { rq.result.createObjectStore('s'); };
+      rq.onerror = () => { clearTimeout(to); idb = '✗'; fin(); };
+      rq.onsuccess = () => {
+        try {
+          const db = rq.result, tx = db.transaction('s', 'readwrite');
+          tx.objectStore('s').put('1', 'k');
+          tx.oncomplete = () => { clearTimeout(to); idb = '✓'; db.close(); try { indexedDB.deleteDatabase('_probe'); } catch (e) {} fin(); };
+          tx.onerror = () => { clearTimeout(to); idb = '✗'; fin(); };
+        } catch (e) { clearTimeout(to); idb = '✗'; fin(); }
+      };
+    } catch (e) { idb = '✗'; fin(); }
+    fin();
+  })();
   showLogin('กำลังตรวจสอบ...');
   let authFired = false;
+  // นับวินาทีช่วงตรวจสอบ — ให้เห็นชัดว่าช้าจุดไหน (โผล่เมื่อเกิน 2 วิ)
+  const bootT0 = Date.now();
+  const bootTick = setInterval(function () {
+    if (authFired) { clearInterval(bootTick); return; }
+    const s = Math.round((Date.now() - bootT0) / 1000);
+    const el = document.getElementById('loginMsg');
+    if (s >= 2 && el && el.textContent.indexOf('กำลังตรวจสอบ') === 0) el.textContent = 'กำลังตรวจสอบ... ' + s + ' วิ';
+  }, 1000);
   // เรียก getRedirectResult เฉพาะตอน "เพิ่งกลับจากหน้า Google แบบ redirect" จริงๆ (Android เท่านั้น)
   // ธงค้างบน iOS = ของเก่าจากช่วงล็อกอินพัง — ถ้าปล่อยไว้ Firebase จะรอ iframe ข้ามโดเมนที่ Safari บล็อก ~30 วิ ทำให้ตรวจสอบช้ามาก
   let pendingRedirect = false;
@@ -1872,7 +1906,11 @@ function startApp(room) { if (started) return; started = true; connectRT(activeC
     } else if (isInAppBrowser()) {
       showLogin('กรุณาเปิดในเบราว์เซอร์ Safari หรือ Chrome\n(กดปุ่ม ••• มุมขวาบน แล้วเลือก "เปิดในเบราว์เซอร์")\nเพราะ Google ล็อกอินในแอป LINE/Facebook ไม่ได้');
     } else {
-      showLogin('เข้าสู่ระบบด้วย Google เพื่อใช้งาน');
+      // แสดงเวลาที่ใช้ตรวจ + ผลตรวจที่เก็บข้อมูล — ไว้ชี้สาเหตุเคสช้า/ไม่จำบัญชี
+      const took = Math.round((Date.now() - bootT0) / 1000);
+      showLogin('เข้าสู่ระบบด้วย Google เพื่อใช้งาน' +
+        (took >= 3 ? '\n(ตรวจสอบใช้เวลา ' + took + ' วิ)' : '') +
+        (window._stProbe ? '\n' + window._stProbe : ''));
     }
   });
   // watchdog: ถ้า auth ค้าง (iOS Safari บล็อก iframe ข้ามโดเมน) ไม่ให้ค้างที่ "กำลังตรวจสอบ"
