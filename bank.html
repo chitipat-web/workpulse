@@ -699,6 +699,21 @@
 <script src="vendor/firebase/firebase-auth-compat.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
 <script>
+/* รับผลล็อกอินแบบ redirect (iOS): Google ส่ง access_token กลับมาใน #hash ของ URL
+   ต้องเก็บ+ล้างออกจาก URL ทันทีก่อนโค้ดอื่นทำงาน (ไม่ให้ token ติดอยู่ในประวัติเบราว์เซอร์) */
+window._oauthToken = '';
+(function () {
+  if (location.hash.indexOf('access_token=') === -1) return;
+  try {
+    const h = new URLSearchParams(location.hash.slice(1));
+    const tok = h.get('access_token') || '', st = h.get('state') || '';
+    let expect = '';
+    try { expect = sessionStorage.getItem('oauthState') || ''; sessionStorage.removeItem('oauthState'); } catch (e) {}
+    history.replaceState(null, '', location.pathname + location.search);
+    if (tok && st && expect && st === expect) window._oauthToken = tok;   // state ไม่ตรง = ไม่รับ (กัน token แปลกปลอม)
+  } catch (e) {}
+})();
+
 const LKEY = 'bank_transfers_v1';      // local fallback store
 const CFGKEY = 'bank_fb_config';        // saved firebase config (JSON string)
 const ROOMKEY = 'bank_room';            // saved room code
@@ -1775,10 +1790,32 @@ function loadGIS() {
 }
 window._diag = window._diag || {};   // จับเวลารายขั้น: load/init/tap/token/signed — ไว้ชี้ว่าช้าขั้นไหน
 function _diagReset() { const d = window._diag; d.tap = d.token = null; }
+/* ล็อกอินหลักของ iOS: พาไปหน้า Google เต็มหน้า แล้วเด้งกลับพร้อม token ใน #hash
+   — เส้นทางคลาสสิก ไม่มี popup/iframe/storage ข้ามโดเมน (Safari ไม่มีอะไรให้บล็อก)
+   ใช้ redirect URI ที่ลงทะเบียนใน Google Cloud แล้ว: /workpulse/bank.html */
+function redirectSignIn() {
+  const nonce = Math.random().toString(36).slice(2) + Date.now().toString(36);
+  try { sessionStorage.setItem('oauthState', nonce); } catch (e) {}
+  const redirectUri = (location.hostname === 'chitipat-web.github.io')
+    ? 'https://chitipat-web.github.io/workpulse/bank.html'
+    : location.origin + location.pathname;
+  const p = new URLSearchParams({
+    client_id: GOOGLE_OAUTH_CLIENT_ID,
+    redirect_uri: redirectUri,
+    response_type: 'token',
+    scope: 'openid email profile',
+    state: nonce,
+    prompt: 'select_account',
+  });
+  const el = document.getElementById('loginMsg'); if (el) el.textContent = 'กำลังพาไปหน้า Google...';
+  location.href = 'https://accounts.google.com/o/oauth2/v2/auth?' + p.toString();
+}
 function googleSignIn() {
   if (!(window.firebase && firebase.auth)) { showAuthError({ code: 'noload', message: 'โหลด Firebase ไม่สำเร็จ — เช็คเน็ตแล้วรีเฟรชหน้า' }); return; }
   if (isInAppBrowser()) { showAuthError({ code: 'inapp' }); return; }   // กัน Google บล็อก webview ในแอป
   const el = document.getElementById('loginMsg');
+  // iOS: ใช้ redirect เต็มหน้าเสมอ — popup ทุกแบบ (Firebase/GIS storagerelay) มีปัญหากับ Safari เครื่องจริง
+  if (isIOSWebKit()) { redirectSignIn(); return; }
   if (gisReady()) {
     window._diag.tap = Date.now();
     if (el) el.textContent = 'กำลังเปิดหน้า Google...';
@@ -1863,6 +1900,17 @@ function startApp(room) { if (started) return; started = true; connectRT(activeC
   try { if (!app) app = firebase.initializeApp(ac.cfg); } catch (e) {}
   // บังคับ "จำบัญชีในเครื่อง" ชัดเจน (default ควรเป็นแบบนี้อยู่แล้ว แต่บางเครื่อง iOS ที่เก็บมีปัญหา)
   try { firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(function () {}); } catch (e) {}
+  // เพิ่งเด้งกลับจากหน้า Google (redirect flow) → ยื่น token ให้ Firebase เลย
+  if (window._oauthToken) {
+    window._diag.tap = window._diag.tap || Date.now();
+    window._diag.token = Date.now();
+    showLogin('กำลังยืนยันตัวตน...');
+    try {
+      const cred = firebase.auth.GoogleAuthProvider.credential(null, window._oauthToken);
+      firebase.auth().signInWithCredential(cred).catch(showAuthError);
+    } catch (e) { showAuthError(e); }
+    window._oauthToken = '';
+  }
   loadGIS().catch(() => {});   // อุ่นตัวล็อกอิน Google ไว้ก่อนผู้ใช้แตะปุ่ม (ถ้าโหลดไม่ได้ก็มีวิธีเดิมสำรอง)
   // ตรวจที่เก็บข้อมูลในเครื่อง (ไว้วินิจฉัยเคส "ไม่จำบัญชี") — แสดงผลบรรทัดเล็กใต้ข้อความ login
   window._stProbe = '';
@@ -1888,7 +1936,7 @@ function startApp(room) { if (started) return; started = true; connectRT(activeC
     } catch (e) { idb = '✗'; fin(); }
     fin();
   })();
-  showLogin('กำลังตรวจสอบ...');
+  showLogin(window._diag && window._diag.token ? 'กำลังยืนยันตัวตน...' : 'กำลังตรวจสอบ...');
   let authFired = false;
   // นับวินาทีแยกรายขั้น (เริ่มระบบ → คุยกับ Google → ยืนยันตัวตน) — ชี้ชัดว่าช้าขั้นไหน
   window._diag = window._diag || {};
