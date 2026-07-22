@@ -1722,10 +1722,15 @@ function isInAppBrowser() {
   return /FBAN|FBAV|FB_IAB|Instagram|Line\/|Messenger|MicroMessenger|TikTok/i.test(ua);
 }
 function isMobile() { return /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent || ''); }
+function isIOSWebKit() {   // iPhone/iPad ทุกเบราว์เซอร์ (รวม Chrome iOS = WebKit) + iPad โหมดเดสก์ท็อป
+  const ua = navigator.userAgent || '';
+  return /iPhone|iPad|iPod/i.test(ua) || (/Macintosh/.test(ua) && 'ontouchend' in document);
+}
 function showAuthError(err) {
   const code = err && err.code || '';
   let msg = (err && (err.message || err.code)) || 'ไม่ทราบสาเหตุ';
   if (code === 'auth/unauthorized-domain') msg = 'โดเมนนี้ยังไม่ได้รับอนุญาตใน Firebase (Authentication → Settings → Authorized domains)';
+  if (/missing.initial.state/i.test(code + ' ' + msg)) msg = 'Safari ไม่รองรับการล็อกอินแบบพาไปอีกหน้า — แตะปุ่มล็อกอินที่หน้านี้อีกครั้งได้เลย';
   if (code === 'auth/operation-not-allowed') msg = 'ยังไม่ได้เปิด Google sign-in ใน Firebase (Authentication → Sign-in method)';
   if (/disallowed_useragent|operation-not-supported/i.test(code + msg) || isInAppBrowser())
     msg = 'เบราว์เซอร์ในแอป (LINE/Facebook) ล็อกอิน Google ไม่ได้ — กดปุ่ม ••• มุมขวา แล้วเลือก "เปิดในเบราว์เซอร์" (Safari/Chrome)';
@@ -1742,8 +1747,13 @@ function googleSignIn() {
   firebase.auth().signInWithPopup(provider).catch(err => {
     if (err.code === 'auth/popup-closed-by-user' || err.code === 'auth/cancelled-popup-request') { if (el) el.textContent = 'เข้าสู่ระบบด้วย Google เพื่อใช้งาน'; return; }
     if (err.code === 'auth/popup-blocked' || err.code === 'auth/operation-not-supported-in-this-environment') {
+      if (isIOSWebKit()) {
+        // iOS ห้ามถอยไป redirect — Safari กั้น storage ข้ามโดเมน จะจบที่หน้า "missing initial state" (ทางตัน)
+        if (el) el.textContent = 'Safari บล็อกหน้าต่างล็อกอิน — แตะปุ่มเดิมอีกครั้ง (ครั้งที่ 2 มักเปิดได้)\nถ้ายังไม่ได้: ตั้งค่า > แอป Safari > ปิด "บล็อกหน้าต่างที่เปิดขึ้นเอง" แล้วลองใหม่';
+        return;
+      }
       if (el) el.textContent = 'กำลังพาไปหน้า Google...';
-      firebase.auth().signInWithRedirect(provider).catch(showAuthError);   // สำรอง ถ้า popup ถูกบล็อก
+      firebase.auth().signInWithRedirect(provider).catch(showAuthError);   // Android: redirect ยังใช้ได้ปกติ
     } else {
       showAuthError(err);
     }
