@@ -36,6 +36,28 @@ function bankName(b) { b = (b || "").toString().trim(); const c = b.replace(/\D/
 
 export default {
   async fetch(req) {
+    // ── Auth proxy: เบี่ยง identitytoolkit/securetoken ผ่าน Cloudflare edge ──
+    // เน็ตมือถือบางเจ้าเข้า googleapis.com ตรงช้ามาก (วัดจริง 27-96 วิ) แต่เข้า Worker เร็วปกติ
+    // แค่ส่งต่อคำขอตามเดิม ไม่มีสิทธิ์อะไรเพิ่ม (endpoint สาธารณะของ Google อยู่แล้ว กุญแจคือ apiKey ฝั่งผู้เรียก)
+    {
+      const u = new URL(req.url);
+      if (u.pathname.startsWith("/itk/") || u.pathname.startsWith("/sts/")) {
+        const AC = {
+          "Access-Control-Allow-Origin": "https://chitipat-web.github.io",
+          "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+          "Access-Control-Allow-Headers": "Content-Type, X-Client-Version, X-Firebase-gmpid, X-Firebase-Client, X-Firebase-AppCheck",
+        };
+        if (req.method === "OPTIONS") return new Response(null, { headers: AC });
+        if ((u.searchParams.get("key") || "") !== FB_APIKEY) return new Response("forbidden", { status: 403, headers: AC });   // ใช้ได้เฉพาะโปรเจกต์เรา
+        const base = u.pathname.startsWith("/itk/") ? "https://identitytoolkit.googleapis.com" : "https://securetoken.googleapis.com";
+        const target = base + u.pathname.slice(4) + u.search;
+        const init = { method: req.method, headers: { "Content-Type": req.headers.get("Content-Type") || "application/json" } };
+        if (req.method !== "GET" && req.method !== "HEAD") init.body = await req.arrayBuffer();
+        const r = await fetch(target, init);
+        const b = await r.arrayBuffer();
+        return new Response(b, { status: r.status, headers: { ...AC, "Content-Type": r.headers.get("Content-Type") || "application/json" } });
+      }
+    }
     const cors = { "Access-Control-Allow-Origin": ALLOW_ORIGIN, "Access-Control-Allow-Methods": "POST, OPTIONS", "Access-Control-Allow-Headers": "Content-Type" };
     if (req.method === "OPTIONS") return new Response(null, { headers: cors });
     if (req.method !== "POST") return new Response("POST only", { status: 405, headers: cors });
