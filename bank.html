@@ -956,8 +956,9 @@ function setIO(m) {
     _ocrFilledVals = {};
     if (currentSlipImg) {
       const qr = document.getElementById('fSlipRef').value;
+      const tok = _ocrToken;   // ถ้ามีการปิดฟอร์ม/สลับซ้ำ/เปลี่ยนสลิป ก่อนรูปโหลดเสร็จ → ทิ้งงานนี้
       const im = new Image();
-      im.onload = () => slipRoute(im, qr);
+      im.onload = () => { if (tok === _ocrToken) slipRoute(im, qr); };
       im.src = currentSlipImg;
     }
   }
@@ -965,6 +966,8 @@ function setIO(m) {
 function openModal(id) {
   if (id && role === 'employee') return;   // พนักงานแก้ไขรายการเดิมไม่ได้
   document.getElementById('modal').classList.add('show');
+  // เปิดฟอร์มทุกครั้ง = ยกเลิกงานอ่านสลิปที่ค้างจากรอบก่อนเสมอ (กันผลอ่านเก่ามาเติมฟอร์มใหม่)
+  _ocrToken++;
   // ล้างสลิปเก่าก่อนเรียก setIO (setIO จะประเมินสลิปที่แนบอยู่ใหม่ — ต้องไม่เห็นของค้างจากรอบก่อน)
   currentSlipImg = '';
   _ocrFilledVals = {};
@@ -1384,6 +1387,7 @@ async function openSlip(id) {
 }
 async function handleSlip(input) {
   _ocrToken++;   // ยกเลิกผลอ่านสลิปใบก่อน (ถ้ายังอ่านค้างอยู่)
+  const myTok = _ocrToken;   // จำเลขงานของเรา — ถ้าฟอร์มถูกปิด/เปิดใหม่ระหว่างอ่านไฟล์ ต้องทิ้งงานนี้
   const file = input.files && input.files[0];
   if (!file) { setSlipStatus('', ''); currentSlipImg=''; document.getElementById('fSlipRef').value=''; document.getElementById('fSlipHash').value=''; return; }
   setSlipStatus('busy', '⏳ กำลังอ่านสลิป...');
@@ -1392,9 +1396,10 @@ async function handleSlip(input) {
     const hash = await sha256(buf);
     const url = URL.createObjectURL(new Blob([buf]));
     const img = await new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = url; });
+    URL.revokeObjectURL(url);
+    if (myTok !== _ocrToken) return;   // ถูกยกเลิกระหว่างอ่านไฟล์ (ปิดฟอร์ม/เปิดใหม่/เปลี่ยนสลิป) — ห้ามเขียนอะไรทั้งนั้น
     const qr = readQRfromImage(img);
     try { currentSlipImg = compressToDataURL(img); } catch (e) { currentSlipImg = ''; }   // เก็บรูปสลิป (บีบอัด)
-    URL.revokeObjectURL(url);
     document.getElementById('fSlipHash').value = hash;
     document.getElementById('fSlipRef').value = qr || '';
     document.getElementById('fSlipVerified').value = '';
