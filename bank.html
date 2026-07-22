@@ -1773,11 +1773,14 @@ function loadGIS() {
   });
   return _gisLoading;
 }
+window._diag = window._diag || {};   // จับเวลารายขั้น: load/init/tap/token/signed — ไว้ชี้ว่าช้าขั้นไหน
+function _diagReset() { const d = window._diag; d.tap = d.token = null; }
 function googleSignIn() {
   if (!(window.firebase && firebase.auth)) { showAuthError({ code: 'noload', message: 'โหลด Firebase ไม่สำเร็จ — เช็คเน็ตแล้วรีเฟรชหน้า' }); return; }
   if (isInAppBrowser()) { showAuthError({ code: 'inapp' }); return; }   // กัน Google บล็อก webview ในแอป
   const el = document.getElementById('loginMsg');
   if (gisReady()) {
+    window._diag.tap = Date.now();
     if (el) el.textContent = 'กำลังเปิดหน้า Google...';
     try {
       if (!_gisClient) _gisClient = google.accounts.oauth2.initTokenClient({
@@ -1786,25 +1789,31 @@ function googleSignIn() {
         prompt: 'select_account',
         callback: resp => {
           if (resp && resp.access_token) {
-            if (el) el.textContent = 'กำลังตรวจสอบ...';
+            window._diag.token = Date.now();
+            if (el) el.textContent = 'กำลังยืนยันตัวตน...';
             try { firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(function () {}); } catch (e) {}   // จำบัญชีไว้ในเครื่อง
             const cred = firebase.auth.GoogleAuthProvider.credential(null, resp.access_token);
-            firebase.auth().signInWithCredential(cred).catch(showAuthError);
+            firebase.auth().signInWithCredential(cred).catch(err => { _diagReset(); showAuthError(err); });
           } else {
+            _diagReset();
             const why = resp && resp.error ? ' (' + resp.error + ')' : '';
             if (el) el.textContent = 'เข้าสู่ระบบไม่สำเร็จ' + why + ' — ลองแตะปุ่มอีกครั้ง';
           }
         },
         error_callback: err => {
+          _diagReset();
           if (err && err.type === 'popup_closed') { if (el) el.textContent = 'หน้าต่าง Google ถูกปิดก่อนล็อกอินเสร็จ — ถ้าในหน้านั้นขึ้น Error 400 ให้ถ่ายจอส่งให้เจ้าของระบบ'; return; }
-          legacyPopupSignIn();   // เปิด popup ไม่ได้ → ลองกลไกเดิมของ Firebase
+          if (isIOSWebKit()) { if (el) el.textContent = 'เปิดหน้าต่าง Google ไม่ได้ (' + esc2((err && err.type) || '?') + ') — แตะปุ่มอีกครั้ง'; return; }
+          legacyPopupSignIn();   // เครื่องอื่น: เปิด popup ไม่ได้ → ลองกลไกเดิมของ Firebase
         },
       });
       _gisClient.requestAccessToken();
       return;
-    } catch (e) { /* ตกไปใช้วิธีเดิมด้านล่าง */ }
+    } catch (e) { if (isIOSWebKit()) { if (el) el.textContent = 'ระบบล็อกอินสะดุด — แตะปุ่มอีกครั้ง'; return; } }
   } else {
     loadGIS().catch(() => {});   // โหลดไว้ให้ทันแตะครั้งหน้า
+    // iOS ห้ามตกไปวิธีเดิม (popup Firebase ค้าง ~30 วิ บน Safari) — ให้รอ GIS โหลดเสร็จแล้วแตะใหม่
+    if (isIOSWebKit()) { if (el) el.textContent = 'กำลังเตรียมระบบล็อกอิน — รอ 2-3 วิ แล้วแตะปุ่มอีกครั้ง'; return; }
   }
   legacyPopupSignIn();
 }
@@ -1881,14 +1890,41 @@ function startApp(room) { if (started) return; started = true; connectRT(activeC
   })();
   showLogin('กำลังตรวจสอบ...');
   let authFired = false;
-  // นับวินาทีช่วงตรวจสอบ — ให้เห็นชัดว่าช้าจุดไหน (โผล่เมื่อเกิน 2 วิ)
-  const bootT0 = Date.now();
+  // นับวินาทีแยกรายขั้น (เริ่มระบบ → คุยกับ Google → ยืนยันตัวตน) — ชี้ชัดว่าช้าขั้นไหน
+  window._diag = window._diag || {};
+  window._diag.load = Date.now();
+  const bootT0 = window._diag.load;
   const bootTick = setInterval(function () {
-    if (authFired) { clearInterval(bootTick); return; }
-    const s = Math.round((Date.now() - bootT0) / 1000);
-    const el = document.getElementById('loginMsg');
-    if (s >= 2 && el && el.textContent.indexOf('กำลังตรวจสอบ') === 0) el.textContent = 'กำลังตรวจสอบ... ' + s + ' วิ';
+    if (currentUser) { clearInterval(bootTick); return; }
+    const el = document.getElementById('loginMsg'); if (!el) return;
+    const d = window._diag;
+    let base = null, label = '';
+    if (d.token) { base = d.token; label = 'กำลังยืนยันตัวตน...'; }
+    else if (d.tap) { base = d.tap; label = 'กำลังคุยกับ Google...'; }
+    else if (!authFired) { base = d.load; label = 'กำลังตรวจสอบ...'; }
+    if (!base) return;
+    const s = Math.round((Date.now() - base) / 1000);
+    if (s >= 2 && el.textContent.indexOf('กำลัง') === 0) el.textContent = label + ' ' + s + ' วิ';
   }, 1000);
+  // สรุปเวลารอบล่าสุด + ร่องรอย session — ไว้โชว์หน้า login ให้วินิจฉัยจากภาพหน้าจอได้
+  const _diagStr = function () {
+    const d = window._diag, f = (a, b) => (a && b && b >= a) ? Math.round((b - a) / 1000) + 'วิ' : '-';
+    return 'เริ่มระบบ ' + f(d.load, d.init) + ' · Google ' + f(d.tap, d.token) + ' · ยืนยัน ' + f(d.token, d.signed);
+  };
+  const _loginFootnote = function () {
+    let s = '';
+    try {
+      const lu = JSON.parse(localStorage.getItem('_lastUser') || 'null');
+      if (lu && lu.e) {
+        const t = new Date(lu.t);
+        s += '\n⚠️ เคยล็อกอิน (' + lu.e.split('@')[0] + ' ' + t.getHours() + ':' + String(t.getMinutes()).padStart(2, '0') + ') แต่เครื่องไม่จำ session';
+      }
+      const pd = localStorage.getItem('_loginDiag');
+      if (pd) s += '\nรอบก่อน: ' + pd;
+    } catch (e) {}
+    if (window._stProbe) s += '\n' + window._stProbe;
+    return s;
+  };
   // เรียก getRedirectResult เฉพาะตอน "เพิ่งกลับจากหน้า Google แบบ redirect" จริงๆ (Android เท่านั้น)
   // ธงค้างบน iOS = ของเก่าจากช่วงล็อกอินพัง — ถ้าปล่อยไว้ Firebase จะรอ iframe ข้ามโดเมนที่ Safari บล็อก ~30 วิ ทำให้ตรวจสอบช้ามาก
   let pendingRedirect = false;
@@ -1904,7 +1940,13 @@ function startApp(room) { if (started) return; started = true; connectRT(activeC
   if (pendingRedirect) firebase.auth().getRedirectResult().catch(showAuthError);   // แสดงสาเหตุถ้า redirect ล้มเหลว
   firebase.auth().onAuthStateChanged(user => {
     authFired = true;
+    if (!window._diag.init) window._diag.init = Date.now();
     if (user && isAllowed(user.email)) {
+      window._diag.signed = Date.now();
+      try {   // ฝากร่องรอยไว้พิสูจน์ว่า session ถูกบันทึก — ถ้ารอบหน้าไม่จำ จะรู้ว่าหายที่ไหน
+        localStorage.setItem('_lastUser', JSON.stringify({ e: user.email, t: Date.now() }));
+        localStorage.setItem('_loginDiag', _diagStr());
+      } catch (e) {}
       currentUser = user;
       role = isOwnerEmail(user.email) ? 'owner' : 'employee';
       document.body.classList.toggle('role-employee', role === 'employee');
@@ -1916,18 +1958,14 @@ function startApp(room) { if (started) return; started = true; connectRT(activeC
     } else if (isInAppBrowser()) {
       showLogin('กรุณาเปิดในเบราว์เซอร์ Safari หรือ Chrome\n(กดปุ่ม ••• มุมขวาบน แล้วเลือก "เปิดในเบราว์เซอร์")\nเพราะ Google ล็อกอินในแอป LINE/Facebook ไม่ได้');
     } else {
-      // แสดงเวลาที่ใช้ตรวจ + ผลตรวจที่เก็บข้อมูล — ไว้ชี้สาเหตุเคสช้า/ไม่จำบัญชี
-      const took = Math.round((Date.now() - bootT0) / 1000);
-      showLogin('เข้าสู่ระบบด้วย Google เพื่อใช้งาน' +
-        (took >= 3 ? '\n(ตรวจสอบใช้เวลา ' + took + ' วิ)' : '') +
-        (window._stProbe ? '\n' + window._stProbe : ''));
+      showLogin('เข้าสู่ระบบด้วย Google เพื่อใช้งาน' + _loginFootnote());
     }
   });
   // watchdog: ถ้า auth ค้าง (iOS Safari บล็อก iframe ข้ามโดเมน) ไม่ให้ค้างที่ "กำลังตรวจสอบ"
   setTimeout(function(){
     if (authFired || currentUser) return;
     if (isInAppBrowser()) return;   // มีข้อความ in-app แยกแล้ว
-    showLogin('เข้าสู่ระบบด้วย Google เพื่อใช้งาน' + (window._stProbe ? '\n' + window._stProbe : ''));
+    showLogin('เข้าสู่ระบบด้วย Google เพื่อใช้งาน' + _loginFootnote());
   }, 5000);
 })();
 </script>
