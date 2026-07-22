@@ -1776,11 +1776,12 @@ function googleSignIn() {
             const cred = firebase.auth.GoogleAuthProvider.credential(null, resp.access_token);
             firebase.auth().signInWithCredential(cred).catch(showAuthError);
           } else {
-            if (el) el.textContent = 'เข้าสู่ระบบด้วย Google เพื่อใช้งาน';   // ผู้ใช้ยกเลิก/ไม่ให้สิทธิ์
+            const why = resp && resp.error ? ' (' + resp.error + ')' : '';
+            if (el) el.textContent = 'เข้าสู่ระบบไม่สำเร็จ' + why + ' — ลองแตะปุ่มอีกครั้ง';
           }
         },
         error_callback: err => {
-          if (err && err.type === 'popup_closed') { if (el) el.textContent = 'เข้าสู่ระบบด้วย Google เพื่อใช้งาน'; return; }
+          if (err && err.type === 'popup_closed') { if (el) el.textContent = 'หน้าต่าง Google ถูกปิดก่อนล็อกอินเสร็จ — ถ้าในหน้านั้นขึ้น Error 400 ให้ถ่ายจอส่งให้เจ้าของระบบ'; return; }
           legacyPopupSignIn();   // เปิด popup ไม่ได้ → ลองกลไกเดิมของ Firebase
         },
       });
