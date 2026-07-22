@@ -1741,14 +1741,62 @@ function showAuthError(err) {
     msg = 'เบราว์เซอร์ในแอป (LINE/Facebook) ล็อกอิน Google ไม่ได้ — กดปุ่ม ••• มุมขวา แล้วเลือก "เปิดในเบราว์เซอร์" (Safari/Chrome)';
   const el = document.getElementById('loginMsg'); if (el) el.textContent = 'เข้าสู่ระบบไม่สำเร็จ: ' + msg;
 }
+/* ล็อกอินหลัก: Google Identity Services (GIS) — ผลกลับในหน้าเดิมผ่าน callback ไม่พึ่ง storage ข้ามโดเมน
+   (แก้ปัญหา iOS Safari: popup ของ Firebase เลือกบัญชีแล้วผลส่งกลับไม่ถึงหน้าเว็บ) */
+const GOOGLE_OAUTH_CLIENT_ID = '273049715377-nak6qa4usnhppdulbr244a3l40b6jae9.apps.googleusercontent.com';   // public (โชว์ใน URL ล็อกอินอยู่แล้ว)
+let _gisLoading = null, _gisClient = null;
+function gisReady() { return !!(window.google && google.accounts && google.accounts.oauth2); }
+function loadGIS() {
+  if (gisReady()) return Promise.resolve();
+  if (_gisLoading) return _gisLoading;
+  _gisLoading = new Promise((res, rej) => {
+    const s = document.createElement('script');
+    s.src = 'https://accounts.google.com/gsi/client';
+    s.async = true; s.defer = true;
+    s.onload = res;
+    s.onerror = () => { _gisLoading = null; rej(new Error('gis load fail')); };
+    document.head.appendChild(s);
+  });
+  return _gisLoading;
+}
 function googleSignIn() {
   if (!(window.firebase && firebase.auth)) { showAuthError({ code: 'noload', message: 'โหลด Firebase ไม่สำเร็จ — เช็คเน็ตแล้วรีเฟรชหน้า' }); return; }
   if (isInAppBrowser()) { showAuthError({ code: 'inapp' }); return; }   // กัน Google บล็อก webview ในแอป
+  const el = document.getElementById('loginMsg');
+  if (gisReady()) {
+    if (el) el.textContent = 'กำลังเปิดหน้า Google...';
+    try {
+      if (!_gisClient) _gisClient = google.accounts.oauth2.initTokenClient({
+        client_id: GOOGLE_OAUTH_CLIENT_ID,
+        scope: 'openid email profile',
+        prompt: 'select_account',
+        callback: resp => {
+          if (resp && resp.access_token) {
+            if (el) el.textContent = 'กำลังตรวจสอบ...';
+            const cred = firebase.auth.GoogleAuthProvider.credential(null, resp.access_token);
+            firebase.auth().signInWithCredential(cred).catch(showAuthError);
+          } else {
+            if (el) el.textContent = 'เข้าสู่ระบบด้วย Google เพื่อใช้งาน';   // ผู้ใช้ยกเลิก/ไม่ให้สิทธิ์
+          }
+        },
+        error_callback: err => {
+          if (err && err.type === 'popup_closed') { if (el) el.textContent = 'เข้าสู่ระบบด้วย Google เพื่อใช้งาน'; return; }
+          legacyPopupSignIn();   // เปิด popup ไม่ได้ → ลองกลไกเดิมของ Firebase
+        },
+      });
+      _gisClient.requestAccessToken();
+      return;
+    } catch (e) { /* ตกไปใช้วิธีเดิมด้านล่าง */ }
+  } else {
+    loadGIS().catch(() => {});   // โหลดไว้ให้ทันแตะครั้งหน้า
+  }
+  legacyPopupSignIn();
+}
+// วิธีเดิม (Firebase popup) — สำรองกรณี GIS ใช้ไม่ได้
+function legacyPopupSignIn() {
   const provider = new firebase.auth.GoogleAuthProvider();
   provider.setCustomParameters({ prompt: 'select_account' });
   const el = document.getElementById('loginMsg'); if (el) el.textContent = 'กำลังเปิดหน้า Google...';
-  // ใช้ popup ทุกอุปกรณ์ — iOS Safari แบบ redirect เด้งกลับแล้วอ่านสถานะไม่ได้ (ITP)
-  // popup ทำงานในแท็บเดียว ไม่ต้องพึ่ง storage ข้ามโดเมนตอนกลับ
   firebase.auth().signInWithPopup(provider).catch(err => {
     if (err.code === 'auth/popup-closed-by-user' || err.code === 'auth/cancelled-popup-request') { if (el) el.textContent = 'เข้าสู่ระบบด้วย Google เพื่อใช้งาน'; return; }
     if (err.code === 'auth/popup-blocked' || err.code === 'auth/operation-not-supported-in-this-environment') {
@@ -1788,6 +1836,7 @@ function startApp(room) { if (started) return; started = true; connectRT(activeC
   }
   try { sessionStorage.removeItem('fbRetry'); } catch (e) {}   // โหลดสำเร็จแล้ว เคลียร์ธงกันลองซ้ำ
   try { if (!app) app = firebase.initializeApp(ac.cfg); } catch (e) {}
+  loadGIS().catch(() => {});   // อุ่นตัวล็อกอิน Google ไว้ก่อนผู้ใช้แตะปุ่ม (ถ้าโหลดไม่ได้ก็มีวิธีเดิมสำรอง)
   showLogin('กำลังตรวจสอบ...');
   let authFired = false;
   firebase.auth().getRedirectResult().catch(showAuthError);   // แสดงสาเหตุถ้า redirect ล้มเหลว
