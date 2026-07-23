@@ -717,7 +717,7 @@ window._oauthStateLost = false;
   } catch (e) {}
 })();
 
-const APP_VER = 'v7.23-1';   // โชว์บนหน้า login — เช็คจากภาพหน้าจอได้ว่าเครื่องรันโค้ดรุ่นไหน (กันงงเรื่องแคช)
+const APP_VER = 'v7.23-2';   // โชว์บนหน้า login — เช็คจากภาพหน้าจอได้ว่าเครื่องรันโค้ดรุ่นไหน (กันงงเรื่องแคช)
 const LKEY = 'bank_transfers_v1';      // local fallback store
 const CFGKEY = 'bank_fb_config';        // saved firebase config (JSON string)
 const ROOMKEY = 'bank_room';            // saved room code
@@ -862,6 +862,7 @@ function connectRT(cfg, room) {
   try {
     const db = firebase.database();
     dbRef = db.ref('rooms/' + room + '/transfers');
+    rtOn = true;   // เขียนขึ้น Firebase ได้ทันที (SDK คิวให้จนเชื่อมต่อ) — กันรายการที่เพิ่มก่อน snapshot แรกหายจากการเขียนลงเครื่องแล้วถูกทับ
 
     // connection state indicator
     db.ref('.info/connected').on('value', snap => {
@@ -999,6 +1000,7 @@ function setIO(m) {
 function openModal(id) {
   if (id && role === 'employee') return;   // พนักงานแก้ไขรายการเดิมไม่ได้
   document.getElementById('modal').classList.add('show');
+  const _sb = document.getElementById('saveBtn'); if (_sb) { _sb.disabled = false; _sb.textContent = 'บันทึก'; }   // คืนปุ่มเสมอ (กันค้าง "กำลังส่ง..." จากรอบก่อน)
   // เปิดฟอร์มทุกครั้ง = ยกเลิกงานอ่านสลิปที่ค้างจากรอบก่อนเสมอ (กันผลอ่านเก่ามาเติมฟอร์มใหม่)
   _ocrToken++;
   // ล้างสลิปเก่าก่อนเรียก setIO (setIO จะประเมินสลิปที่แนบอยู่ใหม่ — ต้องไม่เห็นของค้างจากรอบก่อน)
@@ -1438,6 +1440,11 @@ async function handleSlip(input) {
     document.getElementById('fSlipVerified').value = '';
     slipRoute(img, qr);
   } catch (e) {
+    // อ่านไฟล์/ถอดรูปไม่สำเร็จ (เช่น HEIC บนเดสก์ท็อป/ไฟล์เสีย) — ต้องล้างค่าสลิปใบก่อนออก ไม่งั้นกดบันทึกจะบันทึกสลิปใบเก่าผิดใบ
+    currentSlipImg = '';
+    document.getElementById('fSlipRef').value = '';
+    document.getElementById('fSlipHash').value = '';
+    document.getElementById('fSlipVerified').value = '';
     setSlipStatus('warn', '⚠️ อ่านไฟล์ไม่สำเร็จ ลองใหม่อีกครั้ง');
   }
 }
@@ -1477,7 +1484,11 @@ function clearAll() {
   catch (e) {
     if (!confirm('⚠️ สำรองข้อมูลในเครื่องไม่สำเร็จ (พื้นที่อาจเต็ม)\nถ้าล้างตอนนี้จะกู้คืนไม่ได้ — ยืนยันจะล้างเลยไหม?')) return;
   }
-  if (rtOn && dbRef && dbRef.parent) { dbRef.parent.child('slips').remove().catch(()=>{}); dbRef.remove(); }   // ลบรูปสลิปด้วย
+  if (rtOn && dbRef && dbRef.parent) {
+    dbRef.parent.child('slips').remove().catch(()=>{});
+    dbRef.parent.child('pending').remove().catch(()=>{});   // ล้างคิวรออนุมัติด้วย (คิวชี้ไปข้อมูลที่ล้างทิ้งแล้ว)
+    dbRef.remove();
+  }
   else { data = []; persistLocal(); render(); }
   alert('ล้างข้อมูลแล้ว ✅\nถ้าพลาด กดปุ่ม "↩️ กู้คืน" เพื่อเอากลับได้ (จากเครื่องนี้)');
 }
@@ -1536,7 +1547,7 @@ function _zipStore(files) {
 function _xlsxBlob(aoa) {
   const enc = new TextEncoder();
   const col = n => { let s = ''; n++; while (n > 0) { const m = (n - 1) % 26; s = String.fromCharCode(65 + m) + s; n = Math.floor((n - 1) / 26); } return s; };
-  const xe = s => String(s == null ? '' : s).replace(/[<>&"']/g, c => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;', "'": '&apos;' }[c]));
+  const xe = s => String(s == null ? '' : s).replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, '').replace(/[<>&"']/g, c => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;', "'": '&apos;' }[c]));   // ตัดอักขระควบคุมที่ XML ห้าม (กันไฟล์ .xlsx เสีย)
   let rx = '';
   aoa.forEach((row, r) => {
     let cs = '';
@@ -1625,6 +1636,8 @@ function render() {
   const fm = document.getElementById('filterMonth');
   fm.innerHTML = '<option value="all">เลือกเดือน...</option>' +
     months.map(m => `<option value="${m}">${monthLabel(m)}</option>`).join('');
+  // ถ้ากรองเดือนอยู่แต่เดือนนั้นไม่มีรายการแล้ว (ถูกลบหมด) → กลับไปโหมด "ทั้งหมด" ทั้งค่าและดรอปดาวน์ (กันลิสต์ว่างค้าง)
+  if (dateRange.indexOf('m:')===0 && !months.includes(dateRange.slice(2))) dateRange = 'all';
   fm.value = (dateRange.indexOf('m:')===0 && [...fm.options].some(o=>o.value===dateRange.slice(2))) ? dateRange.slice(2) : 'all';
   document.querySelectorAll('#rangeSeg .seg-btn').forEach(b => b.classList.toggle('active', b.dataset.r === dateRange));
 
@@ -1711,7 +1724,7 @@ function buildReport(){
   const days=[]; for(let i=13;i>=0;i--){ const d=new Date(); d.setDate(d.getDate()-i); days.push(localDateStr(d)); }
   const dayMax=Math.max(1,...days.map(d=>byDay[d]||0));
   const dayBars=days.map(d=>{ const v=byDay[d]||0; const h=Math.round(v/dayMax*100); return `<div class="bar-col"><div class="cbar" style="height:${h}%" title="${fmt(v)}"></div><em>${Number(d.slice(8,10))}</em></div>`; }).join('');
-  const mons=[]; for(let i=5;i>=0;i--){ const d=new Date(); d.setMonth(d.getMonth()-i); mons.push(d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')); }
+  const mons=[]; for(let i=5;i>=0;i--){ const d=new Date(); d.setDate(1); d.setMonth(d.getMonth()-i); mons.push(d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')); }   // setDate(1) ก่อน กัน rollover วันสิ้นเดือน (31→เดือนถัดไป)
   const monMax=Math.max(1,...mons.map(k=>byMonth[k]||0));
   const monBars=mons.map(k=>{ const v=byMonth[k]||0; const h=Math.round(v/monMax*100); return `<div class="bar-col"><div class="cbar" style="height:${h}%" title="${fmt(v)}"></div><em>${MON_TH[Number(k.slice(5,7))-1]}</em></div>`; }).join('');
   const tops=Object.entries(byCust).sort((a,b)=>b[1]-a[1]).slice(0,5);
@@ -1734,6 +1747,7 @@ const EMPLOYEE_EMAILS = ["dynosgaming01@gmail.com", "chitipat.kee@gmail.com"];
 const ALLOWED_EMAILS = [...OWNER_EMAILS, ...EMPLOYEE_EMAILS];
 let currentUser = null;
 let role = 'owner';   // 'owner' | 'employee'
+let signingIn = false;   // กำลังแลก token → เข้าสู่ระบบ (กันหน้าจอเด้งกลับเป็นปุ่มล็อกอินระหว่างรอ)
 
 function isAllowed(email) {
   if (!email) return false;
@@ -1831,10 +1845,11 @@ function googleSignIn() {
         callback: resp => {
           if (resp && resp.access_token) {
             window._diag.token = Date.now();
+            signingIn = true;
             if (el) el.textContent = 'กำลังยืนยันตัวตน...';
             try { firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(function () {}); } catch (e) {}   // จำบัญชีไว้ในเครื่อง
             const cred = firebase.auth.GoogleAuthProvider.credential(null, resp.access_token);
-            firebase.auth().signInWithCredential(cred).catch(err => { _diagReset(); showAuthError(err); });
+            firebase.auth().signInWithCredential(cred).catch(err => { signingIn = false; _diagReset(); showAuthError(err); });
           } else {
             _diagReset();
             const why = resp && resp.error ? ' (' + resp.error + ')' : '';
@@ -1895,6 +1910,7 @@ function startApp(room) { if (started) return; started = true; connectRT(activeC
   if (!(window.firebase && firebase.auth)) {   // SDK โหลดไม่ขึ้น (เน็ต/บล็อก/แคช)
     try {
       if (!sessionStorage.getItem('fbRetry')) {   // ลองโหลดใหม่อัตโนมัติ 1 ครั้ง (กันเน็ตกระตุก)
+        if (window._oauthToken) sessionStorage.setItem('_tokTmp', window._oauthToken);   // token จาก redirect ถูกล้างจาก URL แล้ว — ฝากไว้ไม่ให้หายตอน reload
         sessionStorage.setItem('fbRetry', '1'); location.reload(); return;
       }
     } catch (e) {}
@@ -1904,6 +1920,11 @@ function startApp(room) { if (started) return; started = true; connectRT(activeC
     return;
   }
   try { sessionStorage.removeItem('fbRetry'); } catch (e) {}   // โหลดสำเร็จแล้ว เคลียร์ธงกันลองซ้ำ
+  try {   // รับ token ที่ฝากไว้ก่อน auto-reload รอบที่แล้ว (ถ้ามี)
+    const tt = sessionStorage.getItem('_tokTmp');
+    if (tt && !window._oauthToken) window._oauthToken = tt;
+    sessionStorage.removeItem('_tokTmp');
+  } catch (e) {}
   try { if (!app) app = firebase.initializeApp(ac.cfg); } catch (e) {}
   // เบี่ยงเซิร์ฟเวอร์ auth (identitytoolkit/securetoken) ไปผ่าน Worker "authproxy" (Cloudflare edge)
   // — วัดจากเครื่องจริง: เข้า googleapis ตรงช้า 27-96 วิ แต่เข้า Worker เร็วปกติ (เส้นเดียวกับตรวจสลิป)
@@ -1920,11 +1941,12 @@ function startApp(room) { if (started) return; started = true; connectRT(activeC
   if (window._oauthToken) {
     window._diag.tap = window._diag.tap || Date.now();
     window._diag.token = Date.now();
+    signingIn = true;   // กัน onAuthStateChanged(null) ครั้งแรกทับหน้าจอเป็นปุ่มล็อกอินระหว่างแลก token ยังไม่เสร็จ
     showLogin('กำลังยืนยันตัวตน...');
     try {
       const cred = firebase.auth.GoogleAuthProvider.credential(null, window._oauthToken);
-      firebase.auth().signInWithCredential(cred).catch(showAuthError);
-    } catch (e) { showAuthError(e); }
+      firebase.auth().signInWithCredential(cred).catch(err => { signingIn = false; showAuthError(err); });
+    } catch (e) { signingIn = false; showAuthError(e); }
     window._oauthToken = '';
   }
   loadGIS().catch(() => {});   // อุ่นตัวล็อกอิน Google ไว้ก่อนผู้ใช้แตะปุ่ม (ถ้าโหลดไม่ได้ก็มีวิธีเดิมสำรอง)
@@ -2008,6 +2030,7 @@ function startApp(room) { if (started) return; started = true; connectRT(activeC
     authFired = true;
     if (!window._diag.init) window._diag.init = Date.now();
     if (user && isAllowed(user.email)) {
+      signingIn = false;
       window._diag.signed = Date.now();
       try {   // ฝากร่องรอยไว้พิสูจน์ว่า session ถูกบันทึก — ถ้ารอบหน้าไม่จำ จะรู้ว่าหายที่ไหน
         localStorage.setItem('_lastUser', JSON.stringify({ e: user.email, t: Date.now() }));
@@ -2023,13 +2046,13 @@ function startApp(room) { if (started) return; started = true; connectRT(activeC
       showLogin('บัญชี ' + user.email + ' ไม่มีสิทธิ์เข้าถึงระบบนี้\nติดต่อเจ้าของระบบเพื่อขอสิทธิ์', user.email);
     } else if (isInAppBrowser()) {
       showLogin('กรุณาเปิดในเบราว์เซอร์ Safari หรือ Chrome\n(กดปุ่ม ••• มุมขวาบน แล้วเลือก "เปิดในเบราว์เซอร์")\nเพราะ Google ล็อกอินในแอป LINE/Facebook ไม่ได้');
-    } else {
+    } else if (!signingIn) {   // ยังแลก token อยู่ → คงข้อความ "กำลังยืนยันตัวตน" ไว้ ไม่เด้งปุ่มล็อกอิน
       showLogin('เข้าสู่ระบบด้วย Google เพื่อใช้งาน' + _loginFootnote());
     }
   });
   // watchdog: ถ้า auth ค้าง (iOS Safari บล็อก iframe ข้ามโดเมน) ไม่ให้ค้างที่ "กำลังตรวจสอบ"
   setTimeout(function(){
-    if (authFired || currentUser) return;
+    if (authFired || currentUser || signingIn) return;
     if (isInAppBrowser()) return;   // มีข้อความ in-app แยกแล้ว
     showLogin('เข้าสู่ระบบด้วย Google เพื่อใช้งาน' + _loginFootnote());
   }, 5000);
