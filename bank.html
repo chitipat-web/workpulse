@@ -684,14 +684,15 @@
     })
     .catch(function () {});
 })();
-// ⚠️ iOS Safari: indexedDB มีบั๊กค้าง (โดยเฉพาะเปิดหลายแท็บ) ทำให้ Firebase auth
-// รอ storage จน timeout ~30 วิ และจำบัญชีไม่ได้ → ปิด indexedDB บน iOS ก่อนโหลด Firebase
-// SDK จะถอยไปใช้ localStorage เอง (เร็ว เสถียร — แอปนี้ไม่มีส่วนอื่นใช้ indexedDB)
+// (ถอนแล้ว) เคยปิด indexedDB บน iOS — พิสูจน์ในแล็บแล้วว่าทำให้ SDK กู้ session ไม่ขึ้น (สาเหตุ "ไม่จำบัญชี")
+// ⚡ iOS: กัน Firebase auth หยุดรอโหลด apis.google.com (gapi iframe สำหรับ popup แบบเก่าที่เราไม่ใช้แล้ว)
+// ตอนเริ่มระบบบนมือถือ SDK จะ "await" การโหลดนี้ก่อนปล่อยผู้ใช้ — เน็ตที่เข้าเซิร์ฟเวอร์นี้ช้าจึงค้าง 27-96 วิ
+// ตัวปลอมนี้ตอบ ontimeout ทันที → SDK ข้ามขั้นนี้ (มี try/catch รองรับอยู่แล้ว) → เริ่มระบบไว
 (function () {
   var ua = navigator.userAgent || '';
   var ios = /iPhone|iPad|iPod/i.test(ua) || (/Macintosh/.test(ua) && 'ontouchend' in document);
   if (!ios) return;
-  try { Object.defineProperty(window, 'indexedDB', { get: function () { return undefined; }, configurable: true }); } catch (e) {}
+  window.gapi = { load: function (n, p) { try { if (p && p.ontimeout) p.ontimeout(); else if (typeof p === 'function') p(); } catch (e) {} } };
 })();
 </script>
 <script src="vendor/firebase/firebase-app-compat.js"></script>
@@ -716,7 +717,7 @@ window._oauthStateLost = false;
   } catch (e) {}
 })();
 
-const APP_VER = 'v7.22-4';   // โชว์บนหน้า login — เช็คจากภาพหน้าจอได้ว่าเครื่องรันโค้ดรุ่นไหน (กันงงเรื่องแคช)
+const APP_VER = 'v7.23-1';   // โชว์บนหน้า login — เช็คจากภาพหน้าจอได้ว่าเครื่องรันโค้ดรุ่นไหน (กันงงเรื่องแคช)
 const LKEY = 'bank_transfers_v1';      // local fallback store
 const CFGKEY = 'bank_fb_config';        // saved firebase config (JSON string)
 const ROOMKEY = 'bank_room';            // saved room code
@@ -1877,7 +1878,10 @@ function legacyPopupSignIn() {
     }
   });
 }
-function googleSignOut() { if (window.firebase && firebase.auth) firebase.auth().signOut().then(() => location.reload()); }
+function googleSignOut() {
+  try { localStorage.removeItem('_lastUser'); localStorage.removeItem('_loginDiag'); } catch (e) {}   // ออกเอง ≠ เครื่องไม่จำ
+  if (window.firebase && firebase.auth) firebase.auth().signOut().then(() => location.reload());
+}
 
 let started = false;
 function startApp(room) { if (started) return; started = true; connectRT(activeConfig().cfg, room); }
@@ -1901,6 +1905,15 @@ function startApp(room) { if (started) return; started = true; connectRT(activeC
   }
   try { sessionStorage.removeItem('fbRetry'); } catch (e) {}   // โหลดสำเร็จแล้ว เคลียร์ธงกันลองซ้ำ
   try { if (!app) app = firebase.initializeApp(ac.cfg); } catch (e) {}
+  // เบี่ยงเซิร์ฟเวอร์ auth (identitytoolkit/securetoken) ไปผ่าน Worker "authproxy" (Cloudflare edge)
+  // — วัดจากเครื่องจริง: เข้า googleapis ตรงช้า 27-96 วิ แต่เข้า Worker เร็วปกติ (เส้นเดียวกับตรวจสลิป)
+  try {
+    const d = firebase.auth()._delegate;
+    if (d && d.config) {
+      d.config.apiHost = 'authproxy.chitipat-kao.workers.dev/itk';
+      d.config.tokenApiHost = 'authproxy.chitipat-kao.workers.dev/sts';
+    }
+  } catch (e) {}
   // บังคับ "จำบัญชีในเครื่อง" ชัดเจน (default ควรเป็นแบบนี้อยู่แล้ว แต่บางเครื่อง iOS ที่เก็บมีปัญหา)
   try { firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(function () {}); } catch (e) {}
   // เพิ่งเด้งกลับจากหน้า Google (redirect flow) → ยื่น token ให้ Firebase เลย
