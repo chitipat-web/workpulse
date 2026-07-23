@@ -107,11 +107,16 @@ export default {
     const g = await fetch(FB_DB + "/rooms/" + ROOM + "/transfers/" + id + ".json?auth=" + FB_SECRET);
     const exist = await g.json().catch(() => null);
     if (exist && exist.id) return J({ ok: false, alreadyExists: true, record: exist });
+    // กันเครดิตซ้ำถาวร: สลิปที่เคยบันทึกแล้วครั้งหนึ่ง ห้ามบันทึกซ้ำแม้รายการถูก "ล้างข้อมูล" ไปแล้ว
+    const u = await fetch(FB_DB + "/rooms/" + ROOM + "/usedRefs/" + id + ".json?auth=" + FB_SECRET);
+    const used = await u.json().catch(() => null);
+    if (used && used.t) return J({ ok: false, alreadyExists: true, record: { id, amount: used.amount || v.amount, name: (used.name || "") + " (เคยบันทึกแล้ว — ข้อมูลถูกล้างภายหลัง)" } });
 
     // เก็บรูปสลิป (ถ้าส่งมา) — บีบอัดแล้วจากฝั่งเว็บ, จำกัดขนาดกันสแปม
     const hasImg = typeof body.img === "string" && body.img.indexOf("data:image") === 0 && body.img.length < 400000;
     const rec = { id, amount: v.amount, name: v.sender || "ไม่ระบุชื่อ", bank: v.senderBank || "", date: (v.date || "").slice(0, 10), note: (body.note || "").toString().slice(0, 200), slipRef: v.transRef, slipVerified: true, createdBy: email, hasImg };
     await fetch(FB_DB + "/rooms/" + ROOM + "/transfers/" + id + ".json?auth=" + FB_SECRET, { method: "PUT", body: JSON.stringify(rec) });
+    await fetch(FB_DB + "/rooms/" + ROOM + "/usedRefs/" + id + ".json?auth=" + FB_SECRET, { method: "PUT", body: JSON.stringify({ t: Date.now(), amount: rec.amount, name: rec.name, by: email }) });   // จดสลิปที่ใช้แล้วถาวร (clearAll ไม่แตะโหนดนี้)
     if (hasImg) await fetch(FB_DB + "/rooms/" + ROOM + "/slips/" + id + ".json?auth=" + FB_SECRET, { method: "PUT", body: JSON.stringify(body.img) });
     return J({ ok: true, record: rec });
   }

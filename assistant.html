@@ -233,6 +233,15 @@
   </div>
 </div>
 
+<script>
+// iOS: กัน Firebase auth หยุดรอโหลด apis.google.com (เหตุเดียวกับ bank.html — เน็ตมือถือเข้าโฮสต์นี้ช้ามาก)
+(function () {
+  var ua = navigator.userAgent || '';
+  var ios = /iPhone|iPad|iPod/i.test(ua) || (/Macintosh/.test(ua) && 'ontouchend' in document);
+  if (!ios) return;
+  window.gapi = { load: function (n, p) { try { if (p && p.ontimeout) p.ontimeout(); else if (typeof p === 'function') p(); } catch (e) {} } };
+})();
+</script>
 <script src="vendor/firebase/firebase-app-compat.js"></script>
 <script src="vendor/firebase/firebase-database-compat.js"></script>
 <script src="vendor/firebase/firebase-auth-compat.js"></script>
@@ -303,8 +312,13 @@ function normalizeRec(r){ return (r && typeof r==='object' && r.date!=null) ? Ob
 function filterRange(from, to){
   return data.filter(r => r.date >= from && r.date <= to);
 }
-function sum(list){ return list.reduce((s,r) => s + Number(r.amount||0), 0); }
+const isOut = r => !!(r && r.type === 'out');                       // รายการจ่ายออก
+const signedAmt = r => Number(r && r.amount || 0) * (isOut(r) ? -1 : 1);   // เข้า=+, ออก=− (เหมือน bank.html)
+function sum(list){ return list.reduce((s,r) => s + signedAmt(r), 0); }    // ยอดสุทธิ = รับเข้า − จ่ายออก
+function sumIn(list){ return list.filter(r => !isOut(r)).reduce((s,r) => s + Number(r.amount||0), 0); }
+function sumOut(list){ return list.filter(isOut).reduce((s,r) => s + Number(r.amount||0), 0); }
 function recLine(r){
+  if (isOut(r)) return '💸 −' + fmt(r.amount) + ' ฿ (จ่ายออก) — ' + (r.name||'ไม่ระบุ') + (r.bank ? ' (' + r.bank + ')' : '') + ' · ' + thaiDate(r.date) + (r.note ? '\n    💬 ' + r.note : '') + (((r.hasImg) && r.id) ? ' ⟦slip:' + r.id + '⟧' : '');
   const v = r.slipVerified ? '✅' : (r.slipRef ? '⏳' : '📝');
   const slip = (r.slipVerified || r.hasImg) && r.id ? ' ⟦slip:' + r.id + '⟧' : '';
   return v + ' ' + fmt(r.amount) + ' ฿ — ' + (r.name||'ไม่ระบุชื่อ') + (r.bank ? ' (' + r.bank + ')' : '') + ' · ' + thaiDate(r.date) + (r.note ? '\n    💬 ' + r.note : '') + slip;
@@ -316,12 +330,14 @@ function sortRecent(list){
 /* ═══════════ สมองผู้ช่วย ═══════════ */
 function summaryReply(list, label){
   if(!list.length) return '📊 ' + label + ': ยังไม่มีรายการเลยค่ะ';
-  const total = sum(list);
+  const net = sum(list), tIn = sumIn(list), tOut = sumOut(list);
+  const nIn = list.filter(r => !isOut(r)).length;
   const verified = list.filter(r => r.slipVerified).length;
-  return '📊 ' + label + '\n' +
-    'ยอดรวม: ' + fmt(total) + ' ฿\n' +
-    'จำนวน: ' + list.length + ' รายการ (ตรวจสลิปแล้ว ' + verified + ')\n' +
-    'เฉลี่ย: ' + fmt(total/list.length) + ' ฿/รายการ';
+  let s = '📊 ' + label + '\n' + 'ยอดสุทธิ: ' + fmt(net) + ' ฿';
+  if (tOut > 0) s += '\nรับเข้า: ' + fmt(tIn) + ' ฿ · จ่ายออก: −' + fmt(tOut) + ' ฿';
+  s += '\nจำนวน: ' + list.length + ' รายการ (ตรวจสลิปแล้ว ' + verified + ')';
+  if (nIn > 0) s += '\nเฉลี่ยเงินเข้า: ' + fmt(tIn/nIn) + ' ฿/รายการ';
+  return s;
 }
 
 function botReply(text){
@@ -349,14 +365,14 @@ function botReply(text){
     const tD = sum(filterRange(today,today));
     const t7 = sum(filterRange(daysAgoStr(6),today));
     const tM = sum(data.filter(r => (r.date||'').slice(0,7) === monthStr(0)));
-    const tAll = sum(data);
-    const custs = new Set(data.map(r => r.name || 'ไม่ระบุ')).size;
+    const tAll = sum(data), oAll = sumOut(data);
+    const custs = new Set(data.filter(r => !isOut(r)).map(r => r.name || 'ไม่ระบุ')).size;
     const verified = data.filter(r => r.slipVerified).length;
-    return '📋 สรุปภาพรวม HURT SHOP\n\n' +
+    return '📋 สรุปภาพรวม HURT SHOP (ยอดสุทธิ = รับเข้า − จ่ายออก)\n\n' +
       '• วันนี้: ' + fmt(tD) + ' ฿\n' +
       '• 7 วันล่าสุด: ' + fmt(t7) + ' ฿\n' +
       '• เดือนนี้: ' + fmt(tM) + ' ฿\n' +
-      '• ทั้งหมด: ' + fmt(tAll) + ' ฿ (' + data.length + ' รายการ)\n' +
+      '• คงเหลือทั้งหมด: ' + fmt(tAll) + ' ฿ (' + data.length + ' รายการ' + (oAll > 0 ? ' · จ่ายออกรวม −' + fmt(oAll) + ' ฿' : '') + ')\n' +
       '• ลูกค้า: ' + custs + ' ราย · ตรวจสลิปแล้ว ' + verified + '/' + data.length;
   }
 
@@ -384,7 +400,7 @@ function botReply(text){
   if(/ลูกค้าประจำ|ขาประจำ|โอนบ่อย|บ่อยสุด|ประจำ/.test(t)){
     if(!data.length) return 'ยังไม่มีรายการในระบบเลยค่ะ';
     const g = {};
-    data.forEach(r => { const n = r.name || 'ไม่ระบุ'; g[n] = g[n] || {n:0,s:0}; g[n].n++; g[n].s += Number(r.amount||0); });
+    data.filter(r => !isOut(r)).forEach(r => { const n = r.name || 'ไม่ระบุ'; g[n] = g[n] || {n:0,s:0}; g[n].n++; g[n].s += Number(r.amount||0); });   // นับเฉพาะเงินเข้า (จ่ายออกไม่ใช่ลูกค้า)
     const rows = Object.entries(g).sort((a,b) => b[1].n - a[1].n || b[1].s - a[1].s).slice(0,5);
     return '⭐ ลูกค้าที่โอนบ่อยสุด (Top 5):\n\n' + rows.map(([n,v],i) => (i+1) + '. ' + n + ' — ' + v.n + ' ครั้ง (รวม ' + fmt(v.s) + ' ฿)').join('\n');
   }
@@ -408,7 +424,7 @@ function botReply(text){
 
   // ---- ยังไม่ตรวจสลิป ----
   if(/ไม่ตรวจ|ยังไม่ได้ตรวจ|ไม่ผ่าน|ไม่มีสลิป|ค้าง/.test(t)){
-    const list = sortRecent(data.filter(r => !r.slipVerified));
+    const list = sortRecent(data.filter(r => !r.slipVerified && !isOut(r)));   // จ่ายออกไม่ต้องตรวจธนาคาร
     if(!list.length) return '✅ ทุกรายการตรวจสลิปเรียบร้อยหมดแล้วค่ะ';
     const show = list.slice(0,8);
     return '⚠️ รายการที่ยังไม่ผ่านการตรวจสลิป (' + list.length + ' รายการ):\n\n' + show.map(recLine).join('\n') + (list.length > 8 ? '\n...และอีก ' + (list.length-8) + ' รายการ' : '');
@@ -418,17 +434,18 @@ function botReply(text){
   if(/ธนาคาร|แบงค์|แบงก์|bank/.test(t)){
     if(!data.length) return 'ยังไม่มีรายการในระบบเลยค่ะ';
     const g = {};
-    data.forEach(r => { const b = r.bank || 'ไม่ระบุ'; g[b] = g[b] || {n:0,s:0}; g[b].n++; g[b].s += Number(r.amount||0); });
+    data.forEach(r => { const b = r.bank || 'ไม่ระบุ'; g[b] = g[b] || {n:0,s:0}; g[b].n++; g[b].s += signedAmt(r); });   // สุทธิ (จ่ายออกเป็นลบ)
     const rows = Object.entries(g).sort((a,b) => b[1].s - a[1].s)
       .map(([b,v]) => '🏦 ' + b + ': ' + fmt(v.s) + ' ฿ (' + v.n + ' รายการ)');
-    return '📊 ยอดแยกตามธนาคาร (ทั้งหมด):\n\n' + rows.join('\n');
+    return '📊 ยอดสุทธิแยกตามธนาคาร (รับเข้า − จ่ายออก):\n\n' + rows.join('\n');
   }
 
   // ---- สูงสุด ----
   if(/สูงสุด|มากสุด|เยอะสุด|top/.test(t)){
     if(!data.length) return 'ยังไม่มีรายการในระบบเลยค่ะ';
-    const top = [...data].sort((a,b) => Number(b.amount||0) - Number(a.amount||0)).slice(0,3);
-    return '🏆 ยอดโอนสูงสุด 3 อันดับ:\n\n' + top.map((r,i) => (i+1) + '. ' + recLine(r)).join('\n');
+    const top = data.filter(r => !isOut(r)).sort((a,b) => Number(b.amount||0) - Number(a.amount||0)).slice(0,3);
+    if(!top.length) return 'ยังไม่มีรายการเงินเข้าเลยค่ะ';
+    return '🏆 ยอดโอนเข้าสูงสุด 3 อันดับ:\n\n' + top.map((r,i) => (i+1) + '. ' + recLine(r)).join('\n');
   }
 
   // ---- ค้นหาตามชื่อ ----
@@ -461,7 +478,7 @@ function botReply(text){
 
   // ---- ทักทาย ----
   if(/สวัสดี|หวัดดี|ดีครับ|ดีค่ะ|hello|hi/.test(t)){
-    return 'สวัสดีค่ะ 🙏 น้องเฮิร์ตพร้อมช่วยเช็คยอดแล้วค่ะ\nตอนนี้มี ' + data.length + ' รายการในระบบ ยอดรวม ' + fmt(sum(data)) + ' ฿\nพิมพ์ "ช่วยเหลือ" เพื่อดูว่าถามอะไรได้บ้างนะคะ';
+    return 'สวัสดีค่ะ 🙏 น้องเฮิร์ตพร้อมช่วยเช็คยอดแล้วค่ะ\nตอนนี้มี ' + data.length + ' รายการในระบบ ยอดคงเหลือสุทธิ ' + fmt(sum(data)) + ' ฿\nพิมพ์ "ช่วยเหลือ" เพื่อดูว่าถามอะไรได้บ้างนะคะ';
   }
   if(/ขอบคุณ|ขอบใจ|thank|โอเค/.test(t)) return 'ยินดีค่ะ 💙';
 
@@ -475,7 +492,7 @@ const chatHistory = [];   // เก็บบทสนทนาไว้ให้
 function buildContext(){
   const today = todayStr();
   const lines = [];
-  const agg = (list, label) => label + ': รวม ' + fmt(sum(list)) + ' ฿ / ' + list.length + ' รายการ';
+  const agg = (list, label) => { const o = sumOut(list); return label + ': สุทธิ ' + fmt(sum(list)) + ' ฿ / ' + list.length + ' รายการ' + (o > 0 ? ' (จ่ายออก −' + fmt(o) + '฿)' : ''); };
   lines.push('วันนี้คือ ' + today + ' (' + thaiDate(today) + ')');
   lines.push(agg(filterRange(today, today), 'วันนี้'));
   lines.push(agg(filterRange(daysAgoStr(1), daysAgoStr(1)), 'เมื่อวาน'));
@@ -484,15 +501,15 @@ function buildContext(){
   lines.push(agg(data.filter(r => (r.date||'').slice(0,7) === monthStr(-1)), 'เดือนที่แล้ว'));
   lines.push(agg(data, 'ทั้งหมด'));
   const g = {};
-  data.forEach(r => { const b = r.bank || 'ไม่ระบุ'; g[b] = (g[b]||0) + Number(r.amount||0); });
-  lines.push('แยกธนาคาร: ' + Object.entries(g).map(([b,s]) => b + '=' + fmt(s) + '฿').join(', '));
+  data.forEach(r => { const b = r.bank || 'ไม่ระบุ'; g[b] = (g[b]||0) + signedAmt(r); });
+  lines.push('แยกธนาคาร (สุทธิ): ' + Object.entries(g).map(([b,s]) => b + '=' + fmt(s) + '฿').join(', '));
   const recent = sortRecent(data).slice(0, 200);
   lines.push('');
   lines.push('รายการ (ใหม่→เก่า, ' + recent.length + ' จาก ' + data.length + ' รายการ):');
-  lines.push('รูปแบบ: วันที่ | ยอด | ชื่อ | ธนาคาร | สลิป | โน้ต');
+  lines.push('รูปแบบ: วันที่ | ยอด(ลบ=จ่ายออก) | ชื่อ | ธนาคาร | สลิป | โน้ต');
   recent.forEach(r => {
-    const slip = r.slipVerified ? 'verified' : (r.slipRef ? 'pending' : 'manual');
-    lines.push([r.date, Number(r.amount||0), r.name||'-', r.bank||'-', slip, r.note||''].join(' | '));
+    const slip = isOut(r) ? 'out' : (r.slipVerified ? 'verified' : (r.slipRef ? 'pending' : 'manual'));
+    lines.push([r.date, signedAmt(r), r.name||'-', r.bank||'-', slip, r.note||''].join(' | '));
   });
   return lines.join('\n');
 }
@@ -631,6 +648,14 @@ function showLogin(msg, email){
 }
 function hideLogin(){ document.getElementById('loginScreen').style.display = 'none'; }
 function googleSignIn(){
+  // หน้านี้เปิดใน iframe ของแอปหลัก — ล็อกอินจริงทำที่หน้าหลัก (iOS: popup/redirect ในเฟรมใช้ไม่ได้)
+  const inFrame = (function(){ try { return window.top !== window.self; } catch (e) { return true; } })();
+  const ios = /iPhone|iPad|iPod/i.test(navigator.userAgent||'') || (/Macintosh/.test(navigator.userAgent||'') && 'ontouchend' in document);
+  if (inFrame || ios) {
+    const el = document.getElementById('loginMsg');
+    if (el) el.textContent = 'กรุณาล็อกอินที่หน้าหลักก่อนค่ะ\nปิดหน้านี้ (แตะแท็บ "หน้าแรก") → เข้าสู่ระบบ → แล้วกลับมาที่ผู้ช่วยอีกครั้ง';
+    return;
+  }
   const provider = new firebase.auth.GoogleAuthProvider();
   firebase.auth().signInWithPopup(provider).catch(err => {
     if(err.code === 'auth/popup-closed-by-user' || err.code === 'auth/cancelled-popup-request') return;
@@ -680,6 +705,15 @@ function loadLocalFallback(){
   const ac = activeConfig();
   if(!ac){ hideLogin(); loadLocalFallback(); return; }
   try { if(!app) app = firebase.initializeApp(ac.cfg); } catch(e){}
+  // เบี่ยง auth ผ่าน Worker authproxy เหมือน bank.html (เข้า googleapis ตรงช้ามากบนมือถือผู้ใช้)
+  try {
+    const d = firebase.auth()._delegate;
+    if (d && d.config) {
+      d.config.apiHost = 'authproxy.chitipat-kao.workers.dev/itk';
+      d.config.tokenApiHost = 'authproxy.chitipat-kao.workers.dev/sts';
+    }
+  } catch (e) {}
+  try { firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(function(){}); } catch (e) {}
   showLogin('กำลังตรวจสอบ...');
   firebase.auth().onAuthStateChanged(user => {
     if(user && isAllowed(user.email)){
