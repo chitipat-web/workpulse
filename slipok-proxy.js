@@ -22,13 +22,15 @@ const ALLOWED = ["owner@gmail.com", "staff@gmail.com"]; // อีเมลที
 const ALLOW_ORIGIN = "https://chitipat-web.github.io"; // จำกัดเฉพาะโดเมนเว็บเรา (กันเว็บอื่นเรียก)
 
 // แปลงวันที่จาก SlipOK (มักเป็น YYYYMMDD ไม่มีขีด) ให้เป็น YYYY-MM-DD
+// epoch → คิดตามเวลาไทย (UTC+7) ไม่ใช่ UTC — กันสลิปช่วงเที่ยงคืน-ตี7 ลงวันย้อนไป 1 วัน
+const _ymdTH = ms => { const d = new Date(ms + 7 * 3600 * 1000); return isNaN(d.getTime()) ? "" : d.toISOString().slice(0, 10); };
 function toYMD(s) {
   s = (s || "").toString().trim();
-  if (/^\d{13}$/.test(s)) { const d = new Date(Number(s)); return isNaN(d.getTime()) ? "" : d.toISOString().slice(0,10); }   // epoch ms (เช็คก่อน)
-  if (/^\d{10}$/.test(s)) { const d = new Date(Number(s)*1000); return isNaN(d.getTime()) ? "" : d.toISOString().slice(0,10); }
+  if (/^\d{13}$/.test(s)) { return _ymdTH(Number(s)); }   // epoch ms (เช็คก่อน)
+  if (/^\d{10}$/.test(s)) { return _ymdTH(Number(s) * 1000); }
   let m = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/) || s.match(/^(\d{4})(\d{2})(\d{2})(?!\d)/);
   if (m) { let y = +m[1]; if (y > 2200) y -= 543; return `${String(y).padStart(4,"0")}-${String(+m[2]).padStart(2,"0")}-${String(+m[3]).padStart(2,"0")}`; }
-  const d = new Date(s); return isNaN(d.getTime()) ? "" : d.toISOString().slice(0, 10);
+  const d = new Date(s); return isNaN(d.getTime()) ? "" : _ymdTH(d.getTime());
 }
 // แปลงรหัสธนาคาร (เช่น 014) เป็นชื่อไทย
 const BANK_CODE = { "002":"กรุงเทพ","004":"กสิกรไทย","006":"กรุงไทย","011":"ทหารไทยธนชาต","014":"ไทยพาณิชย์","025":"กรุงศรีอยุธยา","030":"ออมสิน","065":"ธนชาต","067":"ทิสโก้","069":"เกียรตินาคินภัทร","071":"ไทยเครดิต","073":"แลนด์แอนด์เฮ้าส์","034":"ธ.ก.ส.","033":"ธอส." };
