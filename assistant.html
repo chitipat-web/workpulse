@@ -332,10 +332,10 @@ function summaryReply(list, label){
   if(!list.length) return '📊 ' + label + ': ยังไม่มีรายการเลยค่ะ';
   const net = sum(list), tIn = sumIn(list), tOut = sumOut(list);
   const nIn = list.filter(r => !isOut(r)).length;
-  const verified = list.filter(r => r.slipVerified).length;
+  const inList = list.filter(r => !isOut(r)), verified = inList.filter(r => r.slipVerified).length;
   let s = '📊 ' + label + '\n' + 'ยอดสุทธิ: ' + fmt(net) + ' ฿';
   if (tOut > 0) s += '\nรับเข้า: ' + fmt(tIn) + ' ฿ · จ่ายออก: −' + fmt(tOut) + ' ฿';
-  s += '\nจำนวน: ' + list.length + ' รายการ (ตรวจสลิปแล้ว ' + verified + ')';
+  s += '\nจำนวน: ' + list.length + ' รายการ (เงินเข้าตรวจสลิปแล้ว ' + verified + '/' + inList.length + ')';
   if (nIn > 0) s += '\nเฉลี่ยเงินเข้า: ' + fmt(tIn/nIn) + ' ฿/รายการ';
   return s;
 }
@@ -367,13 +367,13 @@ function botReply(text){
     const tM = sum(data.filter(r => (r.date||'').slice(0,7) === monthStr(0)));
     const tAll = sum(data), oAll = sumOut(data);
     const custs = new Set(data.filter(r => !isOut(r)).map(r => r.name || 'ไม่ระบุ')).size;
-    const verified = data.filter(r => r.slipVerified).length;
+    const inCount = data.filter(r => !isOut(r)).length, verified = data.filter(r => r.slipVerified).length;
     return '📋 สรุปภาพรวม HURT SHOP (ยอดสุทธิ = รับเข้า − จ่ายออก)\n\n' +
       '• วันนี้: ' + fmt(tD) + ' ฿\n' +
       '• 7 วันล่าสุด: ' + fmt(t7) + ' ฿\n' +
       '• เดือนนี้: ' + fmt(tM) + ' ฿\n' +
       '• คงเหลือทั้งหมด: ' + fmt(tAll) + ' ฿ (' + data.length + ' รายการ' + (oAll > 0 ? ' · จ่ายออกรวม −' + fmt(oAll) + ' ฿' : '') + ')\n' +
-      '• ลูกค้า: ' + custs + ' ราย · ตรวจสลิปแล้ว ' + verified + '/' + data.length;
+      '• ลูกค้า: ' + custs + ' ราย · เงินเข้าตรวจสลิปแล้ว ' + verified + '/' + inCount;
   }
 
   // ---- เทียบยอด (เดือน/สัปดาห์) ----
@@ -683,7 +683,7 @@ function connectRT(cfg, room){
       const first = !ready;
       ready = true;
       setSync(true, 'Real-time · ' + data.length + ' รายการ' + (AI_PROXY ? ' · AI ✨' : ''));
-      if(first) addMsg('สวัสดีค่ะ 🙏 น้องเฮิร์ต ผู้ช่วยร้าน HURT SHOP พร้อมแล้วค่ะ\nตอนนี้มี ' + data.length + ' รายการ ยอดรวม ' + fmt(sum(data)) + ' ฿\nกดปุ่มด้านล่างหรือพิมพ์ถามได้เลยนะคะ', 'bot');
+      if(first) addMsg('สวัสดีค่ะ 🙏 น้องเฮิร์ต ผู้ช่วยร้าน HURT SHOP พร้อมแล้วค่ะ\nตอนนี้มี ' + data.length + ' รายการ ยอดคงเหลือสุทธิ ' + fmt(sum(data)) + ' ฿\nกดปุ่มด้านล่างหรือพิมพ์ถามได้เลยนะคะ', 'bot');
     }, err => {
       setSync(false, 'เชื่อมต่อไม่ได้');
       loadLocalFallback();

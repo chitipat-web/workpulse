@@ -717,7 +717,7 @@ window._oauthStateLost = false;
   } catch (e) {}
 })();
 
-const APP_VER = 'v7.23-2';   // โชว์บนหน้า login — เช็คจากภาพหน้าจอได้ว่าเครื่องรันโค้ดรุ่นไหน (กันงงเรื่องแคช)
+const APP_VER = 'v7.23-3';   // โชว์บนหน้า login — เช็คจากภาพหน้าจอได้ว่าเครื่องรันโค้ดรุ่นไหน (กันงงเรื่องแคช)
 const LKEY = 'bank_transfers_v1';      // local fallback store
 const CFGKEY = 'bank_fb_config';        // saved firebase config (JSON string)
 const ROOMKEY = 'bank_room';            // saved room code
@@ -814,7 +814,11 @@ function persistLocal() { localStorage.setItem(LKEY, JSON.stringify(data)); }
 
 function putRecord(rec) {
   if (rtOn && dbRef) {
-    dbRef.child(rec.id).set(rec);   // realtime listener will re-render
+    // มิเรอร์ลงเครื่อง + วาดทันที ก่อนเสมอ — กันรายการหาย/ไม่โผล่ ถ้า snapshot แรกยังไม่มา หรือปิดแท็บก่อน sync
+    const idx = data.findIndex(x => x.id === rec.id);
+    if (idx >= 0) data[idx] = rec; else data.push(rec);
+    persistLocal(); render();
+    dbRef.child(rec.id).set(rec).catch(() => {});   // SDK คิวให้จนเชื่อมต่อ; snapshot จะ reconcile ทับด้วย id เดิม
   } else {
     const idx = data.findIndex(x => x.id === rec.id);
     if (idx >= 0) data[idx] = rec; else data.push(rec);
@@ -1325,7 +1329,9 @@ function submitPending() {
   if (!amount || amount <= 0) { alert('ใส่จำนวนเงินตามสลิปก่อนส่ง'); document.getElementById('fAmount').focus(); return; }
   const pref = pendingRef();
   if (!pref) { alert('ส่งไม่สำเร็จ (ยังไม่ได้เชื่อมต่อระบบ)'); return; }
-  const id = 'p' + Date.now() + Math.floor(Math.random() * 1000);
+  // id ผูกกับลายนิ้วมือสลิป (slipHash) — สลิปใบเดียวกันส่งซ้ำ = คิวเดียวกัน ไม่เกิดรายการรออนุมัติซ้ำ
+  const _h = document.getElementById('fSlipHash').value || '';
+  const id = _h ? ('p' + _h.slice(0, 40)) : ('p' + Date.now() + Math.floor(Math.random() * 1000));
   const rec = {
     id, amount,
     name: document.getElementById('fName').value.trim() || 'ไม่ระบุชื่อ',
@@ -1440,11 +1446,16 @@ async function handleSlip(input) {
     document.getElementById('fSlipVerified').value = '';
     slipRoute(img, qr);
   } catch (e) {
-    // อ่านไฟล์/ถอดรูปไม่สำเร็จ (เช่น HEIC บนเดสก์ท็อป/ไฟล์เสีย) — ต้องล้างค่าสลิปใบก่อนออก ไม่งั้นกดบันทึกจะบันทึกสลิปใบเก่าผิดใบ
+    if (myTok !== _ocrToken) return;   // งานเก่าที่ล้มช้า — ห้ามมาล้างค่าของฟอร์ม/งานใหม่กว่า
+    // ถอดรูปไม่สำเร็จ (เช่น HEIC บนเดสก์ท็อป/ไฟล์เสีย) — ทิ้งรูปเสมอ (กันบันทึกรูปผิดใบ)
     currentSlipImg = '';
-    document.getElementById('fSlipRef').value = '';
-    document.getElementById('fSlipHash').value = '';
-    document.getElementById('fSlipVerified').value = '';
+    // เพิ่มรายการใหม่: ล้าง QR/hash ที่อาจค้างจากสลิปใบก่อนในเซสชันเดียวกัน
+    // แก้ไขรายการเดิม: คงค่าสลิปเดิมของรายการไว้ (การแนบไฟล์เสียไม่ควรลบสถานะยืนยันธนาคารทิ้ง)
+    if (!document.getElementById('editId').value) {
+      document.getElementById('fSlipRef').value = '';
+      document.getElementById('fSlipHash').value = '';
+      document.getElementById('fSlipVerified').value = '';
+    }
     setSlipStatus('warn', '⚠️ อ่านไฟล์ไม่สำเร็จ ลองใหม่อีกครั้ง');
   }
 }
@@ -2043,6 +2054,7 @@ function startApp(room) { if (started) return; started = true; connectRT(activeC
       hideLogin();
       startApp(ac.room);
     } else if (user) {
+      signingIn = false;   // แลก token เสร็จแล้ว (แต่ไม่มีสิทธิ์) — ปลดธง ไม่งั้น null-branch รอบหน้าจะไม่วาดหน้า login
       showLogin('บัญชี ' + user.email + ' ไม่มีสิทธิ์เข้าถึงระบบนี้\nติดต่อเจ้าของระบบเพื่อขอสิทธิ์', user.email);
     } else if (isInAppBrowser()) {
       showLogin('กรุณาเปิดในเบราว์เซอร์ Safari หรือ Chrome\n(กดปุ่ม ••• มุมขวาบน แล้วเลือก "เปิดในเบราว์เซอร์")\nเพราะ Google ล็อกอินในแอป LINE/Facebook ไม่ได้');
