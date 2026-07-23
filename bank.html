@@ -717,7 +717,7 @@ window._oauthStateLost = false;
   } catch (e) {}
 })();
 
-const APP_VER = 'v7.22-5';   // โชว์บนหน้า login — เช็คจากภาพหน้าจอได้ว่าเครื่องรันโค้ดรุ่นไหน (กันงงเรื่องแคช)
+const APP_VER = 'v7.23-1';   // โชว์บนหน้า login — เช็คจากภาพหน้าจอได้ว่าเครื่องรันโค้ดรุ่นไหน (กันงงเรื่องแคช)
 const LKEY = 'bank_transfers_v1';      // local fallback store
 const CFGKEY = 'bank_fb_config';        // saved firebase config (JSON string)
 const ROOMKEY = 'bank_room';            // saved room code
@@ -1905,14 +1905,13 @@ function startApp(room) { if (started) return; started = true; connectRT(activeC
   }
   try { sessionStorage.removeItem('fbRetry'); } catch (e) {}   // โหลดสำเร็จแล้ว เคลียร์ธงกันลองซ้ำ
   try { if (!app) app = firebase.initializeApp(ac.cfg); } catch (e) {}
-  // เบี่ยงเซิร์ฟเวอร์ auth (identitytoolkit/securetoken) ไปผ่าน Worker ของร้าน (Cloudflare edge)
-  // — วัดจากเครื่องจริง: เข้า googleapis ตรงช้า 27-96 วิ แต่เข้า Worker เร็วปกติ (ใช้ตรวจสลิปทุกวัน)
+  // เบี่ยงเซิร์ฟเวอร์ auth (identitytoolkit/securetoken) ไปผ่าน Worker "authproxy" (Cloudflare edge)
+  // — วัดจากเครื่องจริง: เข้า googleapis ตรงช้า 27-96 วิ แต่เข้า Worker เร็วปกติ (เส้นเดียวกับตรวจสลิป)
   try {
     const d = firebase.auth()._delegate;
-    if (d && d.config && typeof BAKED_SLIPOK_PROXY === 'string' && BAKED_SLIPOK_PROXY.indexOf('https://') === 0) {
-      const host = BAKED_SLIPOK_PROXY.replace(/^https?:\/\//, '').replace(/\/+$/, '');
-      d.config.apiHost = host + '/itk';
-      d.config.tokenApiHost = host + '/sts';
+    if (d && d.config) {
+      d.config.apiHost = 'authproxy.chitipat-kao.workers.dev/itk';
+      d.config.tokenApiHost = 'authproxy.chitipat-kao.workers.dev/sts';
     }
   } catch (e) {}
   // บังคับ "จำบัญชีในเครื่อง" ชัดเจน (default ควรเป็นแบบนี้อยู่แล้ว แต่บางเครื่อง iOS ที่เก็บมีปัญหา)
