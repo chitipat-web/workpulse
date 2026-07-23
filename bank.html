@@ -704,20 +704,24 @@
    ต้องเก็บ+ล้างออกจาก URL ทันทีก่อนโค้ดอื่นทำงาน (ไม่ให้ token ติดอยู่ในประวัติเบราว์เซอร์) */
 window._oauthToken = '';
 window._oauthStateLost = false;
+window._oauthError = '';
 (function () {
-  if (location.hash.indexOf('access_token=') === -1) return;
+  const hasTok = location.hash.indexOf('access_token=') !== -1;
+  const hasErr = location.hash.indexOf('error=') !== -1;
+  if (!hasTok && !hasErr) return;
   try {
     const h = new URLSearchParams(location.hash.slice(1));
-    const tok = h.get('access_token') || '', st = h.get('state') || '';
+    const tok = h.get('access_token') || '', st = h.get('state') || '', err = h.get('error') || '';
     let expect = '';
     try { expect = sessionStorage.getItem('oauthState') || ''; sessionStorage.removeItem('oauthState'); } catch (e) {}
-    history.replaceState(null, '', location.pathname + location.search);
+    history.replaceState(null, '', location.pathname + location.search);   // ล้าง hash (ทั้ง token และ error) ออกจาก URL/ประวัติเสมอ
     if (tok && st && expect && st === expect) window._oauthToken = tok;   // state ไม่ตรง = ไม่รับ (กัน token แปลกปลอม)
     else if (tok) window._oauthStateLost = true;   // มี token แต่รหัสยืนยันหาย — ต้องบอกผู้ใช้ ไม่ทิ้งเงียบ
+    else if (err) window._oauthError = err;   // ผู้ใช้ยกเลิก/Google ปฏิเสธ (เช่น access_denied) — แจ้งแล้วให้ลองใหม่
   } catch (e) {}
 })();
 
-const APP_VER = 'v7.23-3';   // โชว์บนหน้า login — เช็คจากภาพหน้าจอได้ว่าเครื่องรันโค้ดรุ่นไหน (กันงงเรื่องแคช)
+const APP_VER = 'v7.23-4';   // โชว์บนหน้า login — เช็คจากภาพหน้าจอได้ว่าเครื่องรันโค้ดรุ่นไหน (กันงงเรื่องแคช)
 const LKEY = 'bank_transfers_v1';      // local fallback store
 const CFGKEY = 'bank_fb_config';        // saved firebase config (JSON string)
 const ROOMKEY = 'bank_room';            // saved room code
@@ -1056,7 +1060,8 @@ async function save() {
   if (editId) {
     const amount = parseFloat(document.getElementById('fAmount').value);
     if (!amount || amount <= 0) { alert('กรุณาใส่จำนวนเงินให้ถูกต้อง'); return; }
-    const old = data.find(x => x.id === editId) || {};
+    const old = data.find(x => x.id === editId);
+    if (!old) { alert('รายการนี้ถูกลบไปแล้ว (อาจถูกลบจากอีกเครื่อง)\nปิดหน้าต่างแล้วเพิ่มใหม่ถ้าต้องการ'); closeModal(); return; }   // กันแก้ไขแล้วปลุกรายการที่ถูกลบให้ฟื้นเงียบๆ
     const amtChanged = Number(old.amount) !== amount;
     putRecord(Object.assign({}, old, {
       id: editId, amount,
@@ -1362,7 +1367,7 @@ function approvePending(id) {
   // ไม่เติมยอดให้ล่วงหน้า — บังคับเจ้าของดูสลิปแล้วพิมพ์ยอดจริงเอง (กันกด OK รวดเดียว)
   const input = prompt('พิมพ์จำนวนเงินจริงตามสลิป (กด "ดูสลิป" ตรวจก่อน)\nผู้ส่ง: ' + (it.submittedBy || '-') + '\nชื่อ: ' + (it.name || '-') + '\nยอดที่พนักงานแจ้ง: ' + fmt(amt(it)) + '  ← ตรวจให้ตรงกับสลิป', '');
   if (input === null) return;
-  const amount = parseFloat(input);
+  const amount = parseFloat(String(input).replace(/[,\s]/g, ''));   // เจ้าของพิมพ์ "1,000" ได้ — ตัดจุลภาค/ช่องว่างก่อน (parseFloat("1,000")=1)
   if (!amount || amount <= 0) { alert('จำนวนเงินไม่ถูกต้อง — พิมพ์ยอดตามสลิป'); return; }
   putRecord({
     id: it.id, amount,
@@ -2010,6 +2015,7 @@ function startApp(room) { if (started) return; started = true; connectRT(activeC
   };
   const _loginFootnote = function () {
     let s = '';
+    if (window._oauthError) s += '\n⚠️ ล็อกอินถูกยกเลิก (' + esc2(window._oauthError) + ') — แตะปุ่มเข้าสู่ระบบอีกครั้ง';
     if (window._oauthStateLost) s += '\n⚠️ ล็อกอินเด้งกลับมาแต่รหัสยืนยันหายกลางทาง — แตะปุ่มล็อกอินอีกครั้ง';
     try {
       const lu = JSON.parse(localStorage.getItem('_lastUser') || 'null');
