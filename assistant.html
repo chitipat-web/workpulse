@@ -307,7 +307,7 @@ function normDate(s){
   const d=new Date(s); if(!isNaN(d.getTime())) return localDateStr(d);
   return todayStr();
 }
-function normalizeRec(r){ return (r && typeof r==='object' && r.date!=null) ? Object.assign({}, r, { date: normDate(r.date), bank: normBank(r.bank) }) : null; }
+function normalizeRec(r){ return (r && typeof r==='object') ? Object.assign({}, r, { date: normDate(r.date), bank: normBank(r.bank) }) : null; }   // ให้ตรงกับ bank.html: รายการไม่มี date ก็เก็บ (เติมเป็นวันนี้) ยอดจะได้ตรงกันสองหน้า
 
 function filterRange(from, to){
   return data.filter(r => r.date >= from && r.date <= to);
@@ -317,11 +317,14 @@ const signedAmt = r => Number(r && r.amount || 0) * (isOut(r) ? -1 : 1);   // �
 function sum(list){ return list.reduce((s,r) => s + signedAmt(r), 0); }    // ยอดสุทธิ = รับเข้า − จ่ายออก
 function sumIn(list){ return list.filter(r => !isOut(r)).reduce((s,r) => s + Number(r.amount||0), 0); }
 function sumOut(list){ return list.filter(isOut).reduce((s,r) => s + Number(r.amount||0), 0); }
+const _noSent = s => String(s == null ? '' : s).replace(/[⟦⟧]/g, '');   // ตัดวงเล็บพิเศษออกจากข้อความผู้ใช้ กันฝังปุ่ม "ดูสลิป" ปลอมชี้ไปสลิปคนอื่น (พนักงานคุม name/note ได้)
 function recLine(r){
-  if (isOut(r)) return '💸 −' + fmt(r.amount) + ' ฿ (จ่ายออก) — ' + (r.name||'ไม่ระบุ') + (r.bank ? ' (' + r.bank + ')' : '') + ' · ' + thaiDate(r.date) + (r.note ? '\n    💬 ' + r.note : '') + (((r.hasImg) && r.id) ? ' ⟦slip:' + r.id + '⟧' : '');
-  const v = r.slipVerified ? '✅' : (r.slipRef ? '⏳' : '📝');
-  const slip = (r.slipVerified || r.hasImg) && r.id ? ' ⟦slip:' + r.id + '⟧' : '';
-  return v + ' ' + fmt(r.amount) + ' ฿ — ' + (r.name||'ไม่ระบุชื่อ') + (r.bank ? ' (' + r.bank + ')' : '') + ' · ' + thaiDate(r.date) + (r.note ? '\n    💬 ' + r.note : '') + slip;
+  const nm = _noSent(r.name) || 'ไม่ระบุชื่อ', bk = _noSent(r.bank), nt = _noSent(r.note);
+  const hasSlip = (r.slipVerified || r.hasImg || r.slipHash) && r.id;   // มี slipHash (ผ่านคิว) ก็ถือว่ามีสลิป
+  const slip = hasSlip ? ' ⟦slip:' + r.id + '⟧' : '';
+  if (isOut(r)) return '💸 −' + fmt(r.amount) + ' ฿ (จ่ายออก) — ' + nm + (bk ? ' (' + bk + ')' : '') + ' · ' + thaiDate(r.date) + (nt ? '\n    💬 ' + nt : '') + slip;
+  const v = r.slipVerified ? '✅' : ((r.slipRef || r.slipHash || r.hasImg) ? '📎' : '📝');
+  return v + ' ' + fmt(r.amount) + ' ฿ — ' + nm + (bk ? ' (' + bk + ')' : '') + ' · ' + thaiDate(r.date) + (nt ? '\n    💬 ' + nt : '') + slip;
 }
 function sortRecent(list){
   return [...list].sort((a,b) => (b.date||'').localeCompare(a.date||'') || String(b.id||'').localeCompare(String(a.id||'')));
