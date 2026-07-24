@@ -721,7 +721,7 @@ window._oauthError = '';
   } catch (e) {}
 })();
 
-const APP_VER = 'v7.23-4';   // โชว์บนหน้า login — เช็คจากภาพหน้าจอได้ว่าเครื่องรันโค้ดรุ่นไหน (กันงงเรื่องแคช)
+const APP_VER = 'v7.23-5';   // โชว์บนหน้า login — เช็คจากภาพหน้าจอได้ว่าเครื่องรันโค้ดรุ่นไหน (กันงงเรื่องแคช)
 const LKEY = 'bank_transfers_v1';      // local fallback store
 const CFGKEY = 'bank_fb_config';        // saved firebase config (JSON string)
 const ROOMKEY = 'bank_room';            // saved room code
@@ -975,6 +975,7 @@ document.getElementById('asstModal').addEventListener('click', e => { if (e.targ
 
 /* ---------- add/edit modal ---------- */
 let modalIO = 'in';   // 'in' รับเข้า | 'out' จ่ายออก (เฉพาะเจ้าของ)
+let modalGen = 0;     // นับรุ่นการเปิด modal (กัน continuation ของ save เก่าไปกระทบ modal ใหม่)
 function setIO(m) {
   const next = (m === 'out') ? 'out' : 'in';
   const ioChanged = next !== modalIO;
@@ -1008,6 +1009,7 @@ function setIO(m) {
 function openModal(id) {
   if (id && role === 'employee') return;   // พนักงานแก้ไขรายการเดิมไม่ได้
   document.getElementById('modal').classList.add('show');
+  modalGen++;   // รุ่นของ modal — งาน save ที่ await ค้างจากรอบก่อนต้องไม่มาปิด/แก้ modal ที่เพิ่งเปิดใหม่
   const _sb = document.getElementById('saveBtn'); if (_sb) { _sb.disabled = false; _sb.textContent = 'บันทึก'; }   // คืนปุ่มเสมอ (กันค้าง "กำลังส่ง..." จากรอบก่อน)
   // เปิดฟอร์มทุกครั้ง = ยกเลิกงานอ่านสลิปที่ค้างจากรอบก่อนเสมอ (กันผลอ่านเก่ามาเติมฟอร์มใหม่)
   _ocrToken++;
@@ -1047,7 +1049,7 @@ function openModal(id) {
     setTimeout(() => document.getElementById('fAmount').focus(), 200);
   }
 }
-function closeModal() { _ocrToken++; document.getElementById('modal').classList.remove('show'); homeTab(); }
+function closeModal() { _ocrToken++; modalGen++; document.getElementById('modal').classList.remove('show'); homeTab(); }
 document.getElementById('modal').addEventListener('click', e => { if (e.target.id === 'modal') closeModal(); });
 document.getElementById('settings').addEventListener('click', e => { if (e.target.id === 'settings') closeSettings(); });
 
@@ -1072,7 +1074,8 @@ async function save() {
       slipRef: qr || '', slipHash: document.getElementById('fSlipHash').value || '',
       // แก้ยอด = ยกเลิกสถานะ "ยืนยันธนาคาร" (ยอดไม่ตรงสลิปแล้ว) + ทำเครื่องหมายว่าถูกแก้
       slipVerified: amtChanged ? false : (document.getElementById('fSlipVerified').value === '1'),
-      hasImg: currentSlipImg ? true : !!old.hasImg,
+      // รายการที่ยืนยันผ่าน Worker มีรูปอยู่ที่ slips/{id} แต่ hasImg=false — คงร่องรอยว่ามีรูปไว้ ปุ่ม "ดูสลิป" จะได้ไม่หายหลังแก้ยอด
+      hasImg: currentSlipImg ? true : (!!old.hasImg || !!old.slipVerified),
       edited: amtChanged || !!old.edited
     }));
     if (currentSlipImg) putSlipImage(editId, currentSlipImg);
@@ -1085,14 +1088,19 @@ async function save() {
   // รายการใหม่ + มีสลิป → ยืนยัน+บันทึกผ่าน Worker (ยอดมาจากธนาคาร กันเงินปลอม)
   if (qr) {
     const btn = document.getElementById('saveBtn');
+    const imgAtSave = currentSlipImg;   // จับรูป ณ ตอนกดบันทึก — กันแนบสลิปใบใหม่ระหว่างรอแล้วรูปผิดใบไปติดรายการ (หรือถูกล้างเป็น '')
+    const genAtSave = modalGen;          // จับรุ่น modal — ถ้าเปิด/ปิด modal ระหว่างรอ อย่าไปแตะ modal ใหม่
     btn.disabled = true; btn.textContent = 'กำลังยืนยัน...';
     setSlipStatus('busy', '🛡️ กำลังยืนยันกับธนาคารและบันทึก...');
     const r = await workerSave(qr, note);
-    btn.disabled = false; btn.textContent = 'บันทึก';
+    const sameModal = (genAtSave === modalGen);   // modal เดิมยังเปิดอยู่ไหม
+    if (sameModal) { btn.disabled = false; btn.textContent = 'บันทึก'; }
     if (r.ok) {
-      if (currentSlipImg && r.record && r.record.id) putSlipImage(r.record.id, currentSlipImg);   // เก็บรูปสลิป (เขียนตรงจากเครื่อง)
-      setSlipStatus('ok', '✅ บันทึกแล้ว: ' + esc2(r.record.name) + ' ยอด ' + fmt(r.record.amount) + ' ฿'); setTimeout(closeModal, 800); return;
+      if (imgAtSave && r.record && r.record.id) putSlipImage(r.record.id, imgAtSave);   // เก็บรูปสลิป (ใช้รูปที่จับไว้ ไม่ใช่ global ที่อาจถูกทับ/ล้าง)
+      if (sameModal) { setSlipStatus('ok', '✅ บันทึกแล้ว: ' + esc2(r.record.name) + ' ยอด ' + fmt(r.record.amount) + ' ฿'); setTimeout(() => { if (genAtSave === modalGen) closeModal(); }, 800); }
+      return;
     }
+    if (!sameModal) return;   // modal เปลี่ยนไปแล้ว อย่าเด้ง alert/สถานะทับฟอร์มใหม่
     if (r.alreadyExists) { alert('สลิปนี้บันทึกไว้แล้ว: ยอด ' + fmt(r.record.amount) + ' ฿' + (r.record.name ? ' (' + r.record.name + ')' : '')); closeModal(); return; }
     if (r.error === 'unauthorized') { alert('เซสชันหมดอายุ — กรุณาออกจากระบบแล้วล็อกอินใหม่'); return; }
     if (r.notFound) {
@@ -1118,7 +1126,8 @@ async function workerSave(qr, note) {
     const user = firebase.auth().currentUser;
     if (!user) return { ok: false, error: 'unauthorized' };
     const idToken = await user.getIdToken();
-    const resp = await fetch(proxy, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ idToken, data: qr, note }) });
+    const slipHash = document.getElementById('fSlipHash').value || '';   // ส่ง hash ไปให้ worker จด (กันสลิปเดียวถูกเครดิตซ้ำข้ามเส้นทาง QR/คิว — worker เวอร์ชันใหม่เก็บ slipHash ในรายการ)
+    const resp = await fetch(proxy, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ idToken, data: qr, note, slipHash }) });
     return await resp.json().catch(() => ({ ok: false, error: 'bad response' }));
   } catch (e) { return { ok: false, error: 'เชื่อมต่อไม่ได้' }; }
 }
@@ -1364,6 +1373,10 @@ function approvePending(id) {
   if (role !== 'owner') { alert('เฉพาะเจ้าของอนุมัติได้'); return; }
   const it = (pendingData || []).find(x => String(x.id) === String(id));
   if (!it) { alert('ไม่พบรายการในคิว'); return; }
+  // กันสลิปเดียวถูกเครดิตซ้ำ: ถ้ามีรายการที่บันทึกแล้วใช้ hash เดียวกัน (เส้นทางไหนก็ตาม) เตือนก่อน
+  if (it.slipHash && data.some(x => x && x.slipHash && x.slipHash === it.slipHash)) {
+    if (!confirm('⚠️ สลิปนี้ (hash เดียวกัน) เคยถูกบันทึกเป็นรายการแล้ว\nอนุมัติต่อจะกลายเป็นบันทึกซ้ำ — ยืนยันจะอนุมัติหรือไม่?')) return;
+  }
   // ไม่เติมยอดให้ล่วงหน้า — บังคับเจ้าของดูสลิปแล้วพิมพ์ยอดจริงเอง (กันกด OK รวดเดียว)
   const input = prompt('พิมพ์จำนวนเงินจริงตามสลิป (กด "ดูสลิป" ตรวจก่อน)\nผู้ส่ง: ' + (it.submittedBy || '-') + '\nชื่อ: ' + (it.name || '-') + '\nยอดที่พนักงานแจ้ง: ' + fmt(amt(it)) + '  ← ตรวจให้ตรงกับสลิป', '');
   if (input === null) return;
