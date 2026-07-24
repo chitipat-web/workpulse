@@ -721,7 +721,7 @@ window._oauthError = '';
   } catch (e) {}
 })();
 
-const APP_VER = 'v7.23-6';   // โชว์บนหน้า login — เช็คจากภาพหน้าจอได้ว่าเครื่องรันโค้ดรุ่นไหน (กันงงเรื่องแคช)
+const APP_VER = 'v7.23-7';   // โชว์บนหน้า login — เช็คจากภาพหน้าจอได้ว่าเครื่องรันโค้ดรุ่นไหน (กันงงเรื่องแคช)
 const LKEY = 'bank_transfers_v1';      // local fallback store
 const CFGKEY = 'bank_fb_config';        // saved firebase config (JSON string)
 const ROOMKEY = 'bank_room';            // saved room code
@@ -1146,6 +1146,11 @@ async function workerSave(qr, note) {
 function ownerManualSave() {
   const amount = parseFloat(document.getElementById('fAmount').value);
   if (!amount || amount <= 0) { alert('กรอกแบบเอง: กรุณาใส่จำนวนเงินก่อน'); document.getElementById('fAmount').focus(); return; }
+  // กันสลิปไฟล์เดิมถูกบันทึกซ้ำ (เช่น K BIZ ที่แนบไฟล์เดิม 2 ครั้ง) — เส้นทางเจ้าของกรอกเองก็ต้องเช็คเหมือนเส้นทางอื่น
+  const _sh = document.getElementById('fSlipHash').value || '';
+  if (_sh && data.some(x => x && x.slipHash === _sh)) {
+    if (!confirm('⚠️ สลิปไฟล์นี้ (hash เดียวกัน) เคยถูกบันทึกแล้ว\nบันทึกต่ออาจกลายเป็นเงินเข้าซ้ำ — ยืนยันหรือไม่?')) return;
+  }
   const id = 't' + Date.now() + Math.floor(Math.random()*1000);
   putRecord({
     id, amount,
@@ -1165,6 +1170,10 @@ function saveOutgoing() {
   if (role !== 'owner') { alert('เฉพาะเจ้าของบันทึกโอนออกได้'); return; }
   const amount = parseFloat(document.getElementById('fAmount').value);
   if (!amount || amount <= 0) { alert('ใส่จำนวนเงินที่โอนออกก่อน'); document.getElementById('fAmount').focus(); return; }
+  const _sh = document.getElementById('fSlipHash').value || '';   // กันแนบสลิปโอนออกไฟล์เดิมซ้ำ
+  if (_sh && data.some(x => x && x.slipHash === _sh)) {
+    if (!confirm('⚠️ สลิปไฟล์นี้ (hash เดียวกัน) เคยถูกบันทึกแล้ว\nบันทึกต่ออาจกลายเป็นรายการซ้ำ — ยืนยันหรือไม่?')) return;
+  }
   const id = 'o' + Date.now() + Math.floor(Math.random() * 1000);
   putRecord({
     id, amount, type: 'out',
