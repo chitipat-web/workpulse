@@ -721,7 +721,7 @@ window._oauthError = '';
   } catch (e) {}
 })();
 
-const APP_VER = 'v7.23-8';   // โชว์บนหน้า login — เช็คจากภาพหน้าจอได้ว่าเครื่องรันโค้ดรุ่นไหน (กันงงเรื่องแคช)
+const APP_VER = 'v7.24-0';   // โชว์บนหน้า login — เช็คจากภาพหน้าจอได้ว่าเครื่องรันโค้ดรุ่นไหน (กันงงเรื่องแคช)
 const LKEY = 'bank_transfers_v1';      // local fallback store
 const CFGKEY = 'bank_fb_config';        // saved firebase config (JSON string)
 const ROOMKEY = 'bank_room';            // saved room code
@@ -1021,6 +1021,7 @@ function openModal(id) {
   _ocrToken++;
   // ล้างสลิปเก่าก่อนเรียก setIO (setIO จะประเมินสลิปที่แนบอยู่ใหม่ — ต้องไม่เห็นของค้างจากรอบก่อน)
   currentSlipImg = '';
+  currentSlipTxn = '';
   _ocrFilledVals = {};
   document.getElementById('fSlip').value = '';
   if (id) {
@@ -1093,10 +1094,10 @@ async function save() {
 
   // รายการใหม่ + มีสลิป → ยืนยัน+บันทึกผ่าน Worker (ยอดมาจากธนาคาร กันเงินปลอม)
   if (qr) {
-    // กันสลิปไฟล์เดิมถูกเครดิตซ้ำข้ามเส้นทาง (เคยเข้าคิว/บันทึกด้วย hash เดียวกันมาก่อน)
+    // กันสลิปเดิมถูกเครดิตซ้ำข้ามเส้นทาง (เคยเข้าคิว/บันทึกด้วย hash หรือเลขที่รายการเดียวกัน)
     const _sh = document.getElementById('fSlipHash').value || '';
-    if (_sh && data.some(x => x && x.slipHash === _sh)) {
-      if (!confirm('⚠️ สลิปไฟล์นี้ (hash เดียวกัน) เคยถูกบันทึกแล้ว\nบันทึกต่ออาจกลายเป็นเงินเข้าซ้ำ — ยืนยันหรือไม่?')) return;
+    if (slipAlreadyRecorded(_sh, currentSlipTxn)) {
+      if (!confirm('⚠️ สลิปนี้เคยถูกบันทึกแล้ว\nบันทึกต่ออาจกลายเป็นเงินเข้าซ้ำ — ยืนยันหรือไม่?')) return;
     }
     const btn = document.getElementById('saveBtn');
     const imgAtSave = currentSlipImg;   // จับรูป ณ ตอนกดบันทึก — กันแนบสลิปใบใหม่ระหว่างรอแล้วรูปผิดใบไปติดรายการ (หรือถูกล้างเป็น '')
@@ -1146,10 +1147,10 @@ async function workerSave(qr, note) {
 function ownerManualSave() {
   const amount = parseFloat(document.getElementById('fAmount').value);
   if (!amount || amount <= 0) { alert('กรอกแบบเอง: กรุณาใส่จำนวนเงินก่อน'); document.getElementById('fAmount').focus(); return; }
-  // กันสลิปไฟล์เดิมถูกบันทึกซ้ำ (เช่น K BIZ ที่แนบไฟล์เดิม 2 ครั้ง) — เส้นทางเจ้าของกรอกเองก็ต้องเช็คเหมือนเส้นทางอื่น
+  // กันสลิปเดิมถูกบันทึกซ้ำ (เทียบทั้งไฟล์แฮช และเลขที่รายการธนาคาร — เลขที่รายการกันได้แม้ถ่ายรูปใหม่)
   const _sh = document.getElementById('fSlipHash').value || '';
-  if (_sh && data.some(x => x && x.slipHash === _sh)) {
-    if (!confirm('⚠️ สลิปไฟล์นี้ (hash เดียวกัน) เคยถูกบันทึกแล้ว\nบันทึกต่ออาจกลายเป็นเงินเข้าซ้ำ — ยืนยันหรือไม่?')) return;
+  if (slipAlreadyRecorded(_sh, currentSlipTxn)) {
+    if (!confirm('⚠️ สลิปนี้เคยถูกบันทึกแล้ว' + (currentSlipTxn ? '\n(เลขที่รายการ ' + esc2(currentSlipTxn) + ')' : '') + '\nบันทึกต่ออาจกลายเป็นเงินเข้าซ้ำ — ยืนยันหรือไม่?')) return;
   }
   const id = 't' + Date.now() + Math.floor(Math.random()*1000);
   putRecord({
@@ -1159,7 +1160,7 @@ function ownerManualSave() {
     date: document.getElementById('fDate').value || todayStr(),
     note: document.getElementById('fNote').value.trim(),
     slipRef: document.getElementById('fSlipRef').value || '',
-    slipHash: document.getElementById('fSlipHash').value || '',
+    slipHash: document.getElementById('fSlipHash').value || '', slipTxn: currentSlipTxn || '',
     slipVerified: false, manual: true, hasImg: !!currentSlipImg
   });
   if (currentSlipImg) putSlipImage(id, currentSlipImg);
@@ -1170,9 +1171,9 @@ function saveOutgoing() {
   if (role !== 'owner') { alert('เฉพาะเจ้าของบันทึกโอนออกได้'); return; }
   const amount = parseFloat(document.getElementById('fAmount').value);
   if (!amount || amount <= 0) { alert('ใส่จำนวนเงินที่โอนออกก่อน'); document.getElementById('fAmount').focus(); return; }
-  const _sh = document.getElementById('fSlipHash').value || '';   // กันแนบสลิปโอนออกไฟล์เดิมซ้ำ
-  if (_sh && data.some(x => x && x.slipHash === _sh)) {
-    if (!confirm('⚠️ สลิปไฟล์นี้ (hash เดียวกัน) เคยถูกบันทึกแล้ว\nบันทึกต่ออาจกลายเป็นรายการซ้ำ — ยืนยันหรือไม่?')) return;
+  const _sh = document.getElementById('fSlipHash').value || '';   // กันแนบสลิปโอนออกไฟล์เดิม/ธุรกรรมเดิมซ้ำ
+  if (slipAlreadyRecorded(_sh, currentSlipTxn)) {
+    if (!confirm('⚠️ สลิปนี้เคยถูกบันทึกแล้ว' + (currentSlipTxn ? '\n(เลขที่รายการ ' + esc2(currentSlipTxn) + ')' : '') + '\nบันทึกต่ออาจกลายเป็นรายการซ้ำ — ยืนยันหรือไม่?')) return;
   }
   const id = 'o' + Date.now() + Math.floor(Math.random() * 1000);
   putRecord({
@@ -1181,7 +1182,7 @@ function saveOutgoing() {
     bank: document.getElementById('fBank').value || '',
     date: document.getElementById('fDate').value || todayStr(),
     note: document.getElementById('fNote').value.trim(),
-    slipRef: '', slipHash: document.getElementById('fSlipHash').value || '',
+    slipRef: '', slipHash: document.getElementById('fSlipHash').value || '', slipTxn: currentSlipTxn || '',
     slipVerified: false, manual: true, hasImg: !!currentSlipImg
   });
   if (currentSlipImg) putSlipImage(id, currentSlipImg);
@@ -1301,6 +1302,21 @@ function parseSlipInfo(text) {
     if (mon && day >= 1 && day <= 31 && y >= 2020 && y <= 2100)
       out.date = y + '-' + String(mon).padStart(2, '0') + '-' + String(day).padStart(2, '0');
   }
+  // เลขที่รายการ/รหัสอ้างอิงของธนาคาร — เฉพาะของธุรกรรมจริงแต่ละครั้ง เหมือนเดิมแม้ถ่ายรูปสลิปใหม่ (กุญแจกันซ้ำที่ดีกว่าไฟล์แฮช)
+  const clean = t => (t || '').replace(/[^A-Za-z0-9]/g, '');
+  const ki = lines.findIndex(l => /เลข.{0,2}ท.{0,2}รายการ|รห[ัสี].{0,2}ส?อ้?างอิง|อ้างอิง|reference|transaction\s*(id|no)/i.test(l));
+  if (ki >= 0) {   // มองบรรทัดที่มีคีย์เวิร์ด + บรรทัดถัดไป
+    for (let i = ki; i < Math.min(ki + 2, lines.length); i++) {
+      const m = clean(lines[i]).match(/[A-Z0-9]{12,}/i);
+      if (m) { out.txnRef = m[0].toUpperCase(); break; }
+    }
+  }
+  if (!out.txnRef) {   // สำรอง: บรรทัดที่เป็นโทเคนยาว (≥14) ตัวอักษร/เลขล้วน และเป็นตัวเลขเยอะ (เลขอ้างอิงมักหน้าตาแบบนี้)
+    for (const l of lines) {
+      const c = clean(l);
+      if (c.length >= 14 && /^[A-Z0-9]+$/i.test(c) && (c.match(/\d/g) || []).length >= 10) { out.txnRef = c.toUpperCase(); break; }
+    }
+  }
   return out;
 }
 // อ่านเสร็จแล้วเติมเฉพาะช่องที่ยังว่าง — เป็นแค่ตัวช่วยกรอก ผู้ใช้ต้องตรวจเอง (ไม่ใช่การยืนยันธนาคาร)
@@ -1310,6 +1326,7 @@ async function ocrAutofill(img, baseMsg) {
     const text = await ocrSlipText(img);
     if (token !== _ocrToken) return;   // ผู้ใช้เปลี่ยนสลิปไปแล้ว
     const info = parseSlipInfo(text);
+    currentSlipTxn = info.txnRef || '';   // เก็บเลขที่รายการไว้กันซ้ำตอนบันทึก
     const isOutForm = (typeof modalIO !== 'undefined' && modalIO === 'out');
     const name = isOutForm ? info.nameTo : info.nameFrom;     // เข้า=ผู้โอน, ออก=ผู้รับ
     const bank = isOutForm ? (info.bankTo || info.bankFrom) : info.bankFrom;
@@ -1332,6 +1349,15 @@ async function ocrAutofill(img, baseMsg) {
 }
 /* ---------- เก็บรูปสลิป (บีบอัด + โหนดแยก slips) ---------- */
 let currentSlipImg = '';   // dataURL ของสลิปที่กำลังจะบันทึก
+let currentSlipTxn = '';   // เลขที่รายการธนาคารที่ OCR อ่านได้ (กุญแจกันซ้ำข้ามการถ่ายรูปใหม่)
+// สลิปนี้ (ไฟล์แฮช หรือ เลขที่รายการธนาคาร) เคยถูกบันทึกเป็นรายการแล้วหรือยัง — กันเครดิตซ้ำทุกเส้นทาง
+function slipAlreadyRecorded(hash, txn) {
+  const h = hash || '', t = (txn || '').toUpperCase();
+  return data.some(x => x && (
+    (h && x.slipHash === h) ||
+    (t && ((x.slipTxn && x.slipTxn.toUpperCase() === t) || (x.slipRef && x.slipRef.toUpperCase() === t)))
+  ));
+}
 function compressToDataURL(img) {
   const max = 1200, scale = Math.min(1, max / Math.max(img.width, img.height));
   const c = document.createElement('canvas');
@@ -1365,8 +1391,8 @@ function submitPending() {
   if (!pref) { alert('ส่งไม่สำเร็จ (ยังไม่ได้เชื่อมต่อระบบ)'); return; }
   // id ผูกกับลายนิ้วมือสลิป (slipHash) — สลิปใบเดียวกันส่งซ้ำ = คิวเดียวกัน ไม่เกิดรายการรออนุมัติซ้ำ
   const _h = document.getElementById('fSlipHash').value || '';
-  // กันส่งสลิปที่ "ถูกบันทึกเป็นรายการไปแล้ว" เข้าคิวซ้ำ (ไฟล์เดิม hash เดียวกัน)
-  if (_h && data.some(x => x && x.slipHash === _h)) {
+  // กันส่งสลิปที่ "ถูกบันทึกเป็นรายการไปแล้ว" เข้าคิวซ้ำ (เทียบไฟล์แฮช และเลขที่รายการธนาคาร)
+  if (slipAlreadyRecorded(_h, currentSlipTxn)) {
     alert('⚠️ สลิปนี้ถูกบันทึกเข้าระบบไปแล้ว\nไม่ต้องส่งซ้ำนะครับ (ถ้าไม่แน่ใจ แจ้งเจ้าของตรวจสอบ)');
     return;
   }
@@ -1378,7 +1404,7 @@ function submitPending() {
     bank: document.getElementById('fBank').value || '',
     date: document.getElementById('fDate').value || todayStr(),
     note: _strip(document.getElementById('fNote').value.trim()),
-    slipHash: document.getElementById('fSlipHash').value || '',
+    slipHash: document.getElementById('fSlipHash').value || '', slipTxn: currentSlipTxn || '',
     submittedBy: (currentUser && currentUser.email) || '',
     submittedAt: Date.now(),
     hasImg: true
@@ -1399,9 +1425,9 @@ function approvePending(id) {
   if (role !== 'owner') { alert('เฉพาะเจ้าของอนุมัติได้'); return; }
   const it = (pendingData || []).find(x => String(x.id) === String(id));
   if (!it) { alert('ไม่พบรายการในคิว'); return; }
-  // กันสลิปเดียวถูกเครดิตซ้ำ: ถ้ามีรายการที่บันทึกแล้วใช้ hash เดียวกัน (เส้นทางไหนก็ตาม) เตือนก่อน
-  if (it.slipHash && data.some(x => x && x.slipHash && x.slipHash === it.slipHash)) {
-    if (!confirm('⚠️ สลิปนี้ (hash เดียวกัน) เคยถูกบันทึกเป็นรายการแล้ว\nอนุมัติต่อจะกลายเป็นบันทึกซ้ำ — ยืนยันจะอนุมัติหรือไม่?')) return;
+  // กันสลิปเดียวถูกเครดิตซ้ำ: มีรายการที่บันทึกแล้วใช้ hash หรือเลขที่รายการเดียวกัน (เส้นทางไหนก็ตาม) เตือนก่อน
+  if (slipAlreadyRecorded(it.slipHash, it.slipTxn)) {
+    if (!confirm('⚠️ สลิปนี้เคยถูกบันทึกเป็นรายการแล้ว' + (it.slipTxn ? '\n(เลขที่รายการ ' + esc2(it.slipTxn) + ')' : '') + '\nอนุมัติต่อจะกลายเป็นบันทึกซ้ำ — ยืนยันจะอนุมัติหรือไม่?')) return;
   }
   // ไม่เติมยอดให้ล่วงหน้า — บังคับเจ้าของดูสลิปแล้วพิมพ์ยอดจริงเอง (กันกด OK รวดเดียว)
   const input = prompt('พิมพ์จำนวนเงินจริงตามสลิป (กด "ดูสลิป" ตรวจก่อน)\nผู้ส่ง: ' + (it.submittedBy || '-') + '\nชื่อ: ' + (it.name || '-') + '\nยอดที่พนักงานแจ้ง: ' + fmt(amt(it)) + '  ← ตรวจให้ตรงกับสลิป', '');
@@ -1411,7 +1437,7 @@ function approvePending(id) {
   putRecord({
     id: it.id, amount,
     name: it.name || 'ไม่ระบุชื่อ', bank: it.bank || '', date: it.date || todayStr(),
-    note: it.note || '', slipRef: '', slipHash: it.slipHash || '',
+    note: it.note || '', slipRef: '', slipHash: it.slipHash || '', slipTxn: it.slipTxn || '',
     slipVerified: false, manual: true,
     approvedBy: (currentUser && currentUser.email) || '', submittedBy: it.submittedBy || '',
     hasImg: !!it.hasImg
@@ -1474,6 +1500,7 @@ async function handleSlip(input) {
   _ocrToken++;   // ยกเลิกผลอ่านสลิปใบก่อน (ถ้ายังอ่านค้างอยู่)
   const myTok = _ocrToken;   // จำเลขงานของเรา — ถ้าฟอร์มถูกปิด/เปิดใหม่ระหว่างอ่านไฟล์ ต้องทิ้งงานนี้
   const file = input.files && input.files[0];
+  currentSlipTxn = '';   // แนบสลิปใหม่ = รีเซ็ตเลขที่รายการ (จะถูกอ่านใหม่ตอน OCR)
   if (!file) { setSlipStatus('', ''); currentSlipImg=''; document.getElementById('fSlipRef').value=''; document.getElementById('fSlipHash').value=''; return; }
   setSlipStatus('busy', '⏳ กำลังอ่านสลิป...');
   try {
