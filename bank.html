@@ -721,7 +721,7 @@ window._oauthError = '';
   } catch (e) {}
 })();
 
-const APP_VER = 'v7.23-5';   // โชว์บนหน้า login — เช็คจากภาพหน้าจอได้ว่าเครื่องรันโค้ดรุ่นไหน (กันงงเรื่องแคช)
+const APP_VER = 'v7.23-6';   // โชว์บนหน้า login — เช็คจากภาพหน้าจอได้ว่าเครื่องรันโค้ดรุ่นไหน (กันงงเรื่องแคช)
 const LKEY = 'bank_transfers_v1';      // local fallback store
 const CFGKEY = 'bank_fb_config';        // saved firebase config (JSON string)
 const ROOMKEY = 'bank_room';            // saved room code
@@ -822,7 +822,10 @@ function putRecord(rec) {
     const idx = data.findIndex(x => x.id === rec.id);
     if (idx >= 0) data[idx] = rec; else data.push(rec);
     persistLocal(); render();
-    dbRef.child(rec.id).set(rec).catch(() => {});   // SDK คิวให้จนเชื่อมต่อ; snapshot จะ reconcile ทับด้วย id เดิม
+    dbRef.child(rec.id).set(rec).catch(err => {   // ถ้าเซิร์ฟเวอร์ปฏิเสธ (สิทธิ์/rule/token) — เตือน ไม่ให้รายการหายเงียบ
+      setSync('err', 'บันทึกขึ้นเซิร์ฟเวอร์ไม่สำเร็จ');
+      alert('⚠️ บันทึกขึ้นเซิร์ฟเวอร์ไม่สำเร็จ (สิทธิ์/เน็ต/เซสชัน)\nรายการอาจหายเมื่อรีเฟรช — ลองใหม่ หรือออกจากระบบแล้วล็อกอินใหม่\n\n' + (err && err.message ? err.message : ''));
+    });
   } else {
     const idx = data.findIndex(x => x.id === rec.id);
     if (idx >= 0) data[idx] = rec; else data.push(rec);
@@ -831,7 +834,10 @@ function putRecord(rec) {
 }
 function removeRecord(id) {
   if (rtOn && dbRef) {
-    dbRef.child(id).remove();
+    dbRef.child(id).remove().catch(err => {   // ลบไม่สำเร็จ (สิทธิ์/เน็ต) — เตือน ไม่ให้เข้าใจผิดว่าลบแล้ว
+      setSync('err', 'ลบไม่สำเร็จ');
+      alert('⚠️ ลบรายการไม่สำเร็จ (สิทธิ์/เน็ต/เซสชัน)\nรายการยังอยู่ — ลองใหม่อีกครั้ง\n\n' + (err && err.message ? err.message : ''));
+    });
   } else {
     data = data.filter(x => x.id !== id);
     persistLocal(); render();
@@ -1087,6 +1093,11 @@ async function save() {
 
   // รายการใหม่ + มีสลิป → ยืนยัน+บันทึกผ่าน Worker (ยอดมาจากธนาคาร กันเงินปลอม)
   if (qr) {
+    // กันสลิปไฟล์เดิมถูกเครดิตซ้ำข้ามเส้นทาง (เคยเข้าคิว/บันทึกด้วย hash เดียวกันมาก่อน)
+    const _sh = document.getElementById('fSlipHash').value || '';
+    if (_sh && data.some(x => x && x.slipHash === _sh)) {
+      if (!confirm('⚠️ สลิปไฟล์นี้ (hash เดียวกัน) เคยถูกบันทึกแล้ว\nบันทึกต่ออาจกลายเป็นเงินเข้าซ้ำ — ยืนยันหรือไม่?')) return;
+    }
     const btn = document.getElementById('saveBtn');
     const imgAtSave = currentSlipImg;   // จับรูป ณ ตอนกดบันทึก — กันแนบสลิปใบใหม่ระหว่างรอแล้วรูปผิดใบไปติดรายการ (หรือถูกล้างเป็น '')
     const genAtSave = modalGen;          // จับรุ่น modal — ถ้าเปิด/ปิด modal ระหว่างรอ อย่าไปแตะ modal ใหม่
@@ -1237,8 +1248,8 @@ function parseSlipInfo(text) {
       if (m) { out.amount = parseFloat(m[1].replace(/,/g, '')); break; }
     }
   }
-  if (!out.amount) {   // สำรอง: เลข x.xx ที่มีคำว่า บาท และไม่ใช่ค่าธรรมเนียม
-    const cand = lines.filter(l => /บาท/.test(l) && !/ธรรมเนียม/.test(l))
+  if (!out.amount) {   // สำรอง: เลข x.xx ที่มีคำว่า บาท และไม่ใช่ค่าธรรมเนียม/ยอดคงเหลือ (กันหยิบยอดคงเหลือในสลิปมาเป็นจำนวนเงิน)
+    const cand = lines.filter(l => /บาท/.test(l) && !/ธรรมเนียม|คงเหลือ|ยอดเงินคงเหลือ|balance/i.test(l))
       .map(l => (l.match(numRe) || [])[1]).filter(Boolean)
       .map(s => parseFloat(s.replace(/,/g, ''))).filter(n => n > 0);
     if (cand.length) out.amount = Math.max(...cand);
@@ -1346,12 +1357,13 @@ function submitPending() {
   // id ผูกกับลายนิ้วมือสลิป (slipHash) — สลิปใบเดียวกันส่งซ้ำ = คิวเดียวกัน ไม่เกิดรายการรออนุมัติซ้ำ
   const _h = document.getElementById('fSlipHash').value || '';
   const id = _h ? ('p' + _h.slice(0, 40)) : ('p' + Date.now() + Math.floor(Math.random() * 1000));
+  const _strip = s => (s || '').replace(/[⟦⟧]/g, '');   // กันฝังโทเคน ⟦slip:...⟧ ปลอมผ่าน note/name (พนักงานคุมได้)
   const rec = {
     id, amount,
-    name: document.getElementById('fName').value.trim() || 'ไม่ระบุชื่อ',
+    name: _strip(document.getElementById('fName').value.trim()) || 'ไม่ระบุชื่อ',
     bank: document.getElementById('fBank').value || '',
     date: document.getElementById('fDate').value || todayStr(),
-    note: document.getElementById('fNote').value.trim(),
+    note: _strip(document.getElementById('fNote').value.trim()),
     slipHash: document.getElementById('fSlipHash').value || '',
     submittedBy: (currentUser && currentUser.email) || '',
     submittedAt: Date.now(),
