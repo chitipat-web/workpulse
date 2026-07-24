@@ -721,7 +721,7 @@ window._oauthError = '';
   } catch (e) {}
 })();
 
-const APP_VER = 'v7.23-7';   // โชว์บนหน้า login — เช็คจากภาพหน้าจอได้ว่าเครื่องรันโค้ดรุ่นไหน (กันงงเรื่องแคช)
+const APP_VER = 'v7.23-8';   // โชว์บนหน้า login — เช็คจากภาพหน้าจอได้ว่าเครื่องรันโค้ดรุ่นไหน (กันงงเรื่องแคช)
 const LKEY = 'bank_transfers_v1';      // local fallback store
 const CFGKEY = 'bank_fb_config';        // saved firebase config (JSON string)
 const ROOMKEY = 'bank_room';            // saved room code
@@ -1365,6 +1365,11 @@ function submitPending() {
   if (!pref) { alert('ส่งไม่สำเร็จ (ยังไม่ได้เชื่อมต่อระบบ)'); return; }
   // id ผูกกับลายนิ้วมือสลิป (slipHash) — สลิปใบเดียวกันส่งซ้ำ = คิวเดียวกัน ไม่เกิดรายการรออนุมัติซ้ำ
   const _h = document.getElementById('fSlipHash').value || '';
+  // กันส่งสลิปที่ "ถูกบันทึกเป็นรายการไปแล้ว" เข้าคิวซ้ำ (ไฟล์เดิม hash เดียวกัน)
+  if (_h && data.some(x => x && x.slipHash === _h)) {
+    alert('⚠️ สลิปนี้ถูกบันทึกเข้าระบบไปแล้ว\nไม่ต้องส่งซ้ำนะครับ (ถ้าไม่แน่ใจ แจ้งเจ้าของตรวจสอบ)');
+    return;
+  }
   const id = _h ? ('p' + _h.slice(0, 40)) : ('p' + Date.now() + Math.floor(Math.random() * 1000));
   const _strip = s => (s || '').replace(/[⟦⟧]/g, '');   // กันฝังโทเคน ⟦slip:...⟧ ปลอมผ่าน note/name (พนักงานคุมได้)
   const rec = {
