@@ -721,7 +721,7 @@ window._oauthError = '';
   } catch (e) {}
 })();
 
-const APP_VER = 'v7.24-1';   // โชว์บนหน้า login — เช็คจากภาพหน้าจอได้ว่าเครื่องรันโค้ดรุ่นไหน (กันงงเรื่องแคช)
+const APP_VER = 'v7.24-2';   // โชว์บนหน้า login — เช็คจากภาพหน้าจอได้ว่าเครื่องรันโค้ดรุ่นไหน (กันงงเรื่องแคช)
 const LKEY = 'bank_transfers_v1';      // local fallback store
 const CFGKEY = 'bank_fb_config';        // saved firebase config (JSON string)
 const ROOMKEY = 'bank_room';            // saved room code
@@ -1901,13 +1901,11 @@ window._diag = window._diag || {};   // จับเวลารายขั้�
 function _diagReset() { const d = window._diag; d.tap = d.token = null; }
 /* ล็อกอินหลักของ iOS: พาไปหน้า Google เต็มหน้า แล้วเด้งกลับพร้อม token ใน #hash
    — เส้นทางคลาสสิก ไม่มี popup/iframe/storage ข้ามโดเมน (Safari ไม่มีอะไรให้บล็อก)
-   ใช้ redirect URI ที่ลงทะเบียนใน Google Cloud แล้ว: /workpulse/bank.html */
+   redirect URI ปรับตาม URL จริงอัตโนมัติ — ย้าย repo/path ไหนก็ใช้ได้ (ต้องลงทะเบียน URI นั้นใน Google Cloud) */
 function redirectSignIn() {
   const nonce = Math.random().toString(36).slice(2) + Date.now().toString(36);
   try { sessionStorage.setItem('oauthState', nonce); } catch (e) {}
-  const redirectUri = (location.hostname === 'chitipat-web.github.io')
-    ? 'https://chitipat-web.github.io/workpulse/bank.html'
-    : location.origin + location.pathname;
+  const redirectUri = location.origin + location.pathname;   // = หน้าปัจจุบันเป๊ะ (เช่น /workpulse/bank.html หรือ /Hurtshop/)
   const p = new URLSearchParams({
     client_id: GOOGLE_OAUTH_CLIENT_ID,
     redirect_uri: redirectUri,
